@@ -1,0 +1,82 @@
+const COLORS: Record<string, string> = {
+  // TEAL COLOR THEME
+  "teal-900": "#011a27",
+  "teal-800": "#043b56",
+  "teal-700": "#0b618f",
+  "teal-600": "#0e89c6",
+  "teal-500": "#24acee",
+  "teal-400": "#4abff9",
+  "teal-300": "#89d5fb",
+  "teal-200": "#b3e4fb",
+  "teal-100": "#d9f1fd",
+  "teal-50": "#eef9fd",
+  "teal-10": "#fbfeff",
+
+  // GREEN COLOR THEME
+  "green-900": "#0b2e16",
+  "green-800": "#155728",
+  "green-700": "#227b3b",
+  "green-600": "#2c9a4b",
+  "green-500": "#3ab75d",
+  "green-400": "#65cd82",
+  "green-300": "#8ddca2",
+  "green-200": "#b4e7c3",
+  "green-100": "#d5f2dd",
+  "green-50": "#f1faf3",
+  "green-10": "#fafffb",
+
+  // YELLOW COLOR THEME
+  "yellow-900": "#372401",
+  "yellow-800": "#6d4805",
+  "yellow-700": "#a16a07",
+  "yellow-600": "#d18c0f",
+  "yellow-500": "#eea41a",
+  "yellow-400": "#f1b343",
+  "yellow-300": "#f5ca79",
+  "yellow-200": "#f8d9a0",
+  "yellow-100": "#fbe8c6",
+  "yellow-50": "#fef8ec",
+  "yellow-10": "#fffdf7",
+
+  // RED COLOR THEME
+  "red-900": "#2d0a14",
+  "red-800": "#521224",
+  "red-700": "#7b1c38",
+  "red-600": "#a3284c",
+  "red-500": "#cd3c64",
+  "red-400": "#d45d7f",
+  "red-300": "#de7d99",
+  "red-200": "#eaadbf",
+  "red-100": "#f2cdd8",
+  "red-50": "#fbeef2",
+  "red-10": "#fefbfc",
+
+  // GREY COLOR THEME
+  "grey-900": "#171918",
+  "grey-800": "#353a39",
+  "grey-700": "#525857",
+  "grey-600": "#696f6e",
+  "grey-500": "#818988",
+  "grey-400": "#a8b1af",
+  "grey-300": "#c1c9c8",
+  "grey-200": "#d5dddc",
+  "grey-100": "#e5edeb",
+  "grey-50": "#f1f7f6",
+  "grey-10": "#f6faf9",
+  "grey-5": "#eef2f5",
+
+  // NEUTRAL COLOR THEME
+  "neutral-900": "#000000",
+  "neutral-800": "#171716",
+  "neutral-700": "#2e2e2c",
+  "neutral-600": "#454442",
+  "neutral-500": "#5c5b58",
+  "neutral-400": "#5c5b58",
+  "neutral-300": "#73726e",
+  "neutral-200": "#a0a099",
+  "neutral-100": "#cecdc5",
+  "neutral-50": "#e5e4db",
+  "neutral-10": "#ffffff",
+};
+
+export default COLORS;

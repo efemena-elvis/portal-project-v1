@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+      "target": "esnext",
+      "module": "esnext",
+      "strict": true,
+      "jsx": "preserve",
+      "moduleResolution": "node",
+      "skipLibCheck": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "forceConsistentCasingInFileNames": true,
+      "useDefineForClassFields": true,
+      "sourceMap": true,
+      "baseUrl": ".",
+      "types": ["node"],
+      "paths": {
+        "@apps/*": ["apps/*/src"],       // Alias for app-level imports
+        "@packages/*": ["packages/*/src"] // Alias for shared package imports
+      },
+      "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
+    }
+  }

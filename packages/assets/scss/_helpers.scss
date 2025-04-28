@@ -1,0 +1,31 @@
+.app-dropdown {
+  @apply absolute right-0 mt-2.5 h-auto w-[140%] py-[5px] rounded-md shadow-sm border border-grey-200/75 bg-neutral-10 animate-slide-down z-30;
+
+  .dropdown-wrapper {
+    @apply relative w-full h-full after:absolute after:size-3 after:border after:border-grey-200/95 after:right-[20%] after:-top-3 after:bg-neutral-10 after:rotate-45 after:border-r-0 after:border-b-0 z-30;
+
+    .app-dropdown-item {
+      @apply text-grey-900 px-4 py-[10px] cursor-pointer flex justify-start items-center gap-x-3 transition duration-100 ease-in-out hover:bg-grey-50/90;
+
+      .text {
+        @apply text-[13.5px];
+      }
+    }
+  }
+}
+
+// ANIMATE SPIN
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.75s linear infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}

@@ -1,0 +1,127 @@
+@use "breakpoints";
+
+.modal-overlay {
+  @apply fixed inset-0 top-0 left-0 w-full h-full overflow-auto transition duration-300 ease-in-out;
+  z-index: 2099;
+  background: linear-gradient(
+    180deg,
+    rgba(1, 12, 19, 0.55) 12%,
+    rgba(1, 12, 19, 0.55) 60.25%,
+    rgba(1, 12, 19, 0.575) 100%
+  );
+
+  .modal-outer-container {
+    @apply relative w-fit top-20 left-1/2 -translate-x-1/2 animate-zoom-out rounded-xl overflow-hidden;
+    z-index: 3099;
+  }
+
+  .modal-center-placement {
+    @apply absolute flex flex-col justify-center items-center top-0 bottom-0 w-full;
+  }
+
+  .modal-cover {
+    @apply relative bg-neutral-10 sm:p-2;
+    z-index: 3999;
+
+    .modal-cover-body-wrapper {
+      @apply relative w-full h-full;
+    }
+
+    .dialog-dismiss {
+      @apply absolute right-6 sm:right-3.5 top-6 sm:top-3.5 bg-grey-50 transition duration-300 ease-in-out size-8 rounded-full hover:bg-grey-100;
+      z-index: 999;
+
+      .icon {
+        @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-grey-600 text-2xl;
+      }
+    }
+  }
+
+  .modal-right-placement {
+    @apply animate-drift-right flex justify-end items-center transition duration-300 ease-in-out absolute bottom-3 right-3 top-3 left-[unset] transform-none;
+
+    .modal-cover {
+      @apply h-full;
+
+      .modal-cover-body-wrapper {
+        @apply h-full;
+      }
+    }
+  }
+
+  .modal-xs {
+    width: toRem(362) !important;
+
+    @include breakpoints.breakpoint-down(sm) {
+      width: 93% !important;
+    }
+  }
+
+  .modal-sm {
+    width: toRem(460) !important;
+
+    @include breakpoints.breakpoint-down(sm) {
+      width: 93% !important;
+    }
+  }
+
+  .modal-md {
+    width: toRem(560) !important;
+
+    @include breakpoints.breakpoint-down(md) {
+      width: toRem(540) !important;
+    }
+
+    @include breakpoints.breakpoint-down(sm) {
+      width: 93% !important;
+    }
+  }
+
+  .modal-lg {
+    width: toRem(660) !important;
+
+    @include breakpoints.breakpoint-down(md) {
+      width: 80% !important;
+    }
+
+    @include breakpoints.breakpoint-down(sm) {
+      width: 93% !important;
+    }
+  }
+}
+
+.modal-cover-container {
+  @apply relative h-full border overflow-auto;
+}
+
+.modal-cover-header {
+  @apply pt-6 sm:pt-4 px-6 sm:px-4;
+}
+
+.modal-cover-title {
+  @apply text-grey-900 text-[21px] sm:text-xl font-semibold;
+}
+
+.modal-cover-meta {
+  @apply text-grey-600 mt-2 sm:mb-4 text-[14px] sm:text-[13.5px];
+}
+
+.modal-cover-body {
+  @apply px-6 pt-6 sm:p-4 h-auto border-transparent overflow-auto;
+
+  &::-webkit-scrollbar {
+    @apply w-[5px];
+  }
+
+  &::-webkit-scrollbar-track {
+    @apply rounded-[4px];
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply rounded-[4px] bg-green-100;
+  }
+}
+
+.modal-cover-footer {
+  @apply px-6 pt-4 pb-6 sm:p-4;
+}
