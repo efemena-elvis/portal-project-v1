@@ -44,13 +44,13 @@ const walletBalance = ref([
     countryFlag: "https://flagsapi.com/US/flat/64.png",
     currencyShort: "USD",
     currencySign: "$",
-    amount: 52000,
+    amount: 0,
   },
   {
     countryFlag: "https://flagsapi.com/ZM/flat/64.png",
     currencyShort: "ZMW",
     currencySign: "ZK",
-    amount: 100000,
+    amount: 0,
   },
 ]);
 </script>

@@ -1,15 +1,17 @@
 <template>
   <div class="client-area-wrapper">
     <div class="client-area">
-      <div class="client-area-brand">JG</div>
+      <div class="client-area-brand">
+        {{ getBrandInitials(getBusinessProfile.businessName) }}
+      </div>
 
       <div class="client-area-details">
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
-          <div class="brand-name">Jenny's Glow</div>
+          <div class="brand-name">{{ getBusinessProfile.businessName }}</div>
 
           <div class="brand-id-row">
-            <div class="brand-id">elvis@vesicash.com</div>
+            <div class="brand-id">{{ getUser.email }}</div>
           </div>
         </div>
       </div>
@@ -33,7 +35,18 @@
 import { computed, ref } from "vue";
 import { useString, useClickOutside, useEvents } from "@packages/hooks";
 
+interface IClientAreaProps {
+  businessProfile: any;
+}
+
+const props = withDefaults(defineProps<IClientAreaProps>(), {
+  businessProfile: () => ({}),
+});
+
 const { pushToastAlert } = useEvents();
+const { getStringInitials } = useString();
+
+const profileUtil = props.businessProfile;
 
 const showDropdown = ref(false);
 const dialogRef = ref<HTMLElement | null>(null);
@@ -43,7 +56,9 @@ const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
 
 const copied = ref<boolean>(false);
-const { getStringInitials } = useString();
+
+const getBusinessProfile = computed(() => profileUtil.getBusiness());
+const getUser = computed(() => profileUtil.getUser());
 
 // GET BRAND INITIALS
 const getBrandInitials = (brandName: string): string =>

@@ -154,13 +154,13 @@ export default function useString() {
   // ======================================================
   const getStatus = (status: string, suffixText?: string): string => {
     const statusData: Record<string, string> = {
-      success: "bg-green-400",
-      successful: "bg-green-400",
-      pending: "bg-yellow-400",
-      failed: "bg-red-400",
+      success: "bg-green-100/75 text-green-700 border-green-300/40",
+      successful: "bg-green-100/75 text-green-700 border-green-300/40",
+      pending: "bg-yellow-100/75 text-yellow-700 border-yellow-300/40",
+      failed: "bg-red-100/75 text-red-700 border-red-300/40",
     };
 
-    return `<div class='flex flex-row items-center gap-x-1.5'><div class='relative w-[9px] h-[9px] rounded-full ${statusData[status]}'></div>${capitalizeFirstLetter(suffixText as string)}</div>`;
+    return `<div class='w-max border font-medium text-[13px] rounded-full py-1 px-3 text-center ${statusData[status]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
   };
 
   // ======================================================

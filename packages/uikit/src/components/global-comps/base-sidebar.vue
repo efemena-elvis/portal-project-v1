@@ -1,7 +1,7 @@
 <template>
   <div class="base-sidebar">
     <!-- CLIENT BUSINESS AREA -->
-    <BaseClientArea />
+    <BaseClientArea :businessProfile="businessProfile" />
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
@@ -76,14 +76,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { ISidebarRouteType, IRouteGroupType } from "@packages/models";
 import BaseClientArea from "./base-client-area.vue";
 
 interface ISidebarProps {
   routes: ISidebarRouteType;
-  // businessProfile: () => () => any;
+  businessProfile: any;
 }
 
 interface GroupedByCategory {
@@ -97,15 +97,17 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
     bottomLevel: [],
   }),
 
-  // businessProfile: () => () => ({}),
+  businessProfile: () => ({}),
 });
 
 const appRoute = useRoute();
 
-// const profileUtil = props.businessProfile();
+const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 
 const subLevelRoutes = ref<GroupedByCategory>({});
+
+const getBusinessProfile = computed(() => profileUtil.getBusiness());
 
 // Group routes by category
 const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {

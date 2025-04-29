@@ -310,7 +310,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
           }
 
           .form-control {
-            @apply bg-grey-50 h-11 pl-11 py-5 border border-grey-100 rounded-lg focus:border-green-500/60 focus:bg-grey-50/50 placeholder:text-grey-700;
+            @apply bg-grey-50/75 h-11 pl-11 py-5 border border-grey-100 rounded-lg focus:border-green-500/60 focus:bg-grey-50/50 placeholder:text-grey-700;
           }
         }
 

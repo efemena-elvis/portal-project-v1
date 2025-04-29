@@ -124,7 +124,7 @@ tbody {
 }
 
 tbody tr {
-  @apply cursor-pointer align-middle transition duration-300 ease-in-out border-b border-b-grey-200/60 hover:bg-green-200/20;
+  @apply cursor-pointer align-middle transition duration-300 ease-in-out border-b border-b-grey-200/60 hover:bg-green-100/20;
 }
 
 tbody tr td {

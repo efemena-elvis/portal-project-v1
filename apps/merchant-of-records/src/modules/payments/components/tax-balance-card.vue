@@ -10,6 +10,9 @@
       <div class="item-text">COLLECTED TAX</div>
     </div>
 
+    <!-- MID ROW -->
+    <div class="mid-row"></div>
+
     <!-- BOTTOM ROW -->
     <div class="bottom-row">
       <div class="country-data">
@@ -31,7 +34,7 @@
 
 <style lang="scss" scoped>
 .tax-balance-card {
-  @apply w-[268px] h-auto flex flex-col justify-between items-start gap-6 py-5 px-6 border border-grey-200 rounded-2xl;
+  @apply w-[352px] h-auto flex flex-col justify-between items-start gap-6 p-6 border border-grey-200 rounded-2xl;
 
   .top-row {
     @apply flex justify-between items-center gap-4;
@@ -67,6 +70,9 @@
     .item-text {
       @apply text-grey-600 text-xs;
     }
+  }
+
+  .mid-row {
   }
 
   .bottom-row {

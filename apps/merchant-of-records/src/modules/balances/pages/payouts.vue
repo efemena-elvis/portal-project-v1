@@ -45,12 +45,12 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([
-  {
-    date_created: "22nd July, 2024",
-    reference_id: "Ref: 123-980-112119",
-    amount_requested: "NGN 120,000.00",
-    narration: "Payment for April 2025",
-    status: getStatus("success", "Successful"),
-  },
+  // {
+  //   date_created: "22nd July, 2024",
+  //   reference_id: "Ref: 123-980-112119",
+  //   amount_requested: "NGN 120,000.00",
+  //   narration: "Payment for April 2025",
+  //   status: getStatus("success", "Successful"),
+  // },
 ]);
 </script>

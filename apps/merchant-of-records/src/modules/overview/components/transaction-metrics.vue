@@ -2,12 +2,12 @@
   <div class="transaction-metrics">
     <div class="transaction-data">
       <div class="title-text">Transactions</div>
-      <div class="value-text">2</div>
+      <div class="value-text">0</div>
     </div>
 
     <div class="transaction-data">
       <div class="title-text">Successful Transactions</div>
-      <div class="value-text">2</div>
+      <div class="value-text">0</div>
     </div>
 
     <div class="transaction-data">
@@ -19,7 +19,7 @@
       <div class="title-text">Total Payouts</div>
       <div class="value-text">
         <span class="mr-0.5">ZK</span>
-        <span>1,500</span>
+        <span>0</span>
       </div>
     </div>
   </div>
