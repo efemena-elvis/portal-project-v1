@@ -22,20 +22,15 @@ const $api = new useServiceAPI({
   API_BASE_URL: MOR_API_BASE_URL,
   API_VERSION: MOR_API_VERSION,
   TOKEN_KEY: MOR_AUTH_TOKEN,
+  HEADERS: {
+    "public-key": publicKey.value,
+  },
 });
 
 export const getTransactions = async () => {
-  return await $api.fetch(paymentRoutes.getPaymentTransactions, {
-    headers: {
-      "public-key": publicKey.value,
-    },
-  });
+  return await $api.fetch(paymentRoutes.getPaymentTransactions);
 };
 
 export const getCustomers = async () => {
-  return await $api.fetch(paymentRoutes.getCustomers, {
-    headers: {
-      "public-key": publicKey.value,
-    },
-  });
+  return await $api.fetch(paymentRoutes.getCustomers);
 };
