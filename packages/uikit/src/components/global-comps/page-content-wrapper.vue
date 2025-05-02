@@ -29,6 +29,8 @@
 <script lang="ts" setup>
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import Pagination from "./pagination.vue";
+
 
 interface IPageContentType {
   pagingData?: any;
