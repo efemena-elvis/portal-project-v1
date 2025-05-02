@@ -2,19 +2,6 @@
   <div class="tax-balance-card">
     <!-- TOP ROW -->
     <div class="top-row">
-      <div class="item-status item-status--inactive">
-        <div class="bullet"></div>
-        <div class="text">Inactive</div>
-      </div>
-
-      <div class="item-text">COLLECTED TAX</div>
-    </div>
-
-    <!-- MID ROW -->
-    <div class="mid-row"></div>
-
-    <!-- BOTTOM ROW -->
-    <div class="bottom-row">
       <div class="country-data">
         <div class="country-data-flag">
           <img src="https://flagsapi.com/US/flat/64.png" alt="" />
@@ -22,9 +9,29 @@
         <div class="country-data-code">USD</div>
       </div>
 
-      <div class="data-amount">
-        <div class="data-amount-currency">$</div>
-        <div class="data-amount-value">1,450</div>
+      <div class="item-status item-status--active">
+        <div class="bullet"></div>
+        <div class="text">Active</div>
+      </div>
+    </div>
+
+    <!-- MID ROW -->
+    <div class="mid-row">
+      <div class="tax-title">APRIL COLLECTED TAX</div>
+      <div class="tax-amount">$1,240</div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <!-- TOTAL TAX CARD -->
+      <div class="primary-tax-card">
+        <div class="card-title">TOTAL TAX COLLECTED</div>
+        <div class="card-value">$3,420</div>
+      </div>
+
+      <div class="secondary-tax-card">
+        <div class="card-title">NEXT remittance</div>
+        <div class="card-value">1st, May 2025</div>
       </div>
     </div>
   </div>
@@ -34,49 +41,10 @@
 
 <style lang="scss" scoped>
 .tax-balance-card {
-  @apply w-[352px] h-auto flex flex-col justify-between items-start gap-6 p-6 border border-grey-200 rounded-2xl;
+  @apply w-[352px] h-auto flex flex-col justify-between items-start p-6 border border-grey-200/90 rounded-2xl;
 
   .top-row {
-    @apply flex justify-between items-center gap-4;
-
-    .item-status {
-      @apply flex justify-center items-center gap-1 py-1 px-2.5 rounded-3xl;
-
-      .bullet {
-        @apply size-[5px] rounded-full;
-      }
-
-      .text {
-        @apply text-xs font-medium;
-      }
-
-      &--active {
-        @apply bg-green-100 text-green-800;
-
-        .bullet {
-          @apply bg-green-800;
-        }
-      }
-
-      &--inactive {
-        @apply bg-red-100 text-red-800;
-
-        .bullet {
-          @apply bg-red-800;
-        }
-      }
-    }
-
-    .item-text {
-      @apply text-grey-600 text-xs;
-    }
-  }
-
-  .mid-row {
-  }
-
-  .bottom-row {
-    @apply relative flex justify-between items-center gap-4 top-1;
+    @apply flex justify-between items-center gap-4 mb-6;
 
     .country-data {
       @apply flex justify-start items-center gap-1;
@@ -94,8 +62,68 @@
       }
     }
 
-    .data-amount {
-      @apply flex justify-start items-center gap-0.5 text-grey-800 text-xl font-semibold;
+    .item-status {
+      @apply flex justify-center items-center gap-1 py-1 px-2.5 rounded-3xl;
+
+      .bullet {
+        @apply size-[5px] rounded-full;
+      }
+
+      .text {
+        @apply text-xs font-medium;
+      }
+
+      &--active {
+        @apply bg-green-100/85 text-green-700;
+
+        .bullet {
+          @apply bg-green-700;
+        }
+      }
+
+      &--inactive {
+        @apply bg-red-100/85 text-red-700;
+
+        .bullet {
+          @apply bg-red-700;
+        }
+      }
+    }
+
+    .item-text {
+      @apply text-grey-600 text-xs;
+    }
+  }
+
+  .mid-row {
+    @apply mb-6 flex flex-col justify-start items-start gap-y-2;
+
+    .tax-title {
+      @apply text-xs text-grey-600 uppercase;
+    }
+
+    .tax-amount {
+      @apply text-xl text-teal-800 font-semibold;
+    }
+  }
+
+  .bottom-row {
+    @apply relative flex flex-col justify-start items-start gap-y-4;
+
+    .primary-tax-card {
+      @apply w-full flex justify-between items-center gap-4 bg-yellow-50/75 border border-yellow-200/60 rounded-md px-3.5 py-2.5;
+    }
+
+    .secondary-tax-card {
+      @apply w-full flex justify-between items-center gap-4;
+    }
+
+    .card-title {
+      @apply text-xs text-grey-700/80 uppercase;
+    }
+
+    .card-value {
+      @apply text-sm text-teal-800 font-semibold;
     }
   }
 }

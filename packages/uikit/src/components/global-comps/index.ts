@@ -5,3 +5,4 @@ export { default as ModalDialog } from "./modal-dialog.vue";
 export { default as PageContentWrapper } from "./page-content-wrapper.vue";
 export { default as Pagination } from "./pagination.vue";
 export { default as ToastCard } from "./toast-card.vue";
+export { default as TabBar } from "./tab-bar.vue";

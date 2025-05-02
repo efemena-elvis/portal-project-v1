@@ -89,49 +89,6 @@ export const sidebarRoutes: ISidebarRouteType = {
   ],
 };
 
-export const complianceSidebarRoutes: ISideNavType[] = [
-  {
-    routeTitle: "Documents",
-    routeIcon: "icon-file",
-    routeLinkName: "RedstoneDocuments",
-  },
-  {
-    routeTitle: "Business",
-    routeIcon: "icon-building",
-    routeLinkName: "RedstoneBusinessProfile",
-  },
-  {
-    routeTitle: "Registration",
-    routeIcon: "icon-shop",
-    routeLinkName: "RedstoneRegistrationInformation",
-  },
-  {
-    routeTitle: "Representative",
-    routeIcon: "icon-profile-users",
-    routeLinkName: "RedstoneRepresentativeProfile",
-  },
-  {
-    routeTitle: "Bank Account",
-    routeIcon: "icon-bank",
-    routeLinkName: "RedstoneBankAccount",
-  },
-  {
-    routeTitle: "Business Signatory",
-    routeIcon: "icon-user",
-    routeLinkName: "RedstoneSignatoryProfile",
-  },
-  {
-    routeTitle: "Terms & Agreement",
-    routeIcon: "icon-document-text",
-    routeLinkName: "RedstoneAgreementSignature",
-  },
-  {
-    routeTitle: "Summary",
-    routeIcon: "icon-directbox-notif",
-    routeLinkName: "RedstoneComplianceSummary",
-  },
-];
-
 export const settingsSidebarRoutes: ISideNavType[] = [
   {
     routeTitle: "My Profile",
