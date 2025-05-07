@@ -1,5 +1,6 @@
 .build_template:
   stage: build
+  image: node:18
   script:
     - cd $APP_DIR
     - npm ci
