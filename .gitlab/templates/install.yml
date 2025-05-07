@@ -3,4 +3,4 @@
   image: node:18
   script:
     - cd $APP_DIR
-    - npm install
+    - npm install --legacy-peer-deps
