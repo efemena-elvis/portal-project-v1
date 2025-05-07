@@ -2,5 +2,7 @@
   stage: install
   image: node:18
   script:
-    # - cd $APP_DIR
     - npm install --legacy-peer-deps
+  only:
+    - staging
+    - main

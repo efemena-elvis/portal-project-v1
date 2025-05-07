@@ -1,0 +1,91 @@
+image: node:18
+
+stages:
+  - install
+  - build
+  - deploy
+
+# Job for installing dependencies
+install:
+  stage: install
+  script:
+    - npm install --legacy-peer-deps
+  only:
+    - staging
+    - main
+
+# Job for building on staging environment
+build_staging:
+  stage: build
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build:staging:merchant-of-records
+  artifacts:
+    paths:
+      - apps/merchant-of-records/dist/
+  only:
+    - staging
+  needs:
+    - install
+
+# Job for building on production environment
+build_production:
+  stage: build
+  script:
+    - npm ci --legacy-peer-deps
+    - npm run build:prod:merchant-of-records
+  artifacts:
+    paths:
+      - apps/merchant-of-records/dist/
+  only:
+    - main
+  needs:
+    - install
+
+# Job for deploying to staging
+deploy_staging:
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint:
+      - "/usr/bin/env"
+  stage: deploy
+  script:
+    - echo "Deploying to Staging Environment"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_S3_BUCKET"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION"
+    - echo "$AWS_ACCESS_KEY_ID"
+    - echo "$AWS_SECRET_ACCESS_KEY"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_AWS_REGION"
+
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
+    - aws configure set region $MERCHANT_OF_RECORDS_STAGING_AWS_REGION --profile gitlab
+    - aws s3 sync apps/merchant-of-records/dist/ s3://$MERCHANT_OF_RECORDS_STAGING_S3_BUCKET/ --acl public-read --delete --profile gitlab
+    - aws cloudfront create-invalidation --distribution-id $MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
+  environment:
+    name: staging
+  only:
+    - staging
+  needs:
+    - build_staging
+
+# Job for deploying to production
+deploy_production:
+  image:
+    name: amazon/aws-cli:latest
+    entrypoint:
+      - "/usr/bin/env"
+  stage: deploy
+  script:
+    - echo "Deploying to Production Environment"
+    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
+    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
+    - aws configure set region $MERCHANT_OF_RECORDS_PROD_AWS_REGION --profile gitlab
+    - aws s3 sync apps/merchant-of-records/dist/ s3://$MERCHANT_OF_RECORDS_PROD_S3_BUCKET/ --acl public-read --delete --region $MAIN_AWS_DEFAULT_REGION --profile gitlab
+    - aws cloudfront create-invalidation --distribution-id $MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
+  environment:
+    name: production
+  only:
+    - main
+  needs:
+    - build_production

@@ -1,91 +1,58 @@
-image: node:18
+# === Combined Anchors ===
+.merchant_of_records_staging_vars: &merchant_of_records_staging_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  BUILD_SCRIPT: build:staging:merchant-of-records
+  CI_ENVIRONMENT_NAME: staging
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $MERCHANT_OF_RECORDS_STAGING_AWS_REGION
+  S3_BUCKET: $MERCHANT_OF_RECORDS_STAGING_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION
 
-stages:
-  - install
-  - build
-  - deploy
+.merchant_of_records_prod_vars: &merchant_of_records_prod_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  BUILD_SCRIPT: build:prod:merchant-of-records
+  CI_ENVIRONMENT_NAME: main
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $MERCHANT_OF_RECORDS_PROD_AWS_REGION
+  S3_BUCKET: $MERCHANT_OF_RECORDS_PROD_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION
 
-# Job for installing dependencies
-install:
-  stage: install
-  script:
-    - npm install --legacy-peer-deps
-  only:
-    - staging
-    - main
+# === Merchant of Records ===
+install_merchant_of_records:
+  extends: .install_template
+  variables:
+    <<: *merchant_of_records_staging_vars
 
-# Job for building on staging environment
-build_staging:
-  stage: build
-  script:
-    - npm ci --legacy-peer-deps
-    - npm run build:staging:merchant-of-records
-  artifacts:
-    paths:
-      - apps/merchant-of-records/dist/
-  only:
-    - staging
+build_staging_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_staging_vars
   needs:
-    - install
+    - install_merchant_of_records
 
-# Job for building on production environment
-build_production:
-  stage: build
-  script:
-    - npm ci --legacy-peer-deps
-    - npm run build:prod:merchant-of-records
-  artifacts:
-    paths:
-      - apps/merchant-of-records/dist/
-  only:
-    - main
+build_production_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_prod_vars
   needs:
-    - install
+    - install_merchant_of_records
 
-# Job for deploying to staging
-deploy_staging:
-  image:
-    name: amazon/aws-cli:latest
-    entrypoint:
-      - "/usr/bin/env"
-  stage: deploy
-  script:
-    - echo "Deploying to Staging Environment"
-    - echo "$MERCHANT_OF_RECORDS_STAGING_S3_BUCKET"
-    - echo "$MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION"
-    - echo "$AWS_ACCESS_KEY_ID"
-    - echo "$AWS_SECRET_ACCESS_KEY"
-    - echo "$MERCHANT_OF_RECORDS_STAGING_AWS_REGION"
-
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
-    - aws configure set region $MERCHANT_OF_RECORDS_STAGING_AWS_REGION --profile gitlab
-    - aws s3 sync apps/merchant-of-records/dist/ s3://$MERCHANT_OF_RECORDS_STAGING_S3_BUCKET/ --acl public-read --delete --profile gitlab
-    - aws cloudfront create-invalidation --distribution-id $MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
-  environment:
-    name: staging
-  only:
-    - staging
+deploy_staging_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_staging_vars
   needs:
-    - build_staging
+    - build_staging_merchant_of_records
 
-# Job for deploying to production
-deploy_production:
-  image:
-    name: amazon/aws-cli:latest
-    entrypoint:
-      - "/usr/bin/env"
-  stage: deploy
-  script:
-    - echo "Deploying to Production Environment"
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
-    - aws configure set region $MERCHANT_OF_RECORDS_PROD_AWS_REGION --profile gitlab
-    - aws s3 sync apps/merchant-of-records/dist/ s3://$MERCHANT_OF_RECORDS_PROD_S3_BUCKET/ --acl public-read --delete --region $MAIN_AWS_DEFAULT_REGION --profile gitlab
-    - aws cloudfront create-invalidation --distribution-id $MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
-  environment:
-    name: production
-  only:
-    - main
+deploy_production_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_prod_vars
   needs:
-    - build_production
+    - build_production_merchant_of_records
