@@ -7,9 +7,10 @@ import overviewRoutes from "@/modules/overview";
 import paymentRoutes from "@/modules/payments";
 import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
+import externalRoutes  from "@/modules/external";
 // import settingsRoutes from "@/modules/settings";
 // import storefrontRoutes from "@/modules/storefront";
-// import externalRoutes from "@/modules/external";
+
 
 const routes = [
   ...authRoutes,
@@ -17,10 +18,11 @@ const routes = [
   ...paymentRoutes,
   ...balancesRoutes,
   ...complianceRoutes,
+  ...externalRoutes,
   //   ...transferRoutes,
   //   ...settingsRoutes,
   //   ...storefrontRoutes,
-  //   ...externalRoutes,
+
   {
     path: "/*",
     name: "NotFoundError",
