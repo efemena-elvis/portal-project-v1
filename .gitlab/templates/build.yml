@@ -4,7 +4,7 @@
   script:
     - cd $APP_DIR
     - npm ci --legacy-peer-deps
-    - npm run $BUILD_SCRIPT
+    - npm run "$BUILD_SCRIPT"
   artifacts:
     paths:
       - $BUILD_DIR/
