@@ -15,9 +15,9 @@
             :tableBody="tableBody"
             :isLoading="isLoading"
             :emptyData="{
-              title: 'No transactions yet!',
+              title: 'No taxes recorded yet!',
               description:
-                'No transactions has been initiated on your account yet',
+                'No tax transactions has been initiated on your account yet',
             }"
           >
             <TableContainerBody
@@ -57,20 +57,20 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([
-  {
-    date_created: "Tue, 12th April 2025",
-    reference: "3202-1231-45390",
-    amount: `ZMW${formatNumber(500000)}`,
-    tax: `ZMW${formatNumber(2500)}`,
-    status: `${getStatus("success", "Successful")}`,
-  },
-  {
-    date_created: "Mon, 19th April 2025",
-    reference: "3202-3145-45390",
-    amount: `ZMW${formatNumber(250000)}`,
-    tax: `ZMW${formatNumber(1250)}`,
-    status: `${getStatus("success", "Successful")}`,
-  },
+  // {
+  //   date_created: "Tue, 12th April 2025",
+  //   reference: "3202-1231-45390",
+  //   amount: `ZMW${formatNumber(500000)}`,
+  //   tax: `ZMW${formatNumber(2500)}`,
+  //   status: `${getStatus("success", "Successful")}`,
+  // },
+  // {
+  //   date_created: "Mon, 19th April 2025",
+  //   reference: "3202-3145-45390",
+  //   amount: `ZMW${formatNumber(250000)}`,
+  //   tax: `ZMW${formatNumber(1250)}`,
+  //   status: `${getStatus("success", "Successful")}`,
+  // },
 ]);
 </script>
 

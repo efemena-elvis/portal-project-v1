@@ -92,32 +92,18 @@ export const sidebarRoutes: ISidebarRouteType = {
 export const settingsSidebarRoutes: ISideNavType[] = [
   {
     routeTitle: "My Profile",
-    routeIcon: "icon-user",
-    routeLinkName: "RedstoneProfileSettings",
-  },
-  {
-    routeTitle: "Password",
-    routeIcon: "icon-security-safe",
-    routeLinkName: "RedstonePasswordSettings",
-  },
-  // {
-  //   routeTitle: "Preferences",
-  //   routeIcon: "icon-tool",
-  //   routeLinkName: "RedstonePreferenceSettings",
-  // },
-  {
-    routeTitle: "Contacts",
-    routeIcon: "icon-profile-users",
-    routeLinkName: "RedstoneContactSettings",
+    routeLinkName: "VesicashProfile",
   },
   {
     routeTitle: "Bank Account",
-    routeIcon: "icon-bank",
-    routeLinkName: "RedstoneAccountSettings",
+    routeLinkName: "VesicashBankAccount",
   },
+  // {
+  //   routeTitle: "Teams",
+  //   routeLinkName: "RedstoneAccountSettings",
+  // },
   {
-    routeTitle: "Developers",
-    routeIcon: "icon-developer",
-    routeLinkName: "RedstoneDeveloperSettings",
+    routeTitle: "Developer",
+    routeLinkName: "VesicashDeveloper",
   },
 ];

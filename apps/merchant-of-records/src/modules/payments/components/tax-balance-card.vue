@@ -17,8 +17,8 @@
 
     <!-- MID ROW -->
     <div class="mid-row">
-      <div class="tax-title">APRIL COLLECTED TAX</div>
-      <div class="tax-amount">$1,240</div>
+      <div class="tax-title">May COLLECTED TAX</div>
+      <div class="tax-amount">$0</div>
     </div>
 
     <!-- BOTTOM ROW -->
@@ -26,12 +26,12 @@
       <!-- TOTAL TAX CARD -->
       <div class="primary-tax-card">
         <div class="card-title">TOTAL TAX COLLECTED</div>
-        <div class="card-value">$3,420</div>
+        <div class="card-value">$0</div>
       </div>
 
       <div class="secondary-tax-card">
         <div class="card-title">NEXT remittance</div>
-        <div class="card-value">1st, May 2025</div>
+        <div class="card-value">1st, June 2025</div>
       </div>
     </div>
   </div>

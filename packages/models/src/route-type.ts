@@ -38,6 +38,5 @@ export interface ISidebarRouteType {
 
 export interface ISideNavType {
   routeTitle: string;
-  routeIcon: string;
   routeLinkName: string;
 }

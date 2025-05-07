@@ -18,7 +18,7 @@
     <div class="transaction-data">
       <div class="title-text">Total Payouts</div>
       <div class="value-text">
-        <span class="mr-0.5">ZK</span>
+        <!-- <span class="mr-0.5">ZK</span> -->
         <span>0</span>
       </div>
     </div>

@@ -1,0 +1,57 @@
+# === Combined Anchors ===
+.merchant_of_records_staging_vars: &merchant_of_records_staging_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  CI_ENVIRONMENT_NAME: staging
+  S3_BUCKET: $MERCHANT_OF_RECORDS_STAGING_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION
+  AWS_REGION: $MERCHANT_OF_RECORDS_STAGING_AWS_DEFAULT_REGION
+
+.merchant_of_records_prod_vars: &merchant_of_records_prod_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  CI_ENVIRONMENT_NAME: production
+  S3_BUCKET: $MERCHANT_OF_RECORDS_PROD_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION
+  AWS_REGION: $MERCHANT_OF_RECORDS_PROD_AWS_DEFAULT_REGION
+
+# === Merchant of Records ===
+install_merchant_of_records:
+  extends: .install_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+    - main
+
+build_staging_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+    BUILD_SCRIPT: build:staging:merchant-of-records
+  only:
+    - staging
+
+build_production_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_prod_vars
+    BUILD_SCRIPT: build:prod:merchant-of-records
+  only:
+    - main
+
+deploy_staging_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+
+deploy_production_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_prod_vars
+  only:
+    - main

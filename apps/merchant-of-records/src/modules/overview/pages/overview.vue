@@ -30,14 +30,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { PageContentWrapper } from "@packages/uikit";
+import { useEvents } from "@packages/hooks";
 import {
   OverviewCard,
   TaxBlock,
   TransactionMetrics,
   TransactionTable,
 } from "@/modules/overview/components";
+import { useOverviewStore } from "@/modules/overview/store";
+
+const { getWallets } = useOverviewStore();
+const { processAPIRequest } = useEvents();
 
 const walletBalance = ref([
   {
@@ -46,13 +51,21 @@ const walletBalance = ref([
     currencySign: "$",
     amount: 0,
   },
-  {
-    countryFlag: "https://flagsapi.com/ZM/flat/64.png",
-    currencyShort: "ZMW",
-    currencySign: "ZK",
-    amount: 0,
-  },
 ]);
+
+const fetchAllWallets = async () => {
+  const response = await processAPIRequest({
+    action: getWallets,
+    showAlert: false,
+  });
+
+  if (response?.code === 200) {
+    // walletBalance.value = response.data;
+    console.log("Wallets ===> ", response.data);
+  }
+};
+
+onMounted(() => fetchAllWallets());
 </script>
 
 <style lang="scss" scoped>

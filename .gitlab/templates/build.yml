@@ -1,0 +1,11 @@
+.build_template:
+  stage: build
+  script:
+    - cd $APP_DIR
+    - npm ci
+    - npm run $BUILD_SCRIPT
+  artifacts:
+    paths:
+      - $BUILD_DIR/
+  needs:
+    - install_$APP_NAME

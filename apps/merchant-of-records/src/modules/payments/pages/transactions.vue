@@ -13,7 +13,8 @@
         :isLoading="isLoading"
         :emptyData="{
           title: 'No transactions yet!',
-          description: 'No transactions has been initiated on your account yet.',
+          description:
+            'No transactions has been initiated on your account yet.',
         }"
       >
         <TableContainerBody
@@ -31,8 +32,7 @@
 import { ref, reactive, h, onMounted, computed } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
-import { usePaymentStore } from "../store";
-
+import { usePaymentStore } from "@/modules/payments/store";
 
 import {
   TableContainer,
@@ -40,7 +40,6 @@ import {
   TableDoubleColumn,
   PageContentWrapper,
 } from "@packages/uikit";
-
 
 const {
   formatNumber,
@@ -52,8 +51,7 @@ const {
 const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
-
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Transaction Info", slug: "info" },
@@ -63,26 +61,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
 ]);
 
-const tableBody = reactive<any[]>([
-  // {
-  //   info: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: "Tue, 12th April 2025",
-  //       secondaryText: "Ref: 327-1231-33212",
-  //     },
-  //   }),
-  //   customer: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: "Bolaji Babalola",
-  //       secondaryText: "chditwee@gmail.com",
-  //     },
-  //   }),
-  //   payment_method: "Mastercard",
-  //   amount: getBoldTableText(`ZMW ${formatNumber(500000)}`),
-  //   status: `${getStatus("success", "Successful")}`,
-  // },
- 
-]);
+const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
 const getTransactionDate = (date: string) => {
@@ -95,7 +74,6 @@ const fetchPaymentTransactions = async () => {
     action: getTransactions,
     payload: {},
     showAlert: false,
-
   });
 
   isLoading.value = false;

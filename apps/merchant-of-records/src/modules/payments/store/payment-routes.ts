@@ -1,5 +1,4 @@
 export const paymentRoutes = {
-    getPaymentTransactions: "payment",
-    getCustomers: "customers",
-  };
-  
+  getPaymentTransactions: "payment",
+  getCustomers: "customers",
+};

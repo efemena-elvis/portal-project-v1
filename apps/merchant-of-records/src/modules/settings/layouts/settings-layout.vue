@@ -2,7 +2,7 @@
   <PageContentWrapper>
     <template v-slot:pageContent>
       <!-- TAB BAR -->
-      <TabBar />
+      <TabBar :routes="settingsSidebarRoutes" />
 
       <!-- MAIN CONTENT -->
       <router-view v-slot="{ Component }">
@@ -14,6 +14,7 @@
 
 <script setup lang="ts">
 import { PageContentWrapper, TabBar } from "@packages/uikit";
+import { settingsSidebarRoutes } from "@/shared/utilities/sidebar-routes";
 </script>
 
 <style lang="scss" scoped>

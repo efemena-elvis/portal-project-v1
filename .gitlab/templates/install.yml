@@ -1,0 +1,5 @@
+.install_template:
+  stage: install
+  script:
+    - cd $APP_DIR
+    - npm install

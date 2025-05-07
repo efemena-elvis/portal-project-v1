@@ -11,7 +11,7 @@
   );
 
   .modal-outer-container {
-    @apply relative w-fit top-20 left-1/2 -translate-x-1/2 animate-zoom-out rounded-xl overflow-hidden;
+    @apply relative w-fit top-20 left-1/2 -translate-x-1/2 animate-zoom-out;
     z-index: 3099;
   }
 
@@ -20,7 +20,7 @@
   }
 
   .modal-cover {
-    @apply relative bg-neutral-10 sm:p-2;
+    @apply relative bg-neutral-10 rounded-xl overflow-hidden sm:p-2;
     z-index: 3999;
 
     .modal-cover-body-wrapper {
@@ -50,7 +50,7 @@
   }
 
   .modal-xs {
-    width: toRem(362) !important;
+    width: 362px !important;
 
     @include breakpoints.breakpoint-down(sm) {
       width: 93% !important;
@@ -58,7 +58,7 @@
   }
 
   .modal-sm {
-    width: toRem(460) !important;
+    width: 440px !important;
 
     @include breakpoints.breakpoint-down(sm) {
       width: 93% !important;
@@ -66,10 +66,10 @@
   }
 
   .modal-md {
-    width: toRem(560) !important;
+    width: 560px !important;
 
     @include breakpoints.breakpoint-down(md) {
-      width: toRem(540) !important;
+      width: 540px !important;
     }
 
     @include breakpoints.breakpoint-down(sm) {
@@ -78,7 +78,7 @@
   }
 
   .modal-lg {
-    width: toRem(660) !important;
+    width: 660px !important;
 
     @include breakpoints.breakpoint-down(md) {
       width: 80% !important;
@@ -91,7 +91,7 @@
 }
 
 .modal-cover-container {
-  @apply relative h-full border overflow-auto;
+  @apply relative h-full overflow-auto;
 }
 
 .modal-cover-header {

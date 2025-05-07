@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { useString,useEvents, useDate } from "@packages/hooks";
-import {useBalanceStore} from "../store";
+import { useString, useEvents, useDate } from "@packages/hooks";
+import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
 
 import {
@@ -98,7 +98,5 @@ const fetchPayouts = async () => {
 
 onMounted(() => {
   fetchPayouts();
-  
 });
-
 </script>
