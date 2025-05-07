@@ -4,22 +4,22 @@
     entrypoint:
       - "/usr/bin/env"
   stage: deploy
-  script:
-    - echo "Deploying $APP_NAME to $CI_ENVIRONMENT_NAME"
-    - echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
-    - echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
-    - echo "AWS_REGION: $AWS_REGION"
-    - echo "S3_BUCKET: $S3_BUCKET"
-    - echo "CLOUDFRONT_DISTRIBUTION: $CLOUDFRONT_DISTRIBUTION"
+  # script:
+  #   - echo "Deploying $APP_NAME to $CI_ENVIRONMENT_NAME"
+  #   - echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
+  #   - echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
+  #   - echo "AWS_REGION: $AWS_REGION"
+  #   - echo "S3_BUCKET: $S3_BUCKET"
+  #   - echo "CLOUDFRONT_DISTRIBUTION: $CLOUDFRONT_DISTRIBUTION"
 
-    - if [ -z "$AWS_ACCESS_KEY_ID" ]; then echo "Missing AWS_ACCESS_KEY_ID"; exit 1; fi
-    - if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then echo "Missing AWS_SECRET_ACCESS_KEY"; exit 1; fi
-    - if [ -z "$AWS_REGION" ]; then echo "Missing AWS_REGION"; exit 1; fi
+  #   - if [ -z "$AWS_ACCESS_KEY_ID" ]; then echo "Missing AWS_ACCESS_KEY_ID"; exit 1; fi
+  #   - if [ -z "$AWS_SECRET_ACCESS_KEY" ]; then echo "Missing AWS_SECRET_ACCESS_KEY"; exit 1; fi
+  #   - if [ -z "$AWS_REGION" ]; then echo "Missing AWS_REGION"; exit 1; fi
 
-    - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
-    - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
-    - aws configure set region $AWS_REGION --profile gitlab
-    - aws s3 sync $BUILD_DIR/ s3://$S3_BUCKET/ --acl public-read --delete --profile gitlab
-    - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
-  environment:
-    name: $CI_ENVIRONMENT_NAME
+  #   - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
+  #   - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
+  #   - aws configure set region $AWS_REGION --profile gitlab
+  #   - aws s3 sync $BUILD_DIR/ s3://$S3_BUCKET/ --acl public-read --delete --profile gitlab
+  #   - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
+  # environment:
+  #   name: $CI_ENVIRONMENT_NAME
