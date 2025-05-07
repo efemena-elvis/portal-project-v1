@@ -3,6 +3,3 @@
   image: node:18
   script:
     - npm install --legacy-peer-deps
-  only:
-    - staging
-    - main

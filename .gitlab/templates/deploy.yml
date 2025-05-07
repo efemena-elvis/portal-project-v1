@@ -13,5 +13,3 @@
     - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
   environment:
     name: $CI_ENVIRONMENT_NAME
-  only:
-    - $CI_ENVIRONMENT_NAME

@@ -28,11 +28,16 @@ install_merchant_of_records:
   extends: .install_template
   variables:
     <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+    - main
 
 build_staging_merchant_of_records:
   extends: .build_template
   variables:
     <<: *merchant_of_records_staging_vars
+  only:
+    - staging
   needs:
     - install_merchant_of_records
 
@@ -40,6 +45,8 @@ build_production_merchant_of_records:
   extends: .build_template
   variables:
     <<: *merchant_of_records_prod_vars
+  only:
+    - main
   needs:
     - install_merchant_of_records
 
@@ -47,6 +54,8 @@ deploy_staging_merchant_of_records:
   extends: .deploy_template
   variables:
     <<: *merchant_of_records_staging_vars
+  only:
+    - staging
   needs:
     - build_staging_merchant_of_records
 
@@ -54,5 +63,7 @@ deploy_production_merchant_of_records:
   extends: .deploy_template
   variables:
     <<: *merchant_of_records_prod_vars
+  only:
+    - main
   needs:
     - build_production_merchant_of_records

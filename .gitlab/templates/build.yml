@@ -8,5 +8,3 @@
   artifacts:
     paths:
       - $BUILD_DIR/
-  only:
-    - $CI_ENVIRONMENT_NAME
