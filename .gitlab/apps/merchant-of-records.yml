@@ -51,7 +51,12 @@ deploy_staging:
   stage: deploy
   script:
     - echo "Deploying to Staging Environment"
-    - echo "$STAGING_S3_BUCKET"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_S3_BUCKET"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION"
+    - echo "$AWS_ACCESS_KEY_ID"
+    - echo "$AWS_SECRET_ACCESS_KEY"
+    - echo "$MERCHANT_OF_RECORDS_STAGING_AWS_REGION"
+
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
     - aws configure set region $MERCHANT_OF_RECORDS_STAGING_AWS_REGION --profile gitlab
