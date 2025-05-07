@@ -6,7 +6,7 @@
     - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile gitlab
     - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile gitlab
     - aws configure set region $AWS_REGION --profile gitlab
-    - aws s3 sync "$BUILD_DIR/" "s3://$S3_BUCKET/" --acl public-read --delete --profile gitlab
+    - aws s3 sync $BUILD_DIR/ s3://$S3_BUCKET/ --acl public-read --delete --profile gitlab
     - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION --paths "/*" --profile gitlab
   environment:
     name: $CI_ENVIRONMENT_NAME
