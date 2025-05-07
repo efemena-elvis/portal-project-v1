@@ -7,5 +7,3 @@
   artifacts:
     paths:
       - $BUILD_DIR/
-  needs:
-    - install_$APP_NAME
