@@ -1,20 +1,20 @@
 <template>
   <div>
-    <div class="border-b-2 border-gray-200 p-6 flex items-center bg-white">
+    <div class="flex items-center p-6 bg-white border-b-2 border-gray-200">
       <img
         :src="renderImg('vesicash-svg.svg')"
         alt="Vesicash Logo"
-        class="h-10 w-auto"
+        class="w-auto h-10"
       />
     </div>
 
     <div
-      class="w-full px-6 sm:px-10 lg:px-16 xl:px-20 pt-6 flex flex-col items-center gap-4 text-center"
+      class="flex flex-col items-center w-full gap-4 px-6 pt-6 text-center sm:px-10 lg:px-16 xl:px-20"
     >
       <h1 class="text-3xl font-bold text-grey-900">
         Aggregators Questionnaire
       </h1>
-      <p class="text-grey-500 max-w-3xl">
+      <p class="max-w-3xl text-grey-500">
         Expand your business rapidly across Africa with Vesicash. Launch
         operations in these markets: Nigeria, Ghana, Tanzania, Kenya, Zambia,
         and Rwanda.
@@ -22,32 +22,41 @@
     </div>
 
     <div class="px-6 py-16">
-      <form @submit.prevent="handleSubmit" class="mx-auto max-w-2xl w-full flex flex-col gap-4">
+      <form
+        @submit.prevent="handleSubmit"
+        class="flex flex-col w-full max-w-2xl gap-4 mx-auto"
+      >
         <TextFieldInput
           :labelCompact="false"
           labelId="companyName"
           labelTitle="Company Name"
           :inputType="IInputType.Text"
-          inputPlaceholder="Provide a registered company name"
+          inputPlaceholder="Provide a registered company name."
           isRequired
           :inputValue="questionnairePayload.companyName"
           @inputChanged="questionnairePayload.companyName = $event"
+          @inputValidated="payloadValidity.companyName = $event"
           :errorHandler="{
             validator: 'validateRequired',
-            message: 'Company name is a required field',
+            message: 'Company name is a required field.',
           }"
         />
 
         <PhoneFieldInput
           labelId="phoneNumber"
           labelTitle="Phone Number"
-          inputPlaceholder="Provide a business phone number"
+          inputPlaceholder="Provide a business phone number."
+          :inputType="IInputType.Number"
           :isRequired="true"
           :activeCountryCode="phoneCountryCode"
           :inputValue="phoneNumberInput"
           @inputChanged="phoneNumberInput = $event"
           @countryCodeChanged="phoneCountryCode = $event"
-          :errorHandler="{ validator: 'validatePhone' }"
+          @inputValidated="payloadValidity.phoneNumber = $event"
+          :errorHandler="{
+            validator: 'validatePhone',
+            message: 'Phone number is a required field.',
+          }"
         />
 
         <TextFieldInput
@@ -56,23 +65,24 @@
           labelTitle="Website"
           isRequired
           inputPlaceholder="www.companyname.com"
-          :inputType="IInputType.Text"
+          :inputType="IInputType.Url"
           :inputValue="questionnairePayload.website"
           @inputChanged="questionnairePayload.website = $event"
+          @inputValidated="payloadValidity.website = $event"
           :errorHandler="{
-            validator: 'validateRequired',
-            message: 'Website is a required field',
+            validator: 'validateURL',
+            message: 'Enter a valid url.',
           }"
-       
         />
 
         <SelectFieldInput
           labelId="subMerchants"
           labelTitle="How many sub-merchants do you have?"
-          inputPlaceholder="Select number of sub-merchants"
+          inputPlaceholder="Select number of sub-merchants."
           :selectData="subMerchantsOptions"
           :selectValue="questionnairePayload.subMerchants"
           @onSelectionChange="questionnairePayload.subMerchants = $event"
+          @inputValidated="payloadValidity.subMerchants = $event"
           isRequired
         />
         <div v-if="questionnairePayload.subMerchants === 'other'">
@@ -82,10 +92,11 @@
             :inputType="IInputType.Text"
             :inputValue="subMerchantsOther"
             @inputChanged="subMerchantsOther = $event"
+            @inputValidated="payloadValidity.subMerchants = $event"
             isRequired
             :errorHandler="{
               validator: 'validateRequired',
-              message: 'Please specify a value',
+              message: 'Please specify a value.',
             }"
           />
         </div>
@@ -94,7 +105,7 @@
           :labelCompact="false"
           labelId="countries"
           labelTitle="What Countries Do You Want To Expand Into?"
-          inputPlaceholder="Select your preferred countries"
+          inputPlaceholder="Select your preferred countries."
           :inputValueList="questionnairePayload.countries"
           @onSelectionChange="questionnairePayload.countries = $event"
           :selectData="[
@@ -110,17 +121,14 @@
 
         <SelectFieldInput
           labelId="transactionValue"
-          labelTitle="Estimated monthly transaction value in USD"
-          inputPlaceholder="Select monthly transaction value"
+          labelTitle="Estimated monthly transaction value in USD."
+          inputPlaceholder="Select monthly transaction value."
           :selectData="transactionValues"
           :selectValue="questionnairePayload.transactionValue"
           @onSelectionChange="questionnairePayload.transactionValue = $event"
           isRequired
         />
-        <div
-          v-if="questionnairePayload.transactionValue === 'above-100000'"
-          
-        >
+        <div v-if="questionnairePayload.transactionValue === 'above-100000'">
           <TextFieldInput
             labelId="transactionValueOther"
             inputPlaceholder="Please Specify"
@@ -130,7 +138,7 @@
             isRequired
             :errorHandler="{
               validator: 'validateRequired',
-              message: 'Please specify a value',
+              message: 'Please specify a value.',
             }"
           />
         </div>
@@ -142,23 +150,33 @@
           :inputType="IInputType.Email"
           :inputValue="questionnairePayload.email"
           @inputChanged="questionnairePayload.email = $event"
+          @inputValidated="payloadValidity.email = $event"
           inputPlaceholder="hello@companyname.com"
           isRequired
-          :errorHandler="{ validator: 'validateEmail' }"
+          :errorHandler="{
+            validator: 'validateEmail',
+            message: 'Email is a required field.',
+          }"
         />
 
         <TextFieldInput
           :labelCompact="false"
           labelId="compliance"
+          isRequired
           labelTitle="Compliance"
           :inputType="IInputType.Text"
           :inputValue="questionnairePayload.compliance"
           @inputChanged="questionnairePayload.compliance = $event"
-          inputPlaceholder="Description (optional)"
+          @inputValidated="payloadValidity.compliance = $event"
+          inputPlaceholder="Description"
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Compliance is a required field.',
+          }"
         />
 
         <div class="mb-4">
-          <h2 class="text-sm font-semibold text-grey-900 mb-4">
+          <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Business Registration Document
           </h2>
           <FileUploadInput
@@ -170,7 +188,7 @@
         </div>
 
         <div class="mb-4">
-          <h2 class="text-sm font-semibold text-grey-900 mb-4">
+          <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Directors and Shareholders Details (Form 3)
           </h2>
           <FileUploadInput
@@ -182,7 +200,7 @@
         </div>
 
         <div class="mb-4">
-          <h2 class="text-sm font-semibold text-grey-900 mb-4">
+          <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Director's ID
           </h2>
           <FileUploadInput
@@ -194,7 +212,7 @@
         </div>
 
         <button
-          class="btn btn-primary w-full my-5"
+          class="w-full my-5 btn btn-primary"
           :disabled="!isQuestionnaireReady"
         >
           Submit Questionnaire
@@ -216,7 +234,8 @@ import FileUploadInput from "@packages/uikit/src/components/form-comps/file-uplo
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { storeToRefs } from "pinia";
-import { useString } from "@packages/hooks";
+import { useEvents, useString } from "@packages/hooks";
+import { countryCurrencies } from "@packages/constants";
 
 interface IQuestionnairePayload {
   companyName: string;
@@ -226,7 +245,7 @@ interface IQuestionnairePayload {
   countries: string[];
   transactionValue: string;
   email: string;
-  compliance?: string;
+  compliance: string;
 }
 
 interface IFinalQuestionnairePayload extends IQuestionnairePayload {
@@ -237,8 +256,9 @@ interface IFinalQuestionnairePayload extends IQuestionnairePayload {
   };
 }
 
+const { processAPIRequest } = useEvents();
 const { renderImg } = useImage();
-const { uploadFile } = useGlobalStore();
+const { uploadFile, getBusinessCountries } = useGlobalStore();
 const complianceStore = useComplianceStore();
 // const { getComplianceBusiness } = storeToRefs(complianceStore);
 const { formatPhoneNumber } = useString();
@@ -276,6 +296,14 @@ const questionnairePayload = ref({
   compliance: "",
 });
 
+const payloadValidity = ref({
+  companyName: false,
+  phoneNumber: false,
+  website: false,
+  email: false,
+  compliance: false,
+});
+
 const finalTransactionValue = computed(() =>
   questionnairePayload.value.transactionValue === "above-100000"
     ? transactionValueOther.value
@@ -293,6 +321,29 @@ watch([phoneNumberInput, phoneCountryCode], () => {
     phoneCountryCode.value
   );
 });
+
+const getCountryName = computed(() => {
+  const country = countryCurrencies.find(
+    (country) => country.dialing_code === phoneCountryCode.value
+  );
+
+  return country?.country || "Nigeria";
+});
+
+const fetchCountries = async () => {
+  const response = await processAPIRequest({
+    action: getBusinessCountries,
+    payload: {},
+  });
+
+  if (response.code === 200) {
+    const country = response.data.find(
+      (country: { name: string }) => getCountryName.value === country.name
+    );
+    console.log(country?.name, country?.id);
+    return country?.id;
+  }
+};
 
 const businessDoc = ref("");
 const directorsDoc = ref("");
@@ -315,13 +366,25 @@ const getUploadedDocumentContent = (type: "business" | "directors" | "id") => {
 const isQuestionnaireReady = computed(() => {
   const payload = questionnairePayload.value;
   return !!(
-    payload.companyName &&
-    payload.phoneNumber &&
-    payload.website &&
-    payload.subMerchants &&
-    payload.transactionValue &&
-    payload.countries.length > 0 &&
-    payload.email
+    (
+      payload.companyName &&
+      payload.phoneNumber &&
+      payload.website &&
+      payload.subMerchants &&
+      payload.transactionValue &&
+      payload.countries.length > 0 &&
+      payload.email &&
+      payload.compliance &&
+      // businessDoc.value &&
+      // directorsDoc.value &&
+      // directorsId.value &&
+      payloadValidity.value.companyName &&
+      payloadValidity.value.phoneNumber &&
+      payloadValidity.value.website &&
+      payloadValidity.value.email &&
+      payloadValidity.value.compliance
+    )
+ 
   );
 });
 
@@ -342,12 +405,13 @@ const getQuestionnairePayload = computed(() => {
     },
   };
 });
+// console.log(getUploadedDocumentContent);
 
 const handleSubmit = () => {
   if (isQuestionnaireReady.value) {
-    console.log(getQuestionnairePayload.value);
+    fetchCountries();
   } else {
-    console.error("❌ Form is not ready for submission");
+    console.error("Form is not ready for submission");
   }
 };
 </script>
