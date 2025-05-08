@@ -62,7 +62,7 @@ const getCurrentPage = computed(() => {
   @apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto;
 
   .form-wrapper {
-    @apply w-[74%] lg:w-[78%] mdLg:w-full;
+    @apply w-[70%] lg:w-[78%] mdLg:w-full;
 
     .form-top {
       .title-text {

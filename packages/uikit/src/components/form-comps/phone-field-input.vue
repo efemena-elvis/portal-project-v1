@@ -21,7 +21,7 @@
             ref="togglerRef"
             @click="toggleDropdown(!showDropdown)"
           >
-            <div class="flex justify-start items-center gap-x-1 5">
+            <div class="flex justify-start items-center gap-x-1">
               <img
                 :src="countryFlag"
                 class="size-5 min-h-5 min-w-5 sm:hidden"

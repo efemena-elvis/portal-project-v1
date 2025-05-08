@@ -6,6 +6,20 @@
     @onBackClick="router.push({ name: 'RedstoneRegistrationConfirm' })"
     @onContinueClick="handleRepresentativeProfileUpdate"
   >
+    <MultiSelectFieldInput
+      labelId="businessRole"
+      labelTitle="Business Role"
+      :labelCompact="false"
+      inputPlaceholder="Select your representative business role"
+      :inputValueList="businessPayload.business_role"
+      :selectData="[
+        { value: 'director', name: 'Director' },
+        { value: 'shareholder', name: 'Shareholder' },
+      ]"
+      isRequired
+      @onSelectionChange="businessPayload.business_role = $event"
+    />
+
     <TextFieldInput
       labelId="legalFullName"
       labelTitle="Legal Full Name"
@@ -49,22 +63,9 @@
       @onSelectionChange="businessPayload.nationality = $event"
     />
 
-    <MultiSelectFieldInput
-      labelId="businessRole"
-      labelTitle="Business Role"
-      :labelCompact="false"
-      inputPlaceholder="Select your representative business role"
-      :inputValueList="businessPayload.business_role"
-      :selectData="[
-        { value: 'owner', name: 'Owner' },
-        { value: 'director', name: 'Director' },
-        { value: 'shareholder', name: 'Shareholder' },
-      ]"
-      isRequired
-      @onSelectionChange="businessPayload.business_role = $event"
-    />
+    <!-- { value: 'owner', name: 'Owner' }, -->
 
-    <TextFieldInput
+    <!-- <TextFieldInput
       v-if="
         businessPayload.business_role.includes('owner') ||
         businessPayload.business_role.includes('shareholder')
@@ -81,7 +82,7 @@
         validator: 'validateRequired',
         message: 'Percentage ownership is a required field',
       }"
-    />
+    /> -->
   </ComplianceWrapper>
 </template>
 

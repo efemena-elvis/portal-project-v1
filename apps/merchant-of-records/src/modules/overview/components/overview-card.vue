@@ -5,7 +5,9 @@
         <img :src="wallet.countryFlag" :alt="wallet.countryFlag" />
       </div>
 
-      <div class="country-currency">{{ wallet.currencyShort }}</div>
+      <div class="country-currency">
+        {{ wallet.description }} ({{ wallet.currencyShort }})
+      </div>
     </div>
 
     <div class="bottom-row">
@@ -25,6 +27,7 @@ const props = defineProps({
     type: Object,
     default: () => ({
       countryFlag: "",
+      description: "",
       currencyShort: "",
       currencySign: "",
       amount: 0,
@@ -42,15 +45,15 @@ const props = defineProps({
     @apply flex justify-start items-center gap-x-2;
 
     .country-flag {
-      @apply relative size-6 min-h-6 min-w-6 rounded-full;
+      @apply relative size-5 rounded-full overflow-hidden;
 
       img {
-        @apply absolute w-full h-full object-cover;
+        @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 size-11;
       }
     }
 
     .country-currency {
-      @apply text-sm font-medium text-grey-500;
+      @apply text-[14px] font-medium text-grey-400/75;
     }
   }
 

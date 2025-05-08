@@ -4,7 +4,7 @@
       <template v-if="businesActivated">
         <!-- ICON IMAGE -->
         <div class="icon-img">
-          <img src="@images/file-funnel.png" alt="emptyComplianceSection" />
+          <img src="@images/pendinf-icon.png" alt="emptyComplianceSection" />
         </div>
 
         <!-- TITLE TEXT -->
@@ -15,12 +15,8 @@
           <p>
             Thank you for submitting your compliance information. Our team is
             currently reviewing your documents to ensure it meets necessary
-            requirements.
-          </p>
-
-          <p>
-            This process typically takes between 24 - 36 business hours, and
-            we'll notify you once the review is complete.
+            requirements. This process typically takes between 24 - 36 business
+            hours, and we'll notify you once the review is complete.
           </p>
         </div>
 
@@ -29,7 +25,7 @@
           class="btn btn-primary mt-2 mb-1 sm:mb-0"
           @click="accessDashboard"
         >
-          Explore our services
+          Go to Dashboard
         </button>
       </template>
 
@@ -88,10 +84,10 @@ watch(
 
 <style lang="scss" scoped>
 .layout-wrapper {
-  @apply w-full h-[81vh] mdLg:h-[82.5vh] sm:h-auto sm:pt-1 flex justify-center sm:justify-start items-center;
+  @apply w-full h-auto sm:pt-1 flex justify-center sm:justify-start items-start;
 
   .submitted-layout {
-    @apply w-[55%] xl:w-[65%] lg:w-[75%] md:w-[85%] sm:w-full border border-grey-200/50 shadow-sm rounded-lg bg-neutral-10 px-8 sm:px-6 py-10 sm:py-8 flex flex-col justify-center items-center gap-y-8 lg:gap-y-6;
+    @apply w-[36%] xl:w-[40%] lg:w-[45%] md:w-1/2 sm:w-full pt-8 flex flex-col justify-center items-center gap-y-6;
 
     .icon-img {
       img {
@@ -100,7 +96,7 @@ watch(
     }
 
     .title-text {
-      @apply text-center text-teal-900/85 font-semibold text-[22px] lg:text-xl sm:text-[18px] w-[65%] mdLg:w-4/5 sm:w-[85%];
+      @apply text-center text-teal-900/85 font-semibold text-[22px] lg:text-xl sm:text-[18px] w-[75%] mdLg:w-4/5 sm:w-[85%];
     }
 
     .description-text {

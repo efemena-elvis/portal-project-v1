@@ -31,3 +31,7 @@ const $api = new useServiceAPI({
 export const getWallets = async () => {
   return await $api.fetch(overviewRoutes.getWalletBalance);
 };
+
+export const createWallet = async (payload: any) => {
+  return await $api.push(overviewRoutes.createWallet, payload);
+};

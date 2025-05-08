@@ -57,7 +57,7 @@
       </div>
 
       <!-- CREATE ACTION -->
-      <div class="relative">
+      <!-- <div class="relative">
         <div
           class="create-action"
           ref="togglerActionRef"
@@ -83,7 +83,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- MODE TOGGLER -->
       <div class="relative">

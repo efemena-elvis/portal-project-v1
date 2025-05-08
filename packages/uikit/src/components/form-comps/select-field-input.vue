@@ -83,7 +83,7 @@ watch(
     @apply relative;
 
     svg {
-      @apply absolute z-50 right-4 top-[18px] w-5 h-5;
+      @apply absolute z-20 right-4 top-[18px] w-5 h-5;
     }
   }
 }

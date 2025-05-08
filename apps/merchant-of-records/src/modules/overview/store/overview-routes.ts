@@ -1,6 +1,6 @@
 export const overviewRoutes = {
   getWalletBalance: "account/wallets",
-  createWallet: "wallet",
+  createWallet: "wallets",
   dashboardSummary: "accounts/summary",
   supportedCountries: "supported-countries",
 };

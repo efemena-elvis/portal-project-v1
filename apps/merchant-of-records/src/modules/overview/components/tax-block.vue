@@ -4,19 +4,24 @@
 
     <!-- DATA ROW -->
     <div class="data-row">
-      <div class="data-item">
+      <div class="data-item" v-for="(item, index) in taxList" :key="index">
         <div class="data-title-row">
-          <div class="data-country">Zambia</div>
+          <div class="data-country">
+            <div class="img-wrapper">
+              <img :src="item.countryFlag" :alt="item.countryFlag" />
+            </div>
+            <div class="data-currency">{{ item.currencyShort }}</div>
+          </div>
 
-          <div class="data-status data-status--active">
+          <!-- <div class="data-status data-status--active">
             <div class="bullet"></div>
             <div class="text">Active</div>
-          </div>
+          </div> -->
         </div>
 
         <div class="data-amount">
-          <div>ZK</div>
-          <div>0</div>
+          <div>{{ item.currencySign }}</div>
+          <div>{{ formatNumber(item.amount) }}</div>
         </div>
 
         <div class="data-meta">COLLECTED TAX</div>
@@ -25,10 +30,26 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from "vue";
+<script setup lang="ts">
+import { useString } from "@packages/hooks";
 
-const feature = ref();
+const { formatNumber } = useString();
+
+interface ITaxList {
+  countryFlag: string;
+  currencyShort: string;
+  currencySign: string;
+  amount: string;
+}
+
+const props = withDefaults(
+  defineProps<{
+    taxList: ITaxList[];
+  }>(),
+  {
+    taxList: () => [],
+  }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -40,16 +61,28 @@ const feature = ref();
   }
 
   .data-row {
-    @apply flex justify-start items-center gap-4;
+    @apply flex justify-start items-center;
 
     .data-item {
-      @apply flex flex-col justify-start items-start gap-1;
+      @apply flex flex-col justify-start items-start gap-1 px-5 py-1 border-r border-r-grey-300/50 first-of-type:pl-0 last-of-type:pr-0 last-of-type:border-r-0;
 
       .data-title-row {
         @apply flex justify-start items-center gap-2 mb-3;
 
         .data-country {
-          @apply text-sm font-medium text-teal-800;
+          @apply flex justify-start items-center gap-1.5 text-sm font-medium text-teal-800;
+
+          .img-wrapper {
+            @apply relative size-5 rounded-full overflow-hidden;
+
+            img {
+              @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 size-11;
+            }
+          }
+
+          .data-currency {
+            @apply text-[14.5px] font-medium text-teal-800;
+          }
         }
 
         .data-status {
@@ -86,7 +119,7 @@ const feature = ref();
       }
 
       .data-meta {
-        @apply text-xs text-grey-600;
+        @apply text-xs text-grey-600/90;
       }
     }
   }

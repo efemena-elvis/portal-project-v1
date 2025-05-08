@@ -40,7 +40,7 @@
 
     <TextFieldInput
       labelId="businessWebsite"
-      labelTitle="Business Website (Optional)"
+      labelTitle="Business Website"
       :labelCompact="false"
       :inputType="IInputType.Text"
       :inputValue="businessPayload.website"
@@ -105,6 +105,7 @@ const phoneCountryCode = ref<string>(
 const isActionReady = computed(() => {
   return businessPayload.value.email &&
     businessPayload.value.phone_number &&
+    businessPayload.value.website &&
     payloadValidity.value.email &&
     payloadValidity.value.phone_number
     ? false

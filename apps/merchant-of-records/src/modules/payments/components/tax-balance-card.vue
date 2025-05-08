@@ -4,9 +4,9 @@
     <div class="top-row">
       <div class="country-data">
         <div class="country-data-flag">
-          <img src="https://flagsapi.com/US/flat/64.png" alt="" />
+          <img :src="taxData.countryFlag" :alt="taxData.countryFlag" />
         </div>
-        <div class="country-data-code">USD</div>
+        <div class="country-data-code">{{ taxData.currencyShort }}</div>
       </div>
 
       <div class="item-status item-status--active">
@@ -18,7 +18,9 @@
     <!-- MID ROW -->
     <div class="mid-row">
       <div class="tax-title">May COLLECTED TAX</div>
-      <div class="tax-amount">$0</div>
+      <div class="tax-amount">
+        {{ taxData.currencySign }}{{ formatNumber(taxData.amount) }}
+      </div>
     </div>
 
     <!-- BOTTOM ROW -->
@@ -26,7 +28,9 @@
       <!-- TOTAL TAX CARD -->
       <div class="primary-tax-card">
         <div class="card-title">TOTAL TAX COLLECTED</div>
-        <div class="card-value">$0</div>
+        <div class="card-value">
+          {{ taxData.currencySign }}{{ formatNumber(0) }}
+        </div>
       </div>
 
       <div class="secondary-tax-card">
@@ -37,7 +41,27 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useString } from "@packages/hooks";
+
+const { formatNumber } = useString();
+
+interface ITaxData {
+  countryFlag: string;
+  currencyShort: string;
+  currencySign: string;
+  amount: string;
+}
+
+const props = withDefaults(
+  defineProps<{
+    taxData: ITaxData;
+  }>(),
+  {
+    taxData: () => ({}),
+  }
+);
+</script>
 
 <style lang="scss" scoped>
 .tax-balance-card {
@@ -47,13 +71,13 @@
     @apply flex justify-between items-center gap-4 mb-6;
 
     .country-data {
-      @apply flex justify-start items-center gap-1;
+      @apply flex justify-start items-center gap-1.5;
 
       .country-data-flag {
-        @apply relative size-6 min-h-6 min-w-6 rounded-full overflow-hidden;
+        @apply relative size-5 rounded-full overflow-hidden;
 
         img {
-          @apply absolute w-full h-full object-cover;
+          @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 size-11;
         }
       }
 
