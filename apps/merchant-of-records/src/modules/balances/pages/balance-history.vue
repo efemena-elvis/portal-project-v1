@@ -23,21 +23,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive,onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useString, useDate, useEvents } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
-import {useBalanceStore} from "../store";
+import { useBalanceStore } from "../store";
 import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
 } from "@packages/uikit";
 
-const { formatNumber, getStatus, getBoldTableText, capitalizeFirstLetter,  transactionFlowIcon } = useString();
+const {
+  formatNumber,
+  getStatus,
+  getBoldTableText,
+  capitalizeFirstLetter,
+  transactionFlowIcon,
+} = useString();
 const { getBalanceHistory } = useBalanceStore();
 const { processAPIRequest } = useEvents();
 
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Created", slug: "date_created" },
@@ -57,7 +63,6 @@ const tableBody = reactive<any[]>([
   //   change: getBoldTableText("NGN 1,000.00"),
   //   balance_after: "NGN 21,000.00",
   // },
-
 ]);
 const tablePaging = ref<any>({});
 

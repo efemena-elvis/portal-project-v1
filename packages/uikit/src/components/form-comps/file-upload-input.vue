@@ -181,6 +181,11 @@ const processDocumentUpload = async ($event: Event) => {
 
   // FAILED STATE
   else {
+    pushToastAlert({
+      message: "Document upload failed",
+      type: "error",
+    });
+
     inputElement.value = "";
     isUploading.value = false;
     isDocUploaded.value = false;

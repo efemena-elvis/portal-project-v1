@@ -108,22 +108,23 @@ const getUserEmailAddress = () => {
 };
 
 const moveFieldFocus = (index: number) => {
-  const val = otpFields.value[index];
+  let val = otpFields.value[index];
 
-  // Always truncate to a single digit
+  // Keep only the first digit (handle pasting or multiple input)
   if (val.length > 1) {
-    otpFields.value[index] = val.charAt(0);
+    val = val.charAt(0);
+    otpFields.value[index] = val;
   }
 
-  // Move focus if not the last input
-  if (val && index < otpFields.value.length - 1) {
+  // If a digit (including 0) is entered, move focus to the next field
+  if (val !== "" && index < otpFields.value.length - 1) {
     nextTick(() => {
       otpRefs.value[index + 1]?.focus();
     });
   }
 
-  // If last input is filled, blur all inputs
-  if (index === otpFields.value.length - 1 && val) {
+  // If it's the last input and filled, blur it
+  if (index === otpFields.value.length - 1 && val !== "") {
     nextTick(() => {
       otpRefs.value[index]?.blur();
     });
@@ -162,11 +163,11 @@ const handlePaste = (event: ClipboardEvent) => {
 };
 
 // HANDLE OTP RESEND
-const resendOTP = () => {
+const resendOTP = async () => {
   if (resendCountdown.value > 0) return;
 
   // Start countdown
-  resendCountdown.value = 30;
+  resendCountdown.value = 15;
 
   // Clear any existing interval
   if (countdownInterval) {
@@ -183,9 +184,7 @@ const resendOTP = () => {
     }
   }, 1000);
 
-  // Here you would call your API to resend the OTP
-  console.log("Resending OTP...");
-  // Example: await sendOTP();
+  await sendOutEmailToken();
 };
 
 const handleUserEmailVerification = async () => {

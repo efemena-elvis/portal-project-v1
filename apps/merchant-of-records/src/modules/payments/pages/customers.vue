@@ -38,7 +38,7 @@ const { formatNumber, getStatus, notAvailable } = useString();
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Added On", slug: "date_created" },
@@ -56,7 +56,6 @@ const tableBody = reactive<any[]>([
   //   full_name: "Efemena Elvis",
   //   phone_number: "+234 813 117 7703",
   // },
-
 ]);
 const tablePaging = ref<any>({});
 

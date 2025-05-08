@@ -1,0 +1,69 @@
+# === Combined Anchors ===
+.merchant_of_records_staging_vars: &merchant_of_records_staging_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  BUILD_SCRIPT: build:staging:merchant-of-records
+  CI_ENVIRONMENT_NAME: staging
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $MERCHANT_OF_RECORDS_STAGING_AWS_REGION
+  S3_BUCKET: $MERCHANT_OF_RECORDS_STAGING_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION
+
+.merchant_of_records_prod_vars: &merchant_of_records_prod_vars
+  APP_NAME: merchant-of-records
+  APP_DIR: apps/merchant-of-records
+  BUILD_DIR: apps/merchant-of-records/dist
+  BUILD_SCRIPT: build:prod:merchant-of-records
+  CI_ENVIRONMENT_NAME: main
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $MERCHANT_OF_RECORDS_PROD_AWS_REGION
+  S3_BUCKET: $MERCHANT_OF_RECORDS_PROD_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION
+
+# === Merchant of Records ===
+install_merchant_of_records:
+  extends: .install_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+    - main
+
+build_staging_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+  needs:
+    - install_merchant_of_records
+
+build_production_merchant_of_records:
+  extends: .build_template
+  variables:
+    <<: *merchant_of_records_prod_vars
+  only:
+    - main
+  needs:
+    - install_merchant_of_records
+
+deploy_staging_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_staging_vars
+  only:
+    - staging
+  needs:
+    - build_staging_merchant_of_records
+
+deploy_production_merchant_of_records:
+  extends: .deploy_template
+  variables:
+    <<: *merchant_of_records_prod_vars
+  only:
+    - main
+  needs:
+    - build_production_merchant_of_records

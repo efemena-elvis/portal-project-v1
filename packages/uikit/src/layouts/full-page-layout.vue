@@ -1,5 +1,5 @@
 <template>
-  <div class="compliance-layout">
+  <div class="full-page-layout">
     <div class="top-area">
       <router-link to="/overview" class="icon icon-caret-left"></router-link>
       <div class="divider-line"></div>
@@ -31,9 +31,9 @@ watch(route, () => updatePageTitle(), { immediate: true });
 </script>
 
 <style lang="scss" scoped>
-.compliance-layout {
+.full-page-layout {
   .top-area {
-    @apply fixed z-20 top-0 bg-neutral-10/40 backdrop-blur-sm w-full p-6 flex justify-start items-center gap-5 mb-12;
+    @apply fixed z-20 top-0 bg-neutral-10/40 md:backdrop-blur-sm w-full p-6 flex justify-start items-center gap-5 mb-12;
 
     .icon {
       @apply text-lg cursor-pointer text-grey-700;

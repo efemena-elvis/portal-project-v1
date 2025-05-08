@@ -57,12 +57,6 @@
         activeClass="active-link"
         exactActiveClass="active-link"
         class="sidebar-item"
-        :class="
-          appRoute.path.startsWith('/settings') &&
-          route.link.includes('settings')
-            ? 'bg-teal-900/15'
-            : ''
-        "
         v-for="(route, index) in sidebarRouteList.bottomLevel"
         :key="index"
       >

@@ -1,3 +1,6 @@
+/* This TypeScript code snippet is defining an array of route objects for Vesicash payments within a
+web application. Each route object contains information such as the path, component to render, child
+routes, and metadata like authentication requirements and page titles. */
 import { IRouteType } from "@packages/models";
 
 // *********** VESICASH PAYMENTS ROUTES *********** //

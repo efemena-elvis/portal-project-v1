@@ -7,10 +7,9 @@ import overviewRoutes from "@/modules/overview";
 import paymentRoutes from "@/modules/payments";
 import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
-import externalRoutes  from "@/modules/external";
-// import settingsRoutes from "@/modules/settings";
+import externalRoutes from "@/modules/external";
+import settingsRoutes from "@/modules/settings";
 // import storefrontRoutes from "@/modules/storefront";
-
 
 const routes = [
   ...authRoutes,
@@ -19,9 +18,9 @@ const routes = [
   ...balancesRoutes,
   ...complianceRoutes,
   ...externalRoutes,
+  ...settingsRoutes,
   //   ...transferRoutes,
-  //   ...settingsRoutes,
-  //   ...storefrontRoutes,
+  //   ...storefrontRoutes
 
   {
     path: "/*",

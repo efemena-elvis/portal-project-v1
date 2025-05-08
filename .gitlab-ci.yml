@@ -1,0 +1,10 @@
+stages:
+  - install
+  - build
+  - deploy
+
+include:
+  - local: ".gitlab/templates/install.yml"
+  - local: ".gitlab/templates/build.yml"
+  - local: ".gitlab/templates/deploy.yml"
+  - local: ".gitlab/apps/merchant-of-records.yml"

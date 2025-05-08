@@ -1,5 +1,17 @@
 <template>
   <PageContentWrapper>
+    <template v-slot:pageOptions>
+      <div class="button-row">
+        <router-link
+          to="/market/wallet-entry"
+          class="btn btn-primary btn-sm hover:text-white"
+        >
+          <div class="icon icon-add text-xl font-semibold"></div>
+          Deploy a wallet
+        </router-link>
+      </div>
+    </template>
+
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
       <div class="overflow-row">
@@ -13,7 +25,7 @@
       <!-- TAX ROW -->
       <div class="tax-row">
         <div class="tax-row--left">
-          <TaxBlock />
+          <TaxBlock :taxList="taxBalance" />
         </div>
 
         <div class="tax-row--right">
@@ -30,32 +42,118 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { countryCurrencies } from "@packages/constants";
 import { PageContentWrapper } from "@packages/uikit";
+import { useProfile, useEvents } from "@packages/hooks";
 import {
   OverviewCard,
   TaxBlock,
   TransactionMetrics,
   TransactionTable,
 } from "@/modules/overview/components";
+import { useAuthStore } from "@/modules/auth/store";
+import { useOverviewStore } from "@/modules/overview/store";
 
-const walletBalance = ref([
-  {
-    countryFlag: "https://flagsapi.com/US/flat/64.png",
-    currencyShort: "USD",
-    currencySign: "$",
-    amount: 0,
-  },
-  {
-    countryFlag: "https://flagsapi.com/ZM/flat/64.png",
-    currencyShort: "ZMW",
-    currencySign: "ZK",
-    amount: 0,
-  },
-]);
+const authStore = useAuthStore();
+const profileUtil = new useProfile(authStore);
+
+const { getWallets } = useOverviewStore();
+const { processAPIRequest } = useEvents();
+
+const walletBalance = ref([]);
+const taxBalance = ref([]);
+
+const getLocalCurrencyCode = computed(() => {
+  const userProfile = profileUtil.getUser();
+  return userProfile?.country?.currency_code;
+});
+
+const loadLocalCountryCurrency = (country: string) => {
+  const localCountryPayload = countryCurrencies.find(
+    (country) => country.currency.short === getLocalCurrencyCode.value
+  );
+
+  walletBalance.value = [
+    {
+      countryFlag: localCountryPayload?.flag,
+      description: localCountryPayload?.currency.description,
+      currencyShort: localCountryPayload?.currency.short,
+      currencySign: localCountryPayload?.currency.sign,
+      amount: 0,
+    },
+  ];
+
+  taxBalance.value = [
+    {
+      countryFlag: localCountryPayload?.flag,
+      currencyShort: localCountryPayload?.currency.short,
+      currencySign: localCountryPayload?.currency.sign,
+      amount: 0,
+    },
+  ];
+};
+
+const fetchAllWallets = async () => {
+  // LOAD LOCAL CURRENCY
+  await loadLocalCountryCurrency();
+
+  const response = await processAPIRequest({
+    action: getWallets,
+    showAlert: false,
+  });
+
+  if (response?.code === 200) {
+    // GET LOCAL WALLET BALANCES
+    const localWallet = response.data.find(
+      (wallet: any) => wallet.currency === getLocalCurrencyCode.value
+    );
+
+    walletBalance.value[0].amount = localWallet?.market_balance ?? 0;
+    taxBalance.value[0].amount = localWallet?.tax_balance ?? 0;
+
+    // LOAD OTHER CURRENCIES BALANCE
+    const nonLocalWallets = response.data.filter(
+      (wallet: any) =>
+        wallet.currency !== getLocalCurrencyCode.value &&
+        wallet.currency !== "USD"
+    );
+
+    nonLocalWallets.forEach((wallet: any) => {
+      const walletPayload = {};
+      const taxWalletPayload = {};
+
+      const walletCurrencyData = countryCurrencies.find(
+        (country) => country.currency.short === wallet.currency
+      );
+
+      walletPayload.countryFlag = walletCurrencyData?.flag;
+      walletPayload.description = walletCurrencyData?.currency.description;
+      walletPayload.currencyShort = walletCurrencyData?.currency.short;
+      walletPayload.currencySign = walletCurrencyData?.currency.sign;
+      walletPayload.amount = wallet?.market_balance ?? 0;
+
+      taxWalletPayload.countryFlag = walletCurrencyData?.flag;
+      taxWalletPayload.currencyShort = walletCurrencyData?.currency.short;
+      taxWalletPayload.currencySign = walletCurrencyData?.currency.sign;
+      taxWalletPayload.amount = wallet?.tax_balance ?? 0;
+
+      walletBalance.value.push(walletPayload);
+      taxBalance.value.push(taxWalletPayload);
+    });
+  }
+};
+
+onMounted(() => fetchAllWallets());
 </script>
 
 <style lang="scss" scoped>
+.button-row {
+  .btn-sm {
+    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold;
+  }
+}
+
 .overflow-row {
   @apply flex justify-start items-center gap-8 mb-9;
 }

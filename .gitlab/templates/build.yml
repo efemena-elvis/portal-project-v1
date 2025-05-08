@@ -1,0 +1,10 @@
+.build_template:
+  stage: build
+  image: node:18
+  script:
+    # - cd $APP_DIR
+    - npm ci --legacy-peer-deps
+    - npm run ${BUILD_SCRIPT}
+  artifacts:
+    paths:
+      - $BUILD_DIR/

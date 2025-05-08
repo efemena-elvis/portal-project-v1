@@ -51,7 +51,7 @@ const updatePageMeta = () => {
   const { title } = route.meta?.pageMeta as {
     title: string;
   };
-  pageTitle.value = title;
+  pageTitle.value = title.includes("Settings") ? "Settings" : title;
 };
 
 watch(route, () => updatePageMeta(), { immediate: true });
