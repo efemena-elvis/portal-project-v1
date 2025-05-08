@@ -4,7 +4,7 @@
       <template v-if="businesActivated">
         <!-- ICON IMAGE -->
         <div class="icon-img">
-          <img src="@images/pendinf-icon.png" alt="emptyComplianceSection" />
+          <img src="@images/pending-icon.png" alt="emptyComplianceSection" />
         </div>
 
         <!-- TITLE TEXT -->
