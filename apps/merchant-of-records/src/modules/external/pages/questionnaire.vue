@@ -99,7 +99,7 @@
           @onSelectionChange="questionnairePayload.sub_merchant_range = $event"
           isRequired
         />
-        <div v-if="questionnairePayload.sub_merchant_range === 'other'">
+        <div v-if="questionnairePayload.sub_merchant_range === 'above-1000'">
           <TextFieldInput
             labelId="subMerchantsOther"
             inputPlaceholder="Please Specify"
@@ -148,7 +148,7 @@
         <div
           v-if="
             questionnairePayload.estimated_monthly_transactions_value ===
-            'above-100000'
+            'above-1000000'
           "
         >
           <TextFieldInput
@@ -201,6 +201,7 @@
             accept="application/pdf,image/*"
             id="businessDoc"
             name="business_registration_document_url"
+            required
           />
           <!-- <FileUploadInput
             :hasDocumentUploaded="!!businessDoc"
@@ -220,6 +221,7 @@
             id="directorsDoc"
             name="director_and_shareholders_document_url"
             accept="application/pdf,image/*"
+            required
           />
           <!-- <FileUploadInput
             :hasDocumentUploaded="!!directorsDoc"
@@ -239,6 +241,7 @@
             accept="application/pdf,image/*"
             id="directorsId"
             name="directors_id_document_url"
+            required
           />
 
           <!-- <FileUploadInput
@@ -311,16 +314,14 @@ const subMerchantsOptions = [
   { name: "101–500", value: "101-500" },
   { name: "501–1000", value: "501-1000" },
   { name: "Above 1000", value: "above-1000" },
-  { name: "Other", value: "other" },
+
 ];
 
 const transactionValues = [
-  { value: "0-1000", name: "$0 - $1,000" },
-  { value: "1000-5000", name: "$1,000 - $5,000" },
-  { value: "5000-10000", name: "$5,000 - $10,000" },
-  { value: "10000-50000", name: "$10,000 - $50,000" },
-  { value: "50000-100000", name: "$50,000 - $100,000" },
-  { value: "above-100000", name: "Above $100,000" },
+  { value: "500001-1000000", name: "$500001 - $1000000" },
+  { value: "1000001-5000000", name: "$1000001 - $5000000" },
+  { value: "5000001-10000000", name: "$5000001 - $10000000" },
+  { value: "above-1000000", name: "Above $1000,000" },
 ];
 
 const questionnairePayload = ref<IQuestionnairePayload>({
@@ -395,12 +396,12 @@ const fetchCountriesUUID = async (): Promise<string[]> => {
 
 const finalTransactionValue = computed(() =>
   questionnairePayload.value.estimated_monthly_transactions_value ===
-  "above-100000"
+  "above-1000000"
     ? transactionValueOther.value
     : questionnairePayload.value.estimated_monthly_transactions_value
 );
 const finalSubMerchants = computed(() =>
-  questionnairePayload.value.sub_merchant_range === "other"
+  questionnairePayload.value.sub_merchant_range === "above-1000"
     ? subMerchantsOther.value
     : questionnairePayload.value.sub_merchant_range
 );
@@ -463,30 +464,7 @@ const uploadFile = async (event: Event) => {
   }
 };
 
-// const getQuestionnairePayload = async () => {
-//   return {
-//     full_name: questionnairePayload.value.full_name,
-//     company_name: questionnairePayload.value.company_name,
-//     phone_number: questionnairePayload.value.phone_number,
-//     website_link: questionnairePayload.value.website_link,
-//     country_uuid: "",
-//     sub_merchant_range: finalSubMerchants.value,
-//     countries: "",
-//     estimated_monthly_transactions_value: finalTransactionValue.value,
-//     email: questionnairePayload.value.email,
-//     // compliance: questionnairePayload.value.compliance,
-//     business_registration_document_url:
-//       questionnairePayload.value.business_registration_document_url,
-//     director_and_shareholders_document_url:
-//       questionnairePayload.value.director_and_shareholders_document_url,
-//     directors_id_document_url:
-//       questionnairePayload.value.directors_id_document_url,
-//   };
-// };
 
-// const finalQuestionnairePayload = computed(() => {
-//   return getQuestionnairePayload();
-// });
 
 const handleSubmit = async () => {
   const country_uuid = await fetchSingleCountryUUID();
