@@ -76,7 +76,7 @@ import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
-import { useComplianceUtil } from "@packages/hooks";
+import { useComplianceUtil, useProfile } from "@packages/hooks";
 import { payoutConfig } from "@packages/constants";
 import {
   TextFieldInput,
@@ -85,15 +85,19 @@ import {
   ComplianceSkeleton,
 } from "@packages/uikit";
 import { ComplianceWrapper } from "@/modules/compliance/components";
+import { useAuthStore } from "@/modules/auth/store";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { complianceBase } from "@/modules/compliance/store/compliance-base";
 
 const router = useRouter();
 
+const authStore = useAuthStore();
 const complianceStore = useComplianceStore();
+
 const { getComplianceBankAccount, getComplianceBusiness } =
   storeToRefs(complianceStore);
 
+const profileUtil = new useProfile(authStore);
 const complianceUtil = new useComplianceUtil(complianceStore);
 
 const isBankAccountLoading = ref<boolean>(false);
@@ -107,14 +111,31 @@ const phoneCountryCode = ref<string>(
   getComplianceBusiness.value?.phone_number?.split("-")[0] || "234"
 );
 
+const getLocalCurrencyCode = computed(() => {
+  const userProfile = profileUtil.getUser();
+  return userProfile?.country?.currency_code;
+});
+
 const getPayoutCurrencies = computed(() => {
-  return payoutConfig
+  const currencyList = payoutConfig
     .getAllCurrencies()
     .map((currency) => ({
       value: currency.currency,
       name: `${currency.description} (${currency.currency})`,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const localCurrency = currencyList.filter(
+    (currency) => currency.value === getLocalCurrencyCode.value
+  );
+
+  if (localCurrency.length) {
+    bankCurrency.value = localCurrency[0].value;
+    return localCurrency;
+  }
+
+  // SHOW ALL WALLETS
+  else return currencyList;
 });
 
 const isActionReady = computed(() => {
@@ -153,6 +174,8 @@ const handleBankAccountUpdate = async () => {
     payloadType: "bank_account",
   });
 };
+
+const predefinedBankDetails = () => {};
 
 watch(
   bankCurrency,

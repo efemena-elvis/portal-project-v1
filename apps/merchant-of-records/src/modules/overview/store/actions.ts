@@ -4,8 +4,11 @@ import { useServiceAPI } from "@packages/hooks";
 import { overviewRoutes } from "./overview-routes";
 import { useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
+import { IWalletBalance, ITaxBalance } from "./state";
+import { useOverviewMutations } from "./mutations";
 
 const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+const { mutateWalletBalance, mutateTaxBalance } = useOverviewMutations();
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -27,6 +30,17 @@ const $api = new useServiceAPI({
     "public-key": publicKey.value,
   },
 });
+
+export const updateWalletState = ({
+  walletBalance,
+  taxBalance,
+}: {
+  walletBalance: IWalletBalance[];
+  taxBalance: ITaxBalance[];
+}) => {
+  mutateWalletBalance(walletBalance);
+  mutateTaxBalance(taxBalance);
+};
 
 export const getWallets = async () => {
   return await $api.fetch(overviewRoutes.getWalletBalance);

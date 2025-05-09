@@ -6,29 +6,44 @@
     @onBackClick="router.push({ name: 'VesicashWalletEntry' })"
     @onContinueClick="handleWalletDocumentFlow"
   >
-    <UploadGuidelines
-      title="Please upload a document that:"
-      :guidelines="[
-        'Is government issued',
-        'Is full-sized, original and unedited',
-      ]"
-    />
-
-    <!-- DOCUMENT FIELD UPLOAD -->
-    <div class="mb-14">
-      <div class="form-block">
-        <label class="form-label-basic"
-          >Certificate of business incorporation in
-          {{ route.query.country }}</label
-        >
-        <FileUploadInput
-          :hasDocumentUploaded="!!uploadedDocument"
-          :uploadedDocumentContent="getUploadedDocumentContent"
-          :uploadAction="uploadFile"
-          @onDocumentUploaded="uploadedDocument = $event"
-        />
-      </div>
+    <div class="mb-8">
+      <SelectFieldInput
+        labelId="businessIncorporation"
+        :labelTitle="`Is your business incorporated in ${route.query.country}?`"
+        :labelCompact="false"
+        inputPlaceholder="Select incorporation status"
+        :inputValue="isIncorporated"
+        :selectData="incorporationStatusList"
+        isRequired
+        @onSelectionChange="isIncorporated = $event"
+      />
     </div>
+
+    <template v-if="isIncorporated === 'incorporated'">
+      <UploadGuidelines
+        title="Please upload a document that:"
+        :guidelines="[
+          'Is government issued',
+          'Is full-sized, original and unedited',
+        ]"
+      />
+
+      <!-- DOCUMENT FIELD UPLOAD -->
+      <div class="mb-14">
+        <div class="form-block">
+          <label class="form-label-basic"
+            >Certificate of business incorporation in
+            {{ route.query.country }}</label
+          >
+          <FileUploadInput
+            :hasDocumentUploaded="!!uploadedDocument"
+            :uploadedDocumentContent="getUploadedDocumentContent"
+            :uploadAction="uploadFile"
+            @onDocumentUploaded="uploadedDocument = $event"
+          />
+        </div>
+      </div>
+    </template>
   </MarketWrapper>
 </template>
 
@@ -36,7 +51,11 @@
 import { computed, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
-import { UploadGuidelines, FileUploadInput } from "@packages/uikit";
+import {
+  SelectFieldInput,
+  UploadGuidelines,
+  FileUploadInput,
+} from "@packages/uikit";
 import { MarketWrapper } from "@/modules/overview/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useOverviewStore } from "@/modules/overview/store";
@@ -49,6 +68,13 @@ const { createWallet } = useOverviewStore();
 
 const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
+
+const isIncorporated = ref<string>("");
+
+const incorporationStatusList = ref([
+  { value: "not_incorporated", name: "No, it's not" },
+  { value: "incorporated", name: "Yes, I'm incorporated" },
+]);
 
 const uploadedDocumentContent = ref<{ name: string; link: string }>({
   name: "Certificate of incorporation",

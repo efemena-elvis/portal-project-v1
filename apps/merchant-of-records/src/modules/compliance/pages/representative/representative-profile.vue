@@ -196,8 +196,7 @@ const isActionReady = computed(() => {
     businessPayload.value.dob &&
     payloadValidity.value.dob &&
     businessPayload.value.nationality &&
-    businessPayload.value.business_role.length &&
-    percentageOwnershipProvided.value
+    businessPayload.value.business_role.length
     ? false
     : true;
 });

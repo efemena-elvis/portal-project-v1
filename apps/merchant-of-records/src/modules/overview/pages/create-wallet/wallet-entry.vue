@@ -6,29 +6,18 @@
     @onBackClick="router.push({ name: 'VesicashOverview' })"
     @onContinueClick="handleWalletEntry"
   >
-    <div class="mb-7">
+    <div class="mb-4">
       <SelectOptionFieldInput
         labelId="businessMarket"
-        labelTitle="Market currency"
+        labelTitle="Select a new market"
         :labelCompact="false"
         :inputValue="marketPayload.currency"
-        inputPlaceholder="Select a market currency"
+        inputPlaceholder="Select a market"
         :isRequired="true"
-        :selectData="supportedCurrencies"
+        :selectData="getMarketCurrencies"
         @onSelectionChange="marketPayload.currency = $event"
       />
     </div>
-
-    <SelectFieldInput
-      labelId="businessIncorporation"
-      labelTitle="Are you incorporated in this country?"
-      :labelCompact="false"
-      inputPlaceholder="Select incorporation status"
-      :inputValue="marketPayload.isIncorporated"
-      :selectData="incorporationStatusList"
-      isRequired
-      @onSelectionChange="marketPayload.isIncorporated = $event"
-    />
   </MarketWrapper>
 </template>
 
@@ -37,16 +26,18 @@ import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
-import { useEvents } from "@packages/hooks";
+import { useEvents, useProfile } from "@packages/hooks";
 import { SelectOptionFieldInput, SelectFieldInput } from "@packages/uikit";
 import { supportedCurrencies } from "@packages/constants";
 import { MarketWrapper } from "@/modules/overview/components";
 import { useOverviewStore } from "@/modules/overview/store";
+import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
 
 type IMarketEntryType = {
   currency: string;
-  isIncorporated: string;
+  country_id: string;
+  country_name: string;
 };
 
 type IInputValidity = {
@@ -55,29 +46,44 @@ type IInputValidity = {
 
 const router = useRouter();
 
-const { createWallet } = useOverviewStore();
+const authStore = useAuthStore();
+const overviewStore = useOverviewStore();
+
+const { createWallet } = overviewStore;
 const { getBusinessCountries } = useGlobalStore();
+const { getAllWallets } = storeToRefs(overviewStore);
 
 const { processAPIRequest } = useEvents();
+const profileUtil = new useProfile(authStore);
 
 const stopClickHandler = ref<boolean>(false);
 
 const businessCountries = ref<any>([]);
 
-const incorporationStatusList = ref([
-  { value: "incorporated", name: "Incorporated" },
-  { value: "not_incorporated", name: "Not Incorporated" },
-]);
-
 const marketPayload = ref<IMarketEntryType>({
   currency: "",
   country_id: "",
   country_name: "",
-  isIncorporated: "",
 });
 
 const payloadValidity = ref<IInputValidity>({
   currency: false,
+});
+
+const getLocalCurrencyCode = computed(() => {
+  const userProfile = profileUtil.getUser();
+  return userProfile?.country?.currency_code;
+});
+
+const getMarketCurrencies = computed(() => {
+  const deployedWallets = [
+    ...getAllWallets.value?.walletBalance.map((wallet) => wallet.currencyShort),
+    getLocalCurrencyCode.value,
+  ];
+
+  return supportedCurrencies.filter(
+    (currency) => !deployedWallets.includes(currency.value)
+  );
 });
 
 const isActionReady = computed(() => {
@@ -107,45 +113,14 @@ const fetchBusinessCountries = async () => {
 
 // HANDLE WALLET ENTRY FLOW
 const handleWalletEntry = async () => {
-  if (marketPayload.value.isIncorporated === "incorporated") {
-    router.push({
-      name: "VesicashWalletDocument",
-      query: {
-        currency: marketPayload.value.currency,
-        country: marketPayload.value.country_name,
-        country_id: marketPayload.value.country_id,
-      },
-    });
-    return;
-  }
-
-  const response = await processAPIRequest({
-    action: createWallet,
-    payload: getMarketPayload.value,
-    alertHandler: {
-      201: {
-        message: "Merchant Wallet request sent",
-        type: "success",
-      },
-
-      400: {
-        message: "Wallet request failed",
-        type: "error",
-      },
-
-      500: {
-        message: "Wallet request failed",
-        type: "error",
-      },
+  router.push({
+    name: "VesicashWalletDocument",
+    query: {
+      currency: marketPayload.value.currency,
+      country: marketPayload.value.country_name,
+      country_id: marketPayload.value.country_id,
     },
   });
-
-  if (response?.code === 201) {
-    setTimeout(() => router.push({ name: "VesicashWalletStatus" }), 600);
-    stopClickHandler.value = false;
-  } else {
-    stopClickHandler.value = false;
-  }
 };
 
 watch(
