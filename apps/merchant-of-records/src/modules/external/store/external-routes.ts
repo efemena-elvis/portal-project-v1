@@ -1,5 +1,4 @@
 export const externalRoutes = {
-    submitQuestionnaire: "questionnaire",
-   
+    submitQuestionnaire: "auth/aggregator-signup",
   };
   

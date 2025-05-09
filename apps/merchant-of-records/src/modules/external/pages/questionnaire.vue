@@ -28,14 +28,29 @@
       >
         <TextFieldInput
           :labelCompact="false"
+          labelId="fullName"
+          labelTitle="Full Name"
+          :inputType="IInputType.Text"
+          inputPlaceholder="eg. John Doe."
+          isRequired
+          :inputValue="questionnairePayload.full_name"
+          @inputChanged="questionnairePayload.full_name = $event"
+          @inputValidated="payloadValidity.full_name = $event"
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Full name is a required field.',
+          }"
+        />
+        <TextFieldInput
+          :labelCompact="false"
           labelId="companyName"
           labelTitle="Company Name"
           :inputType="IInputType.Text"
           inputPlaceholder="Provide a registered company name."
           isRequired
-          :inputValue="questionnairePayload.companyName"
-          @inputChanged="questionnairePayload.companyName = $event"
-          @inputValidated="payloadValidity.companyName = $event"
+          :inputValue="questionnairePayload.company_name"
+          @inputChanged="questionnairePayload.company_name = $event"
+          @inputValidated="payloadValidity.company_name = $event"
           :errorHandler="{
             validator: 'validateRequired',
             message: 'Company name is a required field.',
@@ -52,7 +67,7 @@
           :inputValue="phoneNumberInput"
           @inputChanged="phoneNumberInput = $event"
           @countryCodeChanged="phoneCountryCode = $event"
-          @inputValidated="payloadValidity.phoneNumber = $event"
+          @inputValidated="payloadValidity.phone_number = $event"
           :errorHandler="{
             validator: 'validatePhone',
             message: 'Phone number is a required field.',
@@ -66,9 +81,9 @@
           isRequired
           inputPlaceholder="www.companyname.com"
           :inputType="IInputType.Url"
-          :inputValue="questionnairePayload.website"
-          @inputChanged="questionnairePayload.website = $event"
-          @inputValidated="payloadValidity.website = $event"
+          :inputValue="questionnairePayload.website_link"
+          @inputChanged="questionnairePayload.website_link = $event"
+          @inputValidated="payloadValidity.website_link = $event"
           :errorHandler="{
             validator: 'validateURL',
             message: 'Enter a valid url.',
@@ -80,19 +95,17 @@
           labelTitle="How many sub-merchants do you have?"
           inputPlaceholder="Select number of sub-merchants."
           :selectData="subMerchantsOptions"
-          :selectValue="questionnairePayload.subMerchants"
-          @onSelectionChange="questionnairePayload.subMerchants = $event"
-          @inputValidated="payloadValidity.subMerchants = $event"
+          :selectValue="questionnairePayload.sub_merchant_range"
+          @onSelectionChange="questionnairePayload.sub_merchant_range = $event"
           isRequired
         />
-        <div v-if="questionnairePayload.subMerchants === 'other'">
+        <div v-if="questionnairePayload.sub_merchant_range === 'other'">
           <TextFieldInput
             labelId="subMerchantsOther"
             inputPlaceholder="Please Specify"
             :inputType="IInputType.Text"
             :inputValue="subMerchantsOther"
             @inputChanged="subMerchantsOther = $event"
-            @inputValidated="payloadValidity.subMerchants = $event"
             isRequired
             :errorHandler="{
               validator: 'validateRequired',
@@ -124,11 +137,20 @@
           labelTitle="Estimated monthly transaction value in USD."
           inputPlaceholder="Select monthly transaction value."
           :selectData="transactionValues"
-          :selectValue="questionnairePayload.transactionValue"
-          @onSelectionChange="questionnairePayload.transactionValue = $event"
+          :selectValue="
+            questionnairePayload.estimated_monthly_transactions_value
+          "
+          @onSelectionChange="
+            questionnairePayload.estimated_monthly_transactions_value = $event
+          "
           isRequired
         />
-        <div v-if="questionnairePayload.transactionValue === 'above-100000'">
+        <div
+          v-if="
+            questionnairePayload.estimated_monthly_transactions_value ===
+            'above-100000'
+          "
+        >
           <TextFieldInput
             labelId="transactionValueOther"
             inputPlaceholder="Please Specify"
@@ -162,56 +184,73 @@
         <TextFieldInput
           :labelCompact="false"
           labelId="compliance"
-          isRequired
           labelTitle="Compliance"
           :inputType="IInputType.Text"
           :inputValue="questionnairePayload.compliance"
           @inputChanged="questionnairePayload.compliance = $event"
-          @inputValidated="payloadValidity.compliance = $event"
-          inputPlaceholder="Description"
-          :errorHandler="{
-            validator: 'validateRequired',
-            message: 'Compliance is a required field.',
-          }"
+          inputPlaceholder="Description (optional)"
         />
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Business Registration Document
           </h2>
-          <FileUploadInput
+          <input
+            type="file"
+            @change="uploadFile"
+            accept="application/pdf,image/*"
+            id="businessDoc"
+            name="business_registration_document_url"
+          />
+          <!-- <FileUploadInput
             :hasDocumentUploaded="!!businessDoc"
             :uploadedDocumentContent="getUploadedDocumentContent('business')"
             :uploadAction="uploadFile"
             @onDocumentUploaded="businessDoc = $event"
-          />
+          /> -->
         </div>
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Directors and Shareholders Details (Form 3)
           </h2>
-          <FileUploadInput
+          <input
+            type="file"
+            @change="uploadFile"
+            id="directorsDoc"
+            name="director_and_shareholders_document_url"
+            accept="application/pdf,image/*"
+          />
+          <!-- <FileUploadInput
             :hasDocumentUploaded="!!directorsDoc"
             :uploadedDocumentContent="getUploadedDocumentContent('directors')"
             :uploadAction="uploadFile"
             @onDocumentUploaded="directorsDoc = $event"
-          />
+          /> -->
         </div>
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Director's ID
           </h2>
-          <FileUploadInput
+          <input
+            type="file"
+            @change="uploadFile"
+            accept="application/pdf,image/*"
+            id="directorsId"
+            name="directors_id_document_url"
+          />
+
+          <!-- <FileUploadInput
             :hasDocumentUploaded="!!directorsId"
             :uploadedDocumentContent="getUploadedDocumentContent('id')"
             :uploadAction="uploadFile"
             @onDocumentUploaded="directorsId = $event"
-          />
+          /> -->
         </div>
 
         <button
+        ref="questionnaireBtnRef"
           class="w-full my-5 btn btn-primary"
           :disabled="!isQuestionnaireReady"
         >
@@ -232,41 +271,40 @@ import MultiSelectFieldInput from "@packages/uikit/src/components/form-comps/mul
 import SelectFieldInput from "@packages/uikit/src/components/form-comps/select-field-input.vue";
 import FileUploadInput from "@packages/uikit/src/components/form-comps/file-upload-input.vue";
 import { useGlobalStore } from "@/modules/global/store";
-import { useComplianceStore } from "@/modules/compliance/store";
-import { storeToRefs } from "pinia";
 import { useEvents, useString } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
+import { submitQuestionnaire } from "../store/actions";
+import { useExternalStore } from "../store";
 
 interface IQuestionnairePayload {
-  companyName: string;
-  phoneNumber: string;
-  website: string;
-  subMerchants: string;
+  full_name: string;
+  company_name: string;
+  phone_number: string;
+  website_link: string;
+  sub_merchant_range: string;
+  country_uuid: string;
   countries: string[];
-  transactionValue: string;
+  estimated_monthly_transactions_value: string;
   email: string;
-  compliance: string;
+  compliance?: string;
+  business_registration_document_url: string;
+  directors_id_document_url: string;
+  director_and_shareholders_document_url: string;
+  [key: string]: any;
 }
 
-interface IFinalQuestionnairePayload extends IQuestionnairePayload {
-  documents: {
-    businessRegistration: string;
-    directorsDetails: string;
-    directorId: string;
-  };
-}
-
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { renderImg } = useImage();
-const { uploadFile, getBusinessCountries } = useGlobalStore();
-const complianceStore = useComplianceStore();
-// const { getComplianceBusiness } = storeToRefs(complianceStore);
+const { getBusinessCountries } = useGlobalStore();
 const { formatPhoneNumber } = useString();
+const { submitQuestionnaire } = useExternalStore();
 
 const phoneCountryCode = ref("234");
 const phoneNumberInput = ref("");
 const subMerchantsOther = ref("");
 const transactionValueOther = ref("");
+const isUploading = ref(false);
+const questionnaireBtnRef = ref(null);
 
 const subMerchantsOptions = [
   { name: "1–100", value: "1-100" },
@@ -285,41 +323,31 @@ const transactionValues = [
   { value: "above-100000", name: "Above $100,000" },
 ];
 
-const questionnairePayload = ref({
-  phoneNumber: "",
-  companyName: "",
-  website: "",
-  subMerchants: "",
+const questionnairePayload = ref<IQuestionnairePayload>({
+  full_name: "",
+  phone_number: "",
+  company_name: "",
+  website_link: "",
+  sub_merchant_range: "",
   countries: [] as string[],
-  transactionValue: "",
+  estimated_monthly_transactions_value: "",
+  country_uuid: "",
   email: "",
-  compliance: "",
+  // compliance: "",
+  directors_id_document_url: "",
+  business_registration_document_url: "",
+  director_and_shareholders_document_url: "",
 });
 
 const payloadValidity = ref({
-  companyName: false,
-  phoneNumber: false,
-  website: false,
+  full_name: false,
+  company_name: false,
+  phone_number: false,
+  website_link: false,
+  sub_merchant_range: false,
+  countries: false,
+  estimated_monthly_transactions_value: false,
   email: false,
-  compliance: false,
-});
-
-const finalTransactionValue = computed(() =>
-  questionnairePayload.value.transactionValue === "above-100000"
-    ? transactionValueOther.value
-    : questionnairePayload.value.transactionValue
-);
-const finalSubMerchants = computed(() =>
-  questionnairePayload.value.subMerchants === "other"
-    ? subMerchantsOther.value
-    : questionnairePayload.value.subMerchants
-);
-
-watch([phoneNumberInput, phoneCountryCode], () => {
-  questionnairePayload.value.phoneNumber = formatPhoneNumber(
-    phoneNumberInput.value,
-    phoneCountryCode.value
-  );
 });
 
 const getCountryName = computed(() => {
@@ -330,7 +358,7 @@ const getCountryName = computed(() => {
   return country?.country || "Nigeria";
 });
 
-const fetchCountries = async () => {
+const fetchSingleCountryUUID = async (): Promise<string> => {
   const response = await processAPIRequest({
     action: getBusinessCountries,
     payload: {},
@@ -338,80 +366,169 @@ const fetchCountries = async () => {
 
   if (response.code === 200) {
     const country = response.data.find(
-      (country: { name: string }) => getCountryName.value === country.name
+      (item: { name: string }) =>
+        item.name.trim().toLowerCase() ===
+        getCountryName.value.trim().toLowerCase()
     );
-    console.log(country?.name, country?.id);
-    return country?.id;
+    return country?.id || "";
   }
+  return "";
 };
 
-const businessDoc = ref("");
-const directorsDoc = ref("");
-const directorsId = ref("");
+const fetchCountriesUUID = async (): Promise<string[]> => {
+  const response = await processAPIRequest({
+    action: getBusinessCountries,
+    payload: {},
+  });
 
-const getUploadedDocumentContent = (type: "business" | "directors" | "id") => {
-  const docMap = {
-    business: businessDoc.value,
-    directors: directorsDoc.value,
-    id: directorsId.value,
-  };
-  return docMap[type]
-    ? {
-        name: `${type.toUpperCase()} Document`,
-        link: docMap[type],
-      }
-    : undefined;
+  if (response.code === 200) {
+    return questionnairePayload.value.countries.map((countryName) => {
+      const match = response.data.find(
+        (item: { name: string }) =>
+          item.name.trim().toLowerCase() === countryName.trim().toLowerCase()
+      );
+      return match?.id || countryName;
+    });
+  }
+  return [];
 };
+
+const finalTransactionValue = computed(() =>
+  questionnairePayload.value.estimated_monthly_transactions_value ===
+  "above-100000"
+    ? transactionValueOther.value
+    : questionnairePayload.value.estimated_monthly_transactions_value
+);
+const finalSubMerchants = computed(() =>
+  questionnairePayload.value.sub_merchant_range === "other"
+    ? subMerchantsOther.value
+    : questionnairePayload.value.sub_merchant_range
+);
 
 const isQuestionnaireReady = computed(() => {
   const payload = questionnairePayload.value;
   return !!(
-    (
-      payload.companyName &&
-      payload.phoneNumber &&
-      payload.website &&
-      payload.subMerchants &&
-      payload.transactionValue &&
-      payload.countries.length > 0 &&
-      payload.email &&
-      payload.compliance &&
-      // businessDoc.value &&
-      // directorsDoc.value &&
-      // directorsId.value &&
-      payloadValidity.value.companyName &&
-      payloadValidity.value.phoneNumber &&
-      payloadValidity.value.website &&
-      payloadValidity.value.email &&
-      payloadValidity.value.compliance
-    )
- 
+    payload.full_name &&
+    payload.company_name &&
+    payload.phone_number &&
+    payload.website_link &&
+    payload.sub_merchant_range &&
+    payload.estimated_monthly_transactions_value &&
+    payload.countries.length > 0 &&
+    payload.email &&
+    payload.business_registration_document_url &&
+    payload.director_and_shareholders_document_url &&
+    payload.directors_id_document_url &&
+    payloadValidity.value.full_name &&
+    payloadValidity.value.company_name &&
+    payloadValidity.value.phone_number &&
+    payloadValidity.value.website_link &&
+    payloadValidity.value.email
   );
 });
 
-const getQuestionnairePayload = computed(() => {
-  return {
-    companyName: questionnairePayload.value.companyName,
-    phoneNumber: questionnairePayload.value.phoneNumber,
-    website: questionnairePayload.value.website,
-    subMerchants: finalSubMerchants.value,
-    countries: questionnairePayload.value.countries,
-    transactionValue: finalTransactionValue.value,
-    email: questionnairePayload.value.email,
-    compliance: questionnairePayload.value.compliance,
-    documents: {
-      businessRegistration: businessDoc.value,
-      directorsDetails: directorsDoc.value,
-      directorId: directorsId.value,
-    },
-  };
-});
-// console.log(getUploadedDocumentContent);
+// cloudinary
+const CLOUD_NAME = "dszsvnwtb";
+const UPLOAD_PRESET = "vesicash";
 
-const handleSubmit = () => {
-  if (isQuestionnaireReady.value) {
-    fetchCountries();
-  } else {
-    console.error("Form is not ready for submission");
+const uploadFile = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+
+  isUploading.value = true;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.url) {
+      questionnairePayload.value[(event.target as HTMLInputElement).name] =
+        data.url;
+    }
+  } catch (err) {
+    console.error("Upload error:", err);
+  } finally {
+    isUploading.value = false;
   }
 };
+
+// const getQuestionnairePayload = async () => {
+//   return {
+//     full_name: questionnairePayload.value.full_name,
+//     company_name: questionnairePayload.value.company_name,
+//     phone_number: questionnairePayload.value.phone_number,
+//     website_link: questionnairePayload.value.website_link,
+//     country_uuid: "",
+//     sub_merchant_range: finalSubMerchants.value,
+//     countries: "",
+//     estimated_monthly_transactions_value: finalTransactionValue.value,
+//     email: questionnairePayload.value.email,
+//     // compliance: questionnairePayload.value.compliance,
+//     business_registration_document_url:
+//       questionnairePayload.value.business_registration_document_url,
+//     director_and_shareholders_document_url:
+//       questionnairePayload.value.director_and_shareholders_document_url,
+//     directors_id_document_url:
+//       questionnairePayload.value.directors_id_document_url,
+//   };
+// };
+
+// const finalQuestionnairePayload = computed(() => {
+//   return getQuestionnairePayload();
+// });
+
+const handleSubmit = async () => {
+  const country_uuid = await fetchSingleCountryUUID();
+  const countries = await fetchCountriesUUID();
+
+  try {
+    if (isQuestionnaireReady.value) {
+      const response = await processAPIRequest({
+        action: submitQuestionnaire,
+        btnRef: questionnaireBtnRef,
+        btnText: "Submit Questionnaire",
+        payload: {
+          ...questionnairePayload.value,
+          estimated_monthly_transactions_value: finalTransactionValue.value,
+          sub_merchant_range: finalSubMerchants.value,
+          country_uuid,
+          countries,
+        },
+
+        showAlert: true,
+      });
+      if (response.code === 201) {
+        pushToastAlert({
+          message: "Response submitted successfully.",
+          type: "success",
+        });
+      } else {
+        pushToastAlert({
+          message: "Response submission failed.",
+          type: "error",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+watch([phoneNumberInput, phoneCountryCode], () => {
+  questionnairePayload.value.phone_number = formatPhoneNumber(
+    phoneNumberInput.value,
+    phoneCountryCode.value
+  );
+});
 </script>
