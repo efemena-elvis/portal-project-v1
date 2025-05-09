@@ -46,6 +46,7 @@ import { ref, computed, onMounted } from "vue";
 import { countryCurrencies } from "@packages/constants";
 import { PageContentWrapper } from "@packages/uikit";
 import { useProfile, useEvents } from "@packages/hooks";
+import { storeToRefs } from "pinia";
 import {
   OverviewCard,
   TaxBlock,
@@ -56,9 +57,12 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
 
 const authStore = useAuthStore();
+const overviewStore = useOverviewStore();
 const profileUtil = new useProfile(authStore);
 
-const { getWallets } = useOverviewStore();
+const { getWallets, updateWalletState } = overviewStore;
+const { getAllWallets } = storeToRefs(overviewStore);
+
 const { processAPIRequest } = useEvents();
 
 const walletBalance = ref([]);
@@ -96,7 +100,15 @@ const loadLocalCountryCurrency = (country: string) => {
 
 const fetchAllWallets = async () => {
   // LOAD LOCAL CURRENCY
-  await loadLocalCountryCurrency();
+  console.log(getAllWallets.value);
+  console.log(Object.keys(getAllWallets.value));
+
+  if (getAllWallets?.value?.walletBalance.length === 0) {
+    await loadLocalCountryCurrency();
+  } else {
+    walletBalance.value = getAllWallets.value.walletBalance;
+    taxBalance.value = getAllWallets.value.taxBalance;
+  }
 
   const response = await processAPIRequest({
     action: getWallets,
@@ -138,8 +150,31 @@ const fetchAllWallets = async () => {
       taxWalletPayload.currencySign = walletCurrencyData?.currency.sign;
       taxWalletPayload.amount = wallet?.tax_balance ?? 0;
 
-      walletBalance.value.push(walletPayload);
-      taxBalance.value.push(taxWalletPayload);
+      // Replace or push for walletBalance
+      const existingWalletIndex = walletBalance.value.findIndex(
+        (entry) => entry.currencyShort === walletPayload.currencyShort
+      );
+      if (existingWalletIndex !== -1) {
+        walletBalance.value[existingWalletIndex] = walletPayload;
+      } else {
+        walletBalance.value.push(walletPayload);
+      }
+
+      // Replace or push for taxBalance
+      const existingTaxIndex = taxBalance.value.findIndex(
+        (entry) => entry.currencyShort === taxWalletPayload.currencyShort
+      );
+      if (existingTaxIndex !== -1) {
+        taxBalance.value[existingTaxIndex] = taxWalletPayload;
+      } else {
+        taxBalance.value.push(taxWalletPayload);
+      }
+    });
+
+    // UPDATE LOCAL WALLET STATE
+    updateWalletState({
+      walletBalance: walletBalance.value,
+      taxBalance: taxBalance.value,
     });
   }
 };

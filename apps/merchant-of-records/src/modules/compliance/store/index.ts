@@ -7,7 +7,7 @@ import { useComplianceMutations } from "./mutations";
 
 export const useComplianceStore = defineStore("compliance", () => {
   const mutations = useComplianceMutations();
-  
+
   return {
     ...state,
     ...getters,

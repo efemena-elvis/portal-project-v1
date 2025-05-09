@@ -19,7 +19,7 @@
 
       <template v-else>
         <template v-if="bankDetailsFields.length">
-          <div class="mb-8">
+          <div class="mb-12">
             <template v-for="field in bankDetailsFields" :key="field.labelId">
               <TextFieldInput
                 v-if="field.inputType !== 'Phone'"
@@ -58,7 +58,7 @@
             </template>
 
             <button
-              class="btn btn-primary w-full"
+              class="btn btn-primary w-full mt-8"
               ref="updateBankBtnRef"
               :disabled="isActionReady"
               @click="updateBankAccount"
@@ -77,6 +77,7 @@ import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
 import { payoutConfig } from "@packages/constants";
+import { useEvents, useProfile } from "@packages/hooks";
 import {
   TextFieldInput,
   SelectFieldInput,
@@ -85,9 +86,10 @@ import {
 } from "@packages/uikit";
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
-import { useEvents, useProfile } from "@packages/hooks";
+import { useOverviewStore } from "@/modules/overview/store";
 
 const authStore = useAuthStore();
+const overviewStore = useOverviewStore();
 const { fetchUserProfile, updateUserProfile } = useSettingsStore();
 
 const { processAPIRequest } = useEvents();
@@ -99,6 +101,7 @@ const {
   getProfileContact,
   getProfileDeveloper,
 } = storeToRefs(useSettingsStore());
+const { getAllWallets } = storeToRefs(overviewStore);
 
 const updateBankBtnRef = ref<HTMLButtonElement | null>(null);
 
@@ -109,14 +112,28 @@ const bankCurrency = ref<string>("");
 const phoneCountryCode = ref<string>("234");
 const businessPayload = ref<Record<string, string>>({});
 
+const getLocalCurrencyCode = computed(() => {
+  const userProfile = profileUtil.getUser();
+  return userProfile?.country?.currency_code;
+});
+
 const getPayoutCurrencies = computed(() => {
-  return payoutConfig
+  const currencyList = payoutConfig
     .getAllCurrencies()
     .map((currency) => ({
       value: currency.currency,
       name: `${currency.description} (${currency.currency})`,
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const deployedWallets = [
+    ...getAllWallets.value?.walletBalance.map((wallet) => wallet.currencyShort),
+    getLocalCurrencyCode.value,
+  ];
+
+  return currencyList.filter((currency) =>
+    deployedWallets.includes(currency.value)
+  );
 });
 
 const isActionReady = computed(() => {
