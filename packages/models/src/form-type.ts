@@ -5,6 +5,7 @@ export enum IInputType {
   Date = "date",
   Number = "number",
   Search = "search",
+  Url = "url"
 }
 
 export enum ISelectType {

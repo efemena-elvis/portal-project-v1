@@ -40,9 +40,12 @@
     "vue-tsc": "^2.2.4"
   },
   "dependencies": {
+    "@cloudinary/url-gen": "^1.21.0",
+    "@cloudinary/vue": "^1.13.1",
     "@vueuse/head": "^2.0.0",
     "axios": "^1.7.4",
     "chart.js": "^4.4.3",
+    "cloudinary": "^2.6.1",
     "core-js": "^3.8.3",
     "jwt-decode": "^4.0.0",
     "mitt": "^3.0.1",
