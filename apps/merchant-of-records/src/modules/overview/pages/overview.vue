@@ -6,7 +6,7 @@
           to="/market/wallet-entry"
           class="btn btn-primary btn-sm hover:text-white"
         >
-          <div class="icon icon-add text-xl font-semibold"></div>
+          <div class="text-xl font-semibold icon icon-add"></div>
           Deploy a wallet
         </router-link>
       </div>
@@ -180,6 +180,7 @@ const fetchAllWallets = async () => {
 };
 
 onMounted(() => fetchAllWallets());
+
 </script>
 
 <style lang="scss" scoped>

@@ -17,6 +17,8 @@ interface IUserProfile {
   lastName: string;
   currentBusiness: string;
   isEmailVerified: boolean;
+  morAccountType: string;
+
 }
 
 interface IBusinessProfile {
@@ -33,6 +35,8 @@ interface IBusinessProfile {
   activated: string;
   supportEmailAddress: string;
   activateMyBusiness: boolean;
+
+
 }
 
 interface IAPIKeys {
@@ -109,6 +113,7 @@ export default class ProfileUtil<TStore extends Store> {
     };
   }
 
+
   public getBusinessActivatedStatus(): string {
     const business = this.storeRefs.getAuthBusiness;
     const activated = business?.activated ?? "";
@@ -138,4 +143,5 @@ export default class ProfileUtil<TStore extends Store> {
       },
     };
   }
+  
 }
