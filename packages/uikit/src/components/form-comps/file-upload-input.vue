@@ -24,11 +24,11 @@
   <!-- EMPTY VIEW -->
   <div class="upload-field-input" v-else>
     <label :for="id">
-      <div class="flex justify-center items-center gap-x-2">
+      <div class="flex items-center justify-center gap-x-2">
         <!-- UPLOADING STATE -->
         <template v-if="isUploading">
           <div
-            class="icon icon-spinner-ios text-2xl text-grey-600/80 animate-spin"
+            class="text-2xl icon icon-spinner-ios text-grey-600/80 animate-spin"
           ></div>
           <div class="select-none">
             Please wait, uploading your file...
@@ -37,7 +37,7 @@
 
         <!-- NOT UPLOADED STATE -->
         <template v-else>
-          <div class="icon icon-upload text-xl text-grey-600/80"></div>
+          <div class="text-xl icon icon-upload text-grey-600/80"></div>
           <div class="select-none">{{ fileUploadText }}</div>
         </template>
       </div>
@@ -118,7 +118,7 @@ const docPayload = ref<{ name: string; link: string }>({
 const processDocumentUpload = async ($event: Event) => {
   const inputElement = $event.target as HTMLInputElement;
   const uploadedFile = inputElement.files ? inputElement.files[0] : null;
-
+ 
   if (!uploadedFile) return;
 
   isUploading.value = true;
@@ -147,36 +147,50 @@ const processDocumentUpload = async ($event: Event) => {
   }
 
   // UPLOAD FILE TO BUCKET
+  const UPLOAD_PRESET = "vesicash";
   const payload = new FormData();
-  payload.append("files", uploadedFile);
+  payload.append("file", uploadedFile);
+  payload.append("upload_preset", UPLOAD_PRESET);
+
 
   const response = await processAPIRequest({
     action: props.uploadAction,
     payload,
-    alertHandler: {
-      201: {
-        message: "Document uploaded successfully",
-        type: "success",
-      },
+    // alertHandler: {
+    //   200: {
+    //     message: "Document uploaded successfully",
+    //     type: "success",
+    //   },
 
-      400: {
-        message: "Document upload failed",
-        type: "error",
-      },
-    },
+    //   400: {
+    //     message: "Document upload failed",
+    //     type: "error",
+    //   },
+    // },
   });
 
-  if (response.code == 201) {
+
+  if (response.status == 200) {
     docPayload.value = response.data;
     isDocUploaded.value = true;
+    
+    pushToastAlert({
+      message: "Document uploaded successfully",
+      type: "success",
+    });
 
     inputElement.value = "";
     isUploading.value = false;
 
     docPayload.value.name = uploadedFile.name;
-    docPayload.value.link = response.data[0].file_url;
+    docPayload.value.link = response.data.secure_url;
+    
+    console.log(response);
 
-    emits("onDocumentUploaded", response.data[0].file_url);
+      docPayload.value[inputElement.name] =
+        response.data.url;
+    
+    emits("onDocumentUploaded", response.data.secure_url);
   }
 
   // FAILED STATE

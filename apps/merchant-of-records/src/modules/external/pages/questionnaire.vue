@@ -23,8 +23,8 @@
 
     <div class="px-6 py-16">
       <form
-        @submit.prevent="handleSubmit"
-        class="flex flex-col w-full max-w-2xl gap-4 mx-auto"
+        @submit.prevent="handleSubmitQuestionnaire"
+        class="flex flex-col w-full max-w-xl gap-4 mx-auto"
       >
         <TextFieldInput
           :labelCompact="false"
@@ -57,6 +57,21 @@
           }"
         />
 
+        <TextFieldInput
+          :labelCompact="false"
+          labelId="email"
+          labelTitle="Business Email Address"
+          :inputType="IInputType.Email"
+          :inputValue="questionnairePayload.email"
+          @inputChanged="questionnairePayload.email = $event"
+          @inputValidated="payloadValidity.email = $event"
+          inputPlaceholder="hello@companyname.com"
+          isRequired
+          :errorHandler="{
+            validator: 'validateEmail',
+            message: 'Email is a required field.',
+          }"
+        />
         <PhoneFieldInput
           labelId="phoneNumber"
           labelTitle="Phone Number"
@@ -77,7 +92,7 @@
         <TextFieldInput
           :labelCompact="false"
           labelId="website"
-          labelTitle="Website"
+          labelTitle="Company Website"
           isRequired
           inputPlaceholder="www.companyname.com"
           :inputType="IInputType.Url"
@@ -165,95 +180,60 @@
           />
         </div>
 
-        <TextFieldInput
-          :labelCompact="false"
-          labelId="email"
-          labelTitle="Email Address"
-          :inputType="IInputType.Email"
-          :inputValue="questionnairePayload.email"
-          @inputChanged="questionnairePayload.email = $event"
-          @inputValidated="payloadValidity.email = $event"
-          inputPlaceholder="hello@companyname.com"
-          isRequired
-          :errorHandler="{
-            validator: 'validateEmail',
-            message: 'Email is a required field.',
-          }"
-        />
-
-        <TextFieldInput
-          :labelCompact="false"
-          labelId="compliance"
-          labelTitle="Compliance"
-          :inputType="IInputType.Text"
-          :inputValue="questionnairePayload.compliance"
-          @inputChanged="questionnairePayload.compliance = $event"
-          inputPlaceholder="Description (optional)"
-        />
-
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Business Registration Document
           </h2>
-          <input
-            type="file"
-            @change="uploadFile"
-            accept="application/pdf,image/*"
-            id="businessDoc"
-            name="business_registration_document_url"
-            required
-          />
-          <!-- <FileUploadInput
-            :hasDocumentUploaded="!!businessDoc"
-            :uploadedDocumentContent="getUploadedDocumentContent('business')"
+
+          <FileUploadInput
+            id="business_registration_document_url"
+            :hasDocumentUploaded="
+              !!questionnairePayload.business_registration_document_url
+            "
             :uploadAction="uploadFile"
-            @onDocumentUploaded="businessDoc = $event"
-          /> -->
+            @onDocumentUploaded="
+              questionnairePayload.business_registration_document_url = $event
+            "
+          />
         </div>
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Directors and Shareholders Details (Form 3)
           </h2>
-          <input
-            type="file"
-            @change="uploadFile"
-            id="directorsDoc"
-            name="director_and_shareholders_document_url"
-            accept="application/pdf,image/*"
-            required
-          />
-          <!-- <FileUploadInput
-            :hasDocumentUploaded="!!directorsDoc"
-            :uploadedDocumentContent="getUploadedDocumentContent('directors')"
+
+          <FileUploadInput
+            id="director_and_shareholders_document_url"
+            :hasDocumentUploaded="
+              !!questionnairePayload.director_and_shareholders_document_url
+            "
             :uploadAction="uploadFile"
-            @onDocumentUploaded="directorsDoc = $event"
-          /> -->
+            @onDocumentUploaded="
+              questionnairePayload.director_and_shareholders_document_url =
+                $event
+            "
+          />
         </div>
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
             Director's ID
           </h2>
-          <input
-            type="file"
-            @change="uploadFile"
-            accept="application/pdf,image/*"
-            id="directorsId"
-            name="directors_id_document_url"
-            required
-          />
 
-          <!-- <FileUploadInput
-            :hasDocumentUploaded="!!directorsId"
-            :uploadedDocumentContent="getUploadedDocumentContent('id')"
+          <FileUploadInput
+            :hasDocumentUploaded="
+              !!questionnairePayload.directors_id_document_url
+            "
             :uploadAction="uploadFile"
-            @onDocumentUploaded="directorsId = $event"
-          /> -->
+            @onDocumentUploaded="
+              questionnairePayload.directors_id_document_url = $event
+            "
+            id="directors_id_document_url"
+          />
         </div>
 
         <button
-        ref="questionnaireBtnRef"
+          ref="questionnaireBtnRef"
           class="w-full my-5 btn btn-primary"
           :disabled="!isQuestionnaireReady"
         >
@@ -276,8 +256,8 @@ import FileUploadInput from "@packages/uikit/src/components/form-comps/file-uplo
 import { useGlobalStore } from "@/modules/global/store";
 import { useEvents, useString } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
-import { submitQuestionnaire } from "../store/actions";
 import { useExternalStore } from "../store";
+import axios from "axios";
 
 interface IQuestionnairePayload {
   full_name: string;
@@ -289,7 +269,6 @@ interface IQuestionnairePayload {
   countries: string[];
   estimated_monthly_transactions_value: string;
   email: string;
-  compliance?: string;
   business_registration_document_url: string;
   directors_id_document_url: string;
   director_and_shareholders_document_url: string;
@@ -298,7 +277,7 @@ interface IQuestionnairePayload {
 
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { renderImg } = useImage();
-const { getBusinessCountries } = useGlobalStore();
+const { getBusinessCountries, uploadFile } = useGlobalStore();
 const { formatPhoneNumber } = useString();
 const { submitQuestionnaire } = useExternalStore();
 
@@ -306,7 +285,7 @@ const phoneCountryCode = ref("234");
 const phoneNumberInput = ref("");
 const subMerchantsOther = ref("");
 const transactionValueOther = ref("");
-const isUploading = ref(false);
+
 const questionnaireBtnRef = ref(null);
 
 const subMerchantsOptions = [
@@ -314,7 +293,6 @@ const subMerchantsOptions = [
   { name: "101–500", value: "101-500" },
   { name: "501–1000", value: "501-1000" },
   { name: "Above 1000", value: "above-1000" },
-
 ];
 
 const transactionValues = [
@@ -334,7 +312,6 @@ const questionnairePayload = ref<IQuestionnairePayload>({
   estimated_monthly_transactions_value: "",
   country_uuid: "",
   email: "",
-  // compliance: "",
   directors_id_document_url: "",
   business_registration_document_url: "",
   director_and_shareholders_document_url: "",
@@ -428,45 +405,7 @@ const isQuestionnaireReady = computed(() => {
   );
 });
 
-// cloudinary
-const CLOUD_NAME = "dszsvnwtb";
-const UPLOAD_PRESET = "vesicash";
-
-const uploadFile = async (event: Event) => {
-  const file = (event.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-
-  isUploading.value = true;
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", UPLOAD_PRESET);
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.url) {
-      questionnairePayload.value[(event.target as HTMLInputElement).name] =
-        data.url;
-    }
-  } catch (err) {
-    console.error("Upload error:", err);
-  } finally {
-    isUploading.value = false;
-  }
-};
-
-
-
-const handleSubmit = async () => {
+const handleSubmitQuestionnaire = async () => {
   const country_uuid = await fetchSingleCountryUUID();
   const countries = await fetchCountriesUUID();
 
@@ -490,6 +429,13 @@ const handleSubmit = async () => {
         pushToastAlert({
           message: "Response submitted successfully.",
           type: "success",
+        });
+
+       
+      } else if (response.code === 400) {
+        pushToastAlert({
+          message: "Email already exists.",
+          type: "error",
         });
       } else {
         pushToastAlert({

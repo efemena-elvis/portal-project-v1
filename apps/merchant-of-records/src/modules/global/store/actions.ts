@@ -2,6 +2,7 @@ import { useServiceAPI } from "@packages/hooks";
 import { globalRoutes } from "./global-routes";
 import constants from "@/shared/utilities/constants";
 import { useAuthMutations } from "@/modules/auth/store/mutations";
+import axios from "axios";
 
 export function useGlobalActions() {
   const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
@@ -14,12 +15,22 @@ export function useGlobalActions() {
 
   const { mutateBusinessMode } = useAuthMutations();
 
+  // cloudinary
+  const CLOUD_NAME = "dszsvnwtb";
+
   const uploadFile = async (payload: any) => {
-    const response: any = await $api.push(globalRoutes.fileUpload, payload, {
-      hasAttachment: true,
-    });
-    return response;
+    return await axios.post(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
+      payload
+    );
   };
+
+  // const uploadFile = async (payload: any) => {
+  //   const response: any = await $api.push(globalRoutes.fileUpload, payload, {
+  //     hasAttachment: true,
+  //   });
+  //   return response;
+  // };
 
   const switchAppMode = async (payload: any) => {
     const response: any = await $api.push(globalRoutes.switchMode, payload);
@@ -44,5 +55,3 @@ export function useGlobalActions() {
     getBusinessCountries,
   };
 }
-
-
