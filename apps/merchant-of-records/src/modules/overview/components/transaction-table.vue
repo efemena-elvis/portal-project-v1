@@ -19,6 +19,15 @@
         :tableData="payload"
       />
     </TableContainer>
+      <div class="button-row flex justify-center items-center">
+        <router-link
+          to="#"
+          class="btn btn-primary btn-sm hover:text-white  !w-[150px] "
+        >
+          <div class="text-xl font-semibold"></div>
+         Perform a test transaction
+        </router-link>
+      </div>
   </div>
 </template>
 
@@ -30,7 +39,7 @@ import {
   TableContainerBody,
   TableDoubleColumn,
 } from "@packages/uikit";
-import { useString, useEvents } from "@packages/hooks";
+import { useString, useEvents, useDate } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 
 const { formatNumber, getStatus } = useString();

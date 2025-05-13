@@ -18,6 +18,10 @@ interface IAuthBusiness {
   activateMyBusiness: boolean;
 }
 
+interface IAUTHUSER{
+  
+}
+
 const { getStorage } = useStorage();
 const {
   MOR_AUTH_TOKEN,

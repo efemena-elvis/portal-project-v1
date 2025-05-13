@@ -1,18 +1,8 @@
 import { ISidebarRouteType, ISideNavType } from "@packages/models";
 
-export const sidebarRoutes: ISidebarRouteType = {
-  topLevel: [
-    {
-      slug: "overview",
-      link: "/overview",
-      title: "Overview",
-      icon: "icon-home",
-      active: true,
-      category: "home",
-    },
-  ],
 
-  subLevel: [
+export const getSidebarRoutes = (morAccountType: string): ISidebarRouteType => {
+const  subLevel = [
     // {
     //   link: "/overview",
     //   title: "Overview",
@@ -27,6 +17,7 @@ export const sidebarRoutes: ISidebarRouteType = {
     //   active: true,
     //   category: "home",
     // },
+    
     {
       link: "/transactions",
       title: "Transactions",
@@ -68,25 +59,48 @@ export const sidebarRoutes: ISidebarRouteType = {
       icon: "icon-export",
       active: true,
       category: "balances",
-    },
-  ],
+    }]
 
-  bottomLevel: [
-    {
-      link: "/settings/developer",
-      title: "Developer",
-      icon: "icon-developer",
+  if (morAccountType === "aggregator") {
+    subLevel.splice(2,1)
+    subLevel.push({
+      link: "/merchants",
+      title: "Merchants",
+      icon: "icon-send",
       active: true,
-      category: "settings",
-    },
-    {
-      link: "/settings/profile",
-      title: "Settings",
-      icon: "icon-cog",
-      active: true,
-      category: "settings",
-    },
-  ],
+      category: "payments",
+    });
+  }
+
+  return {
+    topLevel: [
+      {
+        slug: "overview",
+        link: "/overview",
+        title: "Overview",
+        icon: "icon-home",
+        active: true,
+        category: "home",
+      },
+    ],
+    subLevel,
+    bottomLevel: [
+      {
+        link: "/settings/developer",
+        title: "Developer",
+        icon: "icon-developer",
+        active: true,
+        category: "settings",
+      },
+      {
+        link: "/settings/profile",
+        title: "Settings",
+        icon: "icon-cog",
+        active: true,
+        category: "settings",
+      },
+    ],
+  };
 };
 
 export const settingsSidebarRoutes: ISideNavType[] = [

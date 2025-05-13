@@ -114,20 +114,7 @@
           @onSelectionChange="questionnairePayload.sub_merchant_range = $event"
           isRequired
         />
-        <div v-if="questionnairePayload.sub_merchant_range === 'above-1000'">
-          <TextFieldInput
-            labelId="subMerchantsOther"
-            inputPlaceholder="Please Specify"
-            :inputType="IInputType.Text"
-            :inputValue="subMerchantsOther"
-            @inputChanged="subMerchantsOther = $event"
-            isRequired
-            :errorHandler="{
-              validator: 'validateRequired',
-              message: 'Please specify a value.',
-            }"
-          />
-        </div>
+     
 
         <MultiSelectFieldInput
           :labelCompact="false"
@@ -160,25 +147,7 @@
           "
           isRequired
         />
-        <div
-          v-if="
-            questionnairePayload.estimated_monthly_transactions_value ===
-            'above-1000000'
-          "
-        >
-          <TextFieldInput
-            labelId="transactionValueOther"
-            inputPlaceholder="Please Specify"
-            :inputType="IInputType.Text"
-            :inputValue="transactionValueOther"
-            @inputChanged="transactionValueOther = $event"
-            isRequired
-            :errorHandler="{
-              validator: 'validateRequired',
-              message: 'Please specify a value.',
-            }"
-          />
-        </div>
+       
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
@@ -257,7 +226,7 @@ import { useGlobalStore } from "@/modules/global/store";
 import { useEvents, useString } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
 import { useExternalStore } from "../store";
-import axios from "axios";
+
 
 interface IQuestionnairePayload {
   full_name: string;
@@ -283,9 +252,6 @@ const { submitQuestionnaire } = useExternalStore();
 
 const phoneCountryCode = ref("234");
 const phoneNumberInput = ref("");
-const subMerchantsOther = ref("");
-const transactionValueOther = ref("");
-
 const questionnaireBtnRef = ref(null);
 
 const subMerchantsOptions = [
@@ -299,7 +265,7 @@ const transactionValues = [
   { value: "500001-1000000", name: "$500001 - $1000000" },
   { value: "1000001-5000000", name: "$1000001 - $5000000" },
   { value: "5000001-10000000", name: "$5000001 - $10000000" },
-  { value: "above-1000000", name: "Above $1000,000" },
+  { value: "above-10000000", name: "Above $10000000" },
 ];
 
 const questionnairePayload = ref<IQuestionnairePayload>({
@@ -371,17 +337,7 @@ const fetchCountriesUUID = async (): Promise<string[]> => {
   return [];
 };
 
-const finalTransactionValue = computed(() =>
-  questionnairePayload.value.estimated_monthly_transactions_value ===
-  "above-1000000"
-    ? transactionValueOther.value
-    : questionnairePayload.value.estimated_monthly_transactions_value
-);
-const finalSubMerchants = computed(() =>
-  questionnairePayload.value.sub_merchant_range === "above-1000"
-    ? subMerchantsOther.value
-    : questionnairePayload.value.sub_merchant_range
-);
+
 
 const isQuestionnaireReady = computed(() => {
   const payload = questionnairePayload.value;
@@ -417,8 +373,6 @@ const handleSubmitQuestionnaire = async () => {
         btnText: "Submit Questionnaire",
         payload: {
           ...questionnairePayload.value,
-          estimated_monthly_transactions_value: finalTransactionValue.value,
-          sub_merchant_range: finalSubMerchants.value,
           country_uuid,
           countries,
         },
@@ -432,18 +386,18 @@ const handleSubmitQuestionnaire = async () => {
         });
 
        
-      } else if (response.code === 400) {
+      }
+    
+      
+      else {
         pushToastAlert({
-          message: "Email already exists.",
-          type: "error",
-        });
-      } else {
-        pushToastAlert({
-          message: "Response submission failed.",
+          message: response.error.message,
           type: "error",
         });
       }
+
     }
+ 
   } catch (error) {
     console.log(error);
   }

@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, h } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart as ChartJS,
@@ -39,7 +39,20 @@ const props = defineProps({
 
 // Set up the chart data
 const chartData = computed(() => ({
-  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  labels: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ],
   datasets: [
     {
       label: "Successful",
@@ -63,13 +76,24 @@ const chartData = computed(() => ({
 // Set up the chart options
 const chartOptions = ref({
   responsive: true,
+
   plugins: {
     legend: {
-      display: false,
+      display: true,
+      backgroundColor: "#fff",
+      position: "top",
+      labels: {
+        boxWidth: 5,
+        boxHeight: 5,
+        usePointStyle: true,
+        pointStyle: "circle",
+        color: "#c6c9c9",
+
+      },
     },
     tooltip: {
       mode: "index",
-      intersect: false,
+      intersect: true,
     },
   },
   scales: {
@@ -77,14 +101,28 @@ const chartOptions = ref({
       title: {
         display: true,
       },
-    },
-    y: {
-      display: false, // Disable y-axis numbers and labels
-      title: {
+      grid: {
         display: false,
       },
+       ticks: {
+        color: "#c6c9c9", 
+      },
+    },
+
+    y: {
+      display: true,
+      title: {
+        display: true,
+      },
+      grid: {
+        display: false, // Remove y-axis grid lines
+      },
       ticks: {
-        display: false, // Remove y-axis ticks and labels
+        display: true,
+        
+          
+        color: "#c6c9c9", 
+    
       },
       beginAtZero: true,
     },
