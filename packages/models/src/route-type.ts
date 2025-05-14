@@ -28,6 +28,7 @@ export interface IRouteGroupType {
   icon: string;
   active: boolean;
   category?: string;
+  type?: string;
 }
 
 export interface ISidebarRouteType {

@@ -3,18 +3,23 @@
     <template v-slot:pageOptions>
       <div class="button-row">
         <router-link
-          to="/market/wallet-entry"
+          :to="morAccountType === 'aggregator' ? '#' : '/market/wallet-entry'"
           class="btn btn-primary btn-sm hover:text-white"
         >
           <div class="text-xl font-semibold icon icon-add"></div>
-          Deploy a wallet
+          {{
+            morAccountType === "aggregator"
+              ? "Add merchants"
+              : " Deploy a wallet"
+          }}
         </router-link>
       </div>
     </template>
 
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
-      <div class="overflow-row">
+      <Overview v-if="morAccountType === 'aggregator'" />
+      <div class="overflow-row" v-else>
         <OverviewCard
           v-for="(wallet, index) in walletBalance"
           :key="index"
@@ -55,6 +60,7 @@ import {
 } from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import Overview from "./aggregator/overview.vue";
 
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
@@ -63,10 +69,17 @@ const profileUtil = new useProfile(authStore);
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
 
+// const morAccountType = ref("aggregator");
+
 const { processAPIRequest } = useEvents();
 
 const walletBalance = ref([]);
 const taxBalance = ref([]);
+
+const morAccountType = computed(() => {
+const userProfile = profileUtil?.getUser()
+return userProfile?.morAccountType
+})
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
@@ -180,7 +193,6 @@ const fetchAllWallets = async () => {
 };
 
 onMounted(() => fetchAllWallets());
-
 </script>
 
 <style lang="scss" scoped>

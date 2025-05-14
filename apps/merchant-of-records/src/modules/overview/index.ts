@@ -1,52 +1,40 @@
 import { IRouteType } from "@packages/models";
 import { FullPageLayout } from "@packages/uikit";
 
-export function getOverviewRoutes(morAccountType: string ): IRouteType[] {
-  const baseLayout = {
+// *********** VESICASH OVERVIEW ROUTES *********** //
+const overviewRoutes: IRouteType[] = [
+  {
     path: "/overview",
     component: () =>
-      import(/* webpackChunkName: "overview-layout" */ "@/layouts/base-layout.vue"),
+      import(
+        /* webpackChunkName: "overview-layout" */ "@/layouts/base-layout.vue"
+      ),
     children: [
-      morAccountType === "merchant"
-        ? {
-            path: "",
-            name: "VesicashOverview",
-            component: () =>
-              import(
-                /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/overview.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Dashboard Overview",
-              pageMeta: {
-                title: "Overview",
-                description: "Welcome to Vesicash MoR",
-              },
-            },
-          }
-        : {
-            path: "",
-            name: "AggregatorOverview",
-            component: () =>
-              import(
-                /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/overview.vue"
-              ),
-            meta: {
-              requiresAuth: true,
-              title: "Dashboard Overview-Aggregator",
-              pageMeta: {
-                title: "Aggregator Overview",
-                description: "Welcome to Vesicash MoR",
-              },
-            },
+      // *********** VESICASH OVERVIEW *********** //
+      {
+        path: "",
+        name: "VesicashOverview",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/overview.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Dashboard Overview",
+          pageMeta: {
+            title: "Overview",
+            description: "Welcome to Vesicash MoR",
           },
+        },
+      },
     ],
-  };
+  },
 
-  const walletRoutes = {
+  {
     path: "/market",
     component: () => Promise.resolve(FullPageLayout),
     children: [
+      // *********** WALLET ENTRY *********** //
       {
         path: "wallet-entry",
         name: "VesicashWalletEntry",
@@ -63,6 +51,8 @@ export function getOverviewRoutes(morAccountType: string ): IRouteType[] {
           },
         },
       },
+
+      // *********** WALLET DOCUMENT *********** //
       {
         path: "wallet-document",
         name: "VesicashWalletDocument",
@@ -79,6 +69,8 @@ export function getOverviewRoutes(morAccountType: string ): IRouteType[] {
           },
         },
       },
+
+      // *********** WALLET STATUS *********** //
       {
         path: "wallet-status",
         name: "VesicashWalletStatus",
@@ -96,7 +88,7 @@ export function getOverviewRoutes(morAccountType: string ): IRouteType[] {
         },
       },
     ],
-  };
+  },
+];
 
-  return [baseLayout, walletRoutes];
-}
+export default overviewRoutes;

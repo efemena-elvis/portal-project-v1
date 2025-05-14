@@ -13,7 +13,6 @@ import {
   CategoryScale,
   LinearScale,
 } from "chart.js";
-import { color } from "@cloudinary/url-gen/qualifiers/background";
 
 ChartJS.register(
   Title,

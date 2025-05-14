@@ -35,27 +35,19 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  dataLabels: { type: Array, required: true },
+  labels: {
+    type: Array,
+    required: true,
+  },
 });
 
 // Set up the chart data
 const chartData = computed(() => ({
-  labels: [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ],
+  labels: props.labels,
   datasets: [
     {
-      label: "Successful",
+      label: props.dataLabels[0],
       borderColor: "#4caf50",
       backgroundColor: "#4caf50",
       data: props.data[0],
@@ -63,7 +55,7 @@ const chartData = computed(() => ({
       tension: 0.4, // smooth curve
     },
     {
-      label: "Failed",
+      label: props.dataLabels[1],
       borderColor: "#f44336",
       backgroundColor: "#f44336",
       data: props.data[1],
@@ -88,7 +80,6 @@ const chartOptions = ref({
         usePointStyle: true,
         pointStyle: "circle",
         color: "#c6c9c9",
-
       },
     },
     tooltip: {
@@ -104,8 +95,8 @@ const chartOptions = ref({
       grid: {
         display: false,
       },
-       ticks: {
-        color: "#c6c9c9", 
+      ticks: {
+        color: "#c6c9c9",
       },
     },
 
@@ -119,10 +110,8 @@ const chartOptions = ref({
       },
       ticks: {
         display: true,
-        
-          
-        color: "#c6c9c9", 
-    
+
+        color: "#c6c9c9",
       },
       beginAtZero: true,
     },

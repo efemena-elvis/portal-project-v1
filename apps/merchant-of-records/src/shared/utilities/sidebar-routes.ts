@@ -1,8 +1,18 @@
 import { ISidebarRouteType, ISideNavType } from "@packages/models";
 
+export const sidebarRoutes: ISidebarRouteType = {
+  topLevel: [
+    {
+      slug: "overview",
+      link: "/overview",
+      title: "Overview",
+      icon: "icon-home",
+      active: true,
+      category: "home",
+    },
+  ],
 
-export const getSidebarRoutes = (morAccountType: string): ISidebarRouteType => {
-const  subLevel = [
+  subLevel: [
     // {
     //   link: "/overview",
     //   title: "Overview",
@@ -17,7 +27,6 @@ const  subLevel = [
     //   active: true,
     //   category: "home",
     // },
-    
     {
       link: "/transactions",
       title: "Transactions",
@@ -38,6 +47,15 @@ const  subLevel = [
       icon: "icon-profile-users",
       active: true,
       category: "payments",
+      type: "merchant"
+    },
+    {
+      link: "/merchants",
+      title: "Merchants",
+      icon: "icon-profile-users",
+      active: true,
+      category: "payments",
+      type: "aggregator"
     },
     // {
     //   link: "/refunds",
@@ -59,48 +77,25 @@ const  subLevel = [
       icon: "icon-export",
       active: true,
       category: "balances",
-    }]
+    },
+  ],
 
-  if (morAccountType === "aggregator") {
-    subLevel.splice(2,1)
-    subLevel.push({
-      link: "/merchants",
-      title: "Merchants",
-      icon: "icon-send",
+  bottomLevel: [
+    {
+      link: "/settings/developer",
+      title: "Developer",
+      icon: "icon-developer",
       active: true,
-      category: "payments",
-    });
-  }
-
-  return {
-    topLevel: [
-      {
-        slug: "overview",
-        link: "/overview",
-        title: "Overview",
-        icon: "icon-home",
-        active: true,
-        category: "home",
-      },
-    ],
-    subLevel,
-    bottomLevel: [
-      {
-        link: "/settings/developer",
-        title: "Developer",
-        icon: "icon-developer",
-        active: true,
-        category: "settings",
-      },
-      {
-        link: "/settings/profile",
-        title: "Settings",
-        icon: "icon-cog",
-        active: true,
-        category: "settings",
-      },
-    ],
-  };
+      category: "settings",
+    },
+    {
+      link: "/settings/profile",
+      title: "Settings",
+      icon: "icon-cog",
+      active: true,
+      category: "settings",
+    },
+  ],
 };
 
 export const settingsSidebarRoutes: ISideNavType[] = [
@@ -121,3 +116,5 @@ export const settingsSidebarRoutes: ISideNavType[] = [
     routeLinkName: "VesicashDeveloper",
   },
 ];
+
+

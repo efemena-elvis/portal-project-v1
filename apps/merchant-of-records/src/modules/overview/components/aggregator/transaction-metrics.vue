@@ -39,7 +39,7 @@
   @apply grid grid-cols-4 gap-x-12  sm:gap-x-6 sm:gap-y-6 p-4 sm:grid-cols-2;
 
   .transaction-data {
-    @apply flex flex-col justify-start items-start gap-6 h-[100px] p-6 bg-[#fff] rounded-xl;
+    @apply flex flex-col justify-start items-start gap-6 h-[100px] p-6 bg-neutral-10 rounded-xl;
 
     .title-text {
       @apply text-sm text-grey-500 ;

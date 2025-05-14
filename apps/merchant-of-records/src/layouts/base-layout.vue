@@ -17,7 +17,7 @@
         :class="showMobileSidebar && 'visible-sidebar-area'"
       >
         <div class="sidebar-mobile-overlay" @click="toggleMobileSidebar"></div>
-        <BaseSidebar :routes="getSidebarRoutes(morAccountType)" :businessProfile="profileUtil" />
+        <BaseSidebar :routes="sidebarRoutes" :businessProfile="profileUtil" />
       </div>
 
       <!-- MAIN CONTENT AREA -->
@@ -57,7 +57,7 @@ import { Emitter } from "mitt";
 import { useRoute } from "vue-router";
 import { useColor, useProfile } from "@packages/hooks";
 import { BaseTopbar, BaseSidebar, AlertTopbar } from "@packages/uikit";
-import { getSidebarRoutes } from "@/shared/utilities/sidebar-routes";
+import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
 // import ContactSupportModal from "@/shared/modals/contact-support-modal.vue";
@@ -69,13 +69,11 @@ type Events = {
 
 const route = useRoute();
 
-
+const authStore = useAuthStore();
 const { switchAppMode } = useGlobalStore();
 
 const { setPageBackgroundColor } = useColor();
-const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
-
 
 const eventBus = inject<Emitter<Events>>("eventBus");
 const showMobileSidebar = ref<boolean>(false);
@@ -84,7 +82,6 @@ const showAlertTop = ref<boolean>(false);
 const alertTopText = ref<string>("");
 const alertTopActionText = ref<string>("");
 const alertTopActionRoute = ref<string>("");
-const morAccountType = ref<string>("");
 
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
@@ -105,7 +102,6 @@ watch(route, () => {
 onMounted(() => {
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
   getActivationStatus();
-  morAccountType.value = profileUtil?.getUser()?.morAccountType || "merchant";
 });
 
 const getActivationStatus = () => {

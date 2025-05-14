@@ -7,7 +7,10 @@
     <div class="sidebar-items-area">
       <!-- TOP-LEVEL CATEGORIES -->
       <div class="sidebar-item-group" v-if="sidebarRouteList.topLevel.length">
-        <template v-for="route in sidebarRouteList.topLevel">
+        <template
+          v-for="(route, index) in sidebarRouteList.topLevel"
+          :key="index"
+        >
           <router-link
             :to="route.link"
             v-if="route.active"
@@ -21,24 +24,26 @@
         </template>
       </div>
 
-      <!-- SUB-LEVEL CATRGORIES -->
-      <template v-if="Object.keys(subLevelRoutes).length">
+      <!-- SUB-LEVEL CATEGORIES -->
+      <template v-if="Object.keys(groupedAndFilteredRoutes).length">
         <div
           class="sidebar-item-group"
-          v-for="(routeCategory, index) in subLevelRoutes"
+          v-for="(
+            routeCategory, categoryName, index
+          ) in groupedAndFilteredRoutes"
           :key="index"
         >
           <div class="sidebar-item-group-title">
-            {{ routeCategory[0].category }}
+            {{ categoryName }}
           </div>
 
           <router-link
+            v-for="(route, index) in routeCategory"
+            :key="index"
             :to="route.link"
             activeClass="active-link"
             exactActiveClass="active-link"
             class="sidebar-item"
-            v-for="(route, index) in routeCategory"
-            :key="index"
           >
             <div class="icon" :class="route.icon"></div>
             <div class="sidebar-text">{{ route.title }}</div>
@@ -53,12 +58,12 @@
       v-if="sidebarRouteList.bottomLevel.length"
     >
       <router-link
+        v-for="(route, index) in sidebarRouteList.bottomLevel"
+        :key="index"
         :to="route.link"
         activeClass="active-link"
         exactActiveClass="active-link"
         class="sidebar-item"
-        v-for="(route, index) in sidebarRouteList.bottomLevel"
-        :key="index"
       >
         <div class="icon" :class="route.icon"></div>
         <div class="sidebar-text">
@@ -70,7 +75,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { computed, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { ISidebarRouteType, IRouteGroupType } from "@packages/models";
 import BaseClientArea from "./base-client-area.vue";
@@ -90,34 +95,42 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
     subLevel: [],
     bottomLevel: [],
   }),
-
   businessProfile: () => ({}),
 });
-
-const appRoute = useRoute();
 
 const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 
-const subLevelRoutes = ref<GroupedByCategory>({});
+const morAccountType = computed(() => {
+  return profileUtil?.getUser?.().morAccountType ?? "merchant";
+});
 
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
-
-// Group routes by category
 const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
   return items.reduce((grouped, item) => {
     const category = item.category || "uncategorized";
-
-    grouped[category] ??= []; // Initialize if not exists
+    grouped[category] ??= [];
     grouped[category].push(item);
-
     return grouped;
   }, {} as GroupedByCategory);
 };
 
-onMounted(() => {
-  subLevelRoutes.value = groupRoutesByCategory(sidebarRouteList.subLevel);
+const groupedAndFilteredRoutes = computed(() => {
+  const grouped = groupRoutesByCategory(sidebarRouteList.subLevel);
+  const filtered: GroupedByCategory = {};
+
+  for (const category in grouped) {
+    const filteredRoutes = grouped[category].filter(
+      (route) => !route.type || route.type === morAccountType.value
+    );
+    if (filteredRoutes.length) {
+      filtered[category] = filteredRoutes;
+    }
+  }
+
+  return filtered;
 });
+
+console.log(groupedAndFilteredRoutes);
 </script>
 
 <style lang="scss" scoped>

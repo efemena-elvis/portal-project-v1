@@ -22,7 +22,7 @@
       <div class="button-row flex justify-center items-center">
         <router-link
           to="#"
-          class="btn btn-primary btn-sm hover:text-white  !w-[150px] "
+          class="btn btn-primary btn-sm hover:text-neutral-10  !w-[150px] "
         >
           <div class="text-xl font-semibold"></div>
          Perform a test transaction

@@ -5,7 +5,7 @@ import { useAuthStore } from "@/modules/auth/store";
 
 // IMPORTED ROUTES FROM RESPECTIVE APPLICATION MODULES
 import authRoutes from "@/modules/auth";
-import {getOverviewRoutes} from "@/modules/overview";
+
 import paymentRoutes from "@/modules/payments";
 import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
@@ -13,6 +13,7 @@ import externalRoutes from "@/modules/external";
 import settingsRoutes from "@/modules/settings";
 import { useAuthState } from "@/modules/auth/store/state";
 import { Ref } from "vue";
+import overviewRoutes from "@/modules/overview";
 
 
 interface IAUTHUSER  {
@@ -32,7 +33,7 @@ const morAccountType = authUser.value?.morAccountType;
 
 const routes = [
   ...authRoutes,
-  ...getOverviewRoutes( "aggregator"),
+  ...overviewRoutes,
   ...paymentRoutes,
   ...balancesRoutes,
   ...complianceRoutes,
