@@ -184,8 +184,6 @@ const processDocumentUpload = async ($event: Event) => {
 
     docPayload.value.name = uploadedFile.name;
     docPayload.value.link = response.data.secure_url;
-    
-    console.log(response);
 
       docPayload.value[inputElement.name] =
         response.data.url;

@@ -89,6 +89,67 @@ const overviewRoutes: IRouteType[] = [
       },
     ],
   },
+
+  {
+    path: "/merchants",
+    component: () => Promise.resolve(FullPageLayout),
+    children: [
+      {
+        path: "add",
+        name: "addMerchants",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/add-merchants.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Add merchants",
+          pageMeta: {
+            title: "Add-Merchants",
+            description: "Adding and uploading merchants",
+          },
+          
+        },
+      },
+         {
+        path: "add/bulk",
+        name: "bulkUploadMerchants",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/bulk-merchants-upload.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Bulk upload merchants",
+          pageMeta: {
+            title: "Upload-Merchants",
+            description: "Uploading merchants",
+          },
+          
+        },
+      },
+         {
+        path: "onboard",
+        name: "merchantOnboarding",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/merchant-onboarding.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Onboard Merchant",
+          pageMeta: {
+            title: "Onboard-Merchants",
+            description: "Onboarding merchants",
+          },
+          
+        },
+      },
+
+      
+
+    ],
+  },
 ];
 
 export default overviewRoutes;

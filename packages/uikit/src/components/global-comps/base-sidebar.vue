@@ -115,7 +115,7 @@ const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
 };
 
 const groupedAndFilteredRoutes = computed(() => {
-  const grouped = groupRoutesByCategory(sidebarRouteList.subLevel);
+  const grouped: GroupedByCategory = groupRoutesByCategory(sidebarRouteList.subLevel);
   const filtered: GroupedByCategory = {};
 
   for (const category in grouped) {
@@ -130,7 +130,7 @@ const groupedAndFilteredRoutes = computed(() => {
   return filtered;
 });
 
-console.log(groupedAndFilteredRoutes);
+
 </script>
 
 <style lang="scss" scoped>

@@ -114,7 +114,6 @@
           @onSelectionChange="questionnairePayload.sub_merchant_range = $event"
           isRequired
         />
-     
 
         <MultiSelectFieldInput
           :labelCompact="false"
@@ -147,7 +146,6 @@
           "
           isRequired
         />
-       
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
@@ -226,7 +224,6 @@ import { useGlobalStore } from "@/modules/global/store";
 import { useEvents, useString } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
 import { useExternalStore } from "../store";
-
 
 interface IQuestionnairePayload {
   full_name: string;
@@ -337,8 +334,6 @@ const fetchCountriesUUID = async (): Promise<string[]> => {
   return [];
 };
 
-
-
 const isQuestionnaireReady = computed(() => {
   const payload = questionnairePayload.value;
   return !!(
@@ -384,20 +379,13 @@ const handleSubmitQuestionnaire = async () => {
           message: "Response submitted successfully.",
           type: "success",
         });
-
-       
-      }
-    
-      
-      else {
+      } else {
         pushToastAlert({
           message: response.error.message,
           type: "error",
         });
       }
-
     }
- 
   } catch (error) {
     console.log(error);
   }
