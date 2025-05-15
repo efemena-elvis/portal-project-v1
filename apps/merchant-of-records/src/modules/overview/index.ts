@@ -144,9 +144,25 @@ const overviewRoutes: IRouteType[] = [
           },
           
         },
+        
       },
 
-      
+        {
+        path: "add-merchant-status",
+        name: "VesicashAddMerchantStatus",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/add-merchant-status.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Adding merchants",
+          pageMeta: {
+            title: "Status-Sdd-Merchant",
+            description: "Vesicash merchant addition status",
+          },
+        },
+      },
 
     ],
   },

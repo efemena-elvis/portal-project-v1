@@ -15,8 +15,7 @@
         Aggregators Questionnaire
       </h1>
       <p class="max-w-3xl text-grey-500">
-        Expand your business rapidly across Africa with Vesicash. Launch
-        operations in these markets: Nigeria, Ghana, Tanzania, Kenya, Zambia,
+       Expand your business rapidly with Vesicash across these markets: Nigeria, Ghana, Tanzania, Kenya, Zambia,
         and Rwanda.
       </p>
     </div>
