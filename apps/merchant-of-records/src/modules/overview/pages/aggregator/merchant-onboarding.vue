@@ -3,39 +3,15 @@
     :title="'Merchant onboarding'"
     :description="'Follow these simple steps to get your merchants onboarded and start to unlock seamless transactions.'"
   >
-    <div class="flex flex-col gap-6">
-      <p class="text-[14px]">Before you upload:</p>
-      <ul class="flex flex-col gap-4 text-[14px]">
-        <div class="flex items-center gap-4">
-          <div class="icon-checkmark text-green-500 text-[18px]"></div>
-          <li>
-            Download the
-            <router-link to="#" class="text-[14px]"
-              >Bulk Merchant Template.xlsx</router-link
-            >
-          </li>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="icon-checkmark text-green-500 text-[18px]"></div>
-          <li>Fill in the appropriate fields.</li>
-        </div>
-        <div class="flex items-center gap-4">
-          <div class="icon-checkmark text-green-500 text-[18px]"></div>
-          <li>Upload updated Bulk Merchant Template.</li>
-        </div>
-      </ul>
-      <FileUploadInput
-        id="merchants"
-        :hasDocumentUploaded="!!merchantPayload.merchants"
-        :uploadAction="uploadFile"
-        @onDocumentUploaded="merchantPayload.merchants = $event"
-      />
-    </div>
+    <ProgressBar/>
+
+     <MerchantDocuments :merchantPayload="merchantPayload" :payloadValidity="payloadValidity"/>
+     
     <button
-      class="btn btn-primary btn-sm mt-8 !w-[100px] self-end"
-      @click="handleFileUpload"
+      class="btn btn-primary btn-sm my-8 !w-[100px] self-end"
+    
     >
-      Upload
+      Next
     </button>
   </MerchantWrapper>
 </template>
@@ -46,12 +22,51 @@ import FileUploadInput from "@packages/uikit/src/components/form-comps/file-uplo
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import MerchantWrapper from "../../components/aggregator/merchant-wrapper.vue";
+import ProgressBar from "../../components/aggregator/onboarding-form-comp.vue/progress-bar.vue";
+
+import MerchantDocuments from "../../components/aggregator/onboarding-form-comp.vue/merchant-documents.vue";
 
 const { uploadFile } = useGlobalStore();
 
+const phoneCountryCode = ref("234");
+const phoneNumberInput = ref("");
+
+const payloadValidity = ref({
+  business_name : false,
+ business_email:false,
+ phone_number:false,
+ website_link: false,
+ business_address: false,
+ director_name : false,
+ director_address: false,
+ director_identity_verification: false,
+ ultimate_business_owner_name: false,
+ ultimate_business_owner_address: false,
+ ultimate_business_owner_name_2: false,
+ ultimate_business_owner_address_2: false,
+   business_certificate: false,
+  form_3: false
+})
+
+
 const merchantPayload = ref({
-  merchants: "",
+ business_name : "",
+ business_email: "",
+ phone_number: "",
+ website_link: "",
+ business_address: "",
+ director_name: "",
+ director_address: "",
+  director_identity_verification: "",
+  ultimate_business_owner_name: "",
+  ultimate_business_owner_address: "",
+  ultimate_business_owner_name_2: "",
+  ultimate_business_owner_address_2: "",
+  business_certificate: "",
+  form_3: ""
 });
+
+
 
 const handleFileUpload = () => {};
 </script>

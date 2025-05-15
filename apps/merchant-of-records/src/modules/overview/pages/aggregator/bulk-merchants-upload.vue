@@ -10,8 +10,10 @@
           <div class="icon-checkmark text-green-500 text-[18px]"></div>
           <li>
             Download the
-            <router-link to="#" class="text-[14px]"
-              >Bulk Merchant Template.xlsx</router-link
+            <span
+              @click="handleLoadTemplate"
+              class="text-[14px] text-green-500 cursor-pointer"
+              >Bulk Merchant Template.xlsx</span
             >
           </li>
         </div>
@@ -53,6 +55,13 @@ const merchantPayload = ref({
   merchants: "",
 });
 
+const router = useRouter();
+const handleLoadTemplate = () => {
+  window.open(
+    "https://docs.google.com/spreadsheets/d/1tZ6760CvuwxQ8qITD2-eteCXH_BzAed5WmD7a2SkrCs/edit?gid=0#gid=0",
+    "_blank"
+  );
+};
 const handleFileUpload = () => {};
 </script>
 

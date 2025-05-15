@@ -11,13 +11,17 @@
       <span>Bulk upload merchants</span>
       <div class="icon-caret-right"></div>
     </router-link>
+  
   </MerchantWrapper>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+
 import MerchantWrapper from "../../components/aggregator/merchant-wrapper.vue";
-import { useRouter } from "vue-router";
+
+
+
+
 </script>
 
 <style scoped lang="scss">

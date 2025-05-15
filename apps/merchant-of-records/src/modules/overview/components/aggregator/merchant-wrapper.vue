@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex justify-center flex-col mx-auto w-[30%] md:w-[60%] sm:w-[80%]"
+    class="flex justify-center flex-col mx-auto lg:w-[44%] xs:w-[40%] xl:w-[42%] xxl:w-[35%] md:w-[60%] sm:w-[80%] w-[30%]"
   >
     <h1
       class="text-grey-900 font-semibold text-[28px] md:text-2xl leading-[32px] mb-2.5"
