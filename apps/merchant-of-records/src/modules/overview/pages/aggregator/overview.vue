@@ -3,7 +3,6 @@
     <OverviewCard />
   </div>
   <Charts />
-  <TransactionTable />
 </template>
 
 <script setup lang="ts">

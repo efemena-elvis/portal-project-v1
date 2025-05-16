@@ -2,12 +2,12 @@
   <div class="mt-8">
     <TextFieldInput
       :labelCompact="false"
-      labelId="director_name"
+      labelId="directors_name"
       labelTitle="Director's Name"
       :inputType="IInputType.Text"
-      :inputValue="merchantPayload.director_name"
-      @inputChanged="merchantPayload.director_name = $event"
-      @inputValidated="payloadValidity.director_name = $event"
+      :inputValue="merchantPayload.directors_name"
+      @inputChanged="merchantPayload.directors_name = $event"
+      @inputValidated="payloadValidity.directors_name = $event"
       inputPlaceholder="Enter the director's name"
       isRequired
       :errorHandler="{
@@ -18,12 +18,12 @@
 
     <TextFieldInput
       :labelCompact="false"
-      labelId="director_address"
+      labelId="directors_address"
       labelTitle="Director's Address"
       :inputType="IInputType.Text"
-      :inputValue="merchantPayload.director_address"
-      @inputChanged="merchantPayload.director_address = $event"
-      @inputValidated="payloadValidity.director_address = $event"
+      :inputValue="merchantPayload.directors_address"
+      @inputChanged="merchantPayload.directors_address = $event"
+      @inputValidated="payloadValidity.directors_address = $event"
       inputPlaceholder="Enter the director's address."
       isRequired
       :errorHandler="{
@@ -39,7 +39,7 @@
     </h2>
     <FileUploadInput
       id="directors_verification"
-      :hasDocumentUploaded="!!merchantPayload.director_identity_verification"
+      :hasDocumentUploaded="!!merchantPayload.directors_id_document_url"
       :uploadAction="uploadFile"
       @onDocumentUploaded="handleDocumentUpload"
     />
@@ -64,8 +64,8 @@ const props = defineProps({
 const emit = defineEmits(["update:isPrimaryActionDisabled"]);
 
 const handleDocumentUpload = (file: string) => {
-  props.merchantPayload.director_identity_verification = file;
-  props.payloadValidity.director_identity_verification = true;
+  props.merchantPayload.directors_id_document_url = file;
+  props.payloadValidity.directors_id_document_url = true;
 };
 
 const isActionReady = computed(() => {
@@ -73,12 +73,12 @@ const isActionReady = computed(() => {
   const validity = props.payloadValidity;
 
   return (
-    payload.director_name &&
-    payload.director_address &&
-    payload.director_identity_verification &&
-    validity.director_name &&
-    validity.director_address &&
-    validity.director_identity_verification
+    payload.directors_name &&
+    payload.directors_address &&
+    payload.directors_id_document_url &&
+    validity.directors_name &&
+    validity.directors_address &&
+    validity.directors_id_document_url
   );
 });
 

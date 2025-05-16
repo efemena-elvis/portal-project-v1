@@ -1,142 +1,117 @@
 <template>
-  <div class="mt-8">
-    <TextFieldInput
-      :labelCompact="false"
-      labelId="ultimate_business_owner_name"
-      labelTitle="Ultimate Business Owner's Name"
-      :inputType="IInputType.Text"
-      :inputValue="merchantPayload.ultimate_business_owner_name"
-      @inputChanged="merchantPayload.ultimate_business_owner_name = $event"
-      @inputValidated="
-        props.payloadValidity.ultimate_business_owner_name = $event
-      "
-      inputPlaceholder="Enter Name"
-      isRequired
-      :errorHandler="{
-        validator: 'validateRequired',
-        message: 'Name is a required field.',
-      }"
-    />
+  <div class="flex flex-col gap-4 mt-8">
+    <div
+      v-for="(owner, index) in merchantPayload.ultimate_business_owner"
+      :key="index"
+ 
+    >
+      <TextFieldInput
+        :labelCompact="false"
+        :labelId="`ultimate_business_owner_name_${index}`"
+        :labelTitle="`Ultimate Business Owner's Name ${index + 1}`"
+        :inputType="IInputType.Text"
+        :inputValue="owner.name"
+        @inputChanged="owner.name = $event"
+        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].name = val"
+        inputPlaceholder="Enter name"
+        isRequired
+        :errorHandler="{
+          validator: 'validateRequired',
+          message: 'Name is a required field.',
+        }"
+      />
 
-    <TextFieldInput
-      :labelCompact="false"
-      labelId="ultimate_business_owner_address"
-      labelTitle="Ultimate Business Owner's Address"
-      :inputType="IInputType.Text"
-      :inputValue="merchantPayload.ultimate_business_owner_address"
-      @inputChanged="merchantPayload.ultimate_business_owner_address = $event"
-      @inputValidated="
-        props.payloadValidity.ultimate_business_owner_address = $event
-      "
-      inputPlaceholder="Enter the address."
-      isRequired
-      :errorHandler="{
-        validator: 'validateRequired',
-        message: 'Address is a required field.',
-      }"
-    />
+      <TextFieldInput
+        :labelCompact="false"
+        :labelId="`ultimate_business_owner_address_${index}`"
+        :labelTitle="`Ultimate Business Owner's Address ${index + 1}`"
+        :inputType="IInputType.Text"
+        :inputValue="owner.address"
+        @inputChanged="owner.address = $event"
+        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].address = val"
+        inputPlaceholder="Enter the address"
+        isRequired
+        :errorHandler="{
+          validator: 'validateRequired',
+          message: 'Address is a required field.',
+        }"
+      />
+
+      <button
+        class="mt-2 text-sm text-red-500"
+        v-if="merchantPayload.ultimate_business_owner.length > 1"
+        @click="removeOwner(index)"
+      >
+        Remove
+      </button>
+    </div>
+
+    <button
+      class="cursor-pointer p-2 flex items-center gap-2 rounded-md border border-grey-200 w-[100px] mt-4 justify-center"
+      @click="addOwner"
+    >
+      <div class="icon-add"></div>
+      <span>Add another</span>
+    </button>
   </div>
-
-  <div v-if="showMoreFields">
-    <TextFieldInput
-      :labelCompact="false"
-      labelId="ultimate_business_owner_name_2"
-      labelTitle="Ultimate Business Owner's Name (2)"
-      :inputType="IInputType.Text"
-      :inputValue="merchantPayload.ultimate_business_owner_name_2"
-      @inputChanged="merchantPayload.ultimate_business_owner_name_2 = $event"
-      @inputValidated="
-        props.payloadValidity.ultimate_business_owner_name_2 = $event
-      "
-      inputPlaceholder="Enter Name"
-      isRequired
-      :errorHandler="{
-        validator: 'validateRequired',
-        message: 'Name is a required field.',
-      }"
-    />
-
-    <TextFieldInput
-      :labelCompact="false"
-      labelId="ultimate_business_owner_address_2"
-      labelTitle="Ultimate Business Owner's Address (2)"
-      :inputType="IInputType.Text"
-      :inputValue="merchantPayload.ultimate_business_owner_address_2"
-      @inputChanged="merchantPayload.ultimate_business_owner_address_2 = $event"
-      @inputValidated="
-        props.payloadValidity.ultimate_business_owner_address_2 = $event
-      "
-      inputPlaceholder="Enter the address."
-      isRequired
-      :errorHandler="{
-        validator: 'validateRequired',
-        message: 'Address is a required field.',
-      }"
-    />
-  </div>
-
-  <button
-    class="cursor-pointer p-2 text-center gap-2 rounded-md border border-grey-200 w-[100px] mt-4"
-    @click="showMoreFields = !showMoreFields"
-    v-if="showMoreFields"
-  >
-    <span>Cancel</span>
-  </button>
-  <button
-    class="cursor-pointer p-2 flex items-center gap-2 rounded-md border border-grey-200 w-[100px] mt-4"
-    @click="showMoreFields = !showMoreFields"
-    v-if="!showMoreFields"
-  >
-    <div class="icon-add"></div>
-    <span>Add another</span>
-  </button>
 </template>
 
-<script setup lang="ts">
+
+
+<script lang="ts" setup>
+import { computed, defineProps, watch } from "vue";
 import TextFieldInput from "@packages/uikit/src/components/form-comps/text-field-input.vue";
-import { computed, defineProps, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 
-const props = defineProps({
-  merchantPayload: { type: Object, required: true },
-  payloadValidity: { type: Object, required: true },
-  isPrimaryActionReady: { type: Boolean, required: true },
-});
+interface Owner {
+  name: string;
+  address: string;
+}
+
+interface MerchantPayload {
+  ultimate_business_owner: Owner[];
+}
+
+interface PayloadValidity {
+  ultimate_business_owner: {
+    name: boolean;
+    address: boolean;
+  }[];
+}
+
+const props = defineProps<{
+  merchantPayload: MerchantPayload;
+  payloadValidity: PayloadValidity;
+}>();
 
 const emit = defineEmits(["update:isPrimaryActionDisabled"]);
 
-const showMoreFields = ref(false);
+const addOwner = () => {
+  props.merchantPayload.ultimate_business_owner.push({ name: "", address: "" });
+  props.payloadValidity.ultimate_business_owner.push({ name: false, address: false });
+};
+
+const removeOwner = (index: number) => {
+  props.merchantPayload.ultimate_business_owner.splice(index, 1);
+  props.payloadValidity.ultimate_business_owner.splice(index, 1);
+};
 
 const isActionReady = computed(() => {
-  const payload = props.merchantPayload;
-  const validity = props.payloadValidity;
-
-  if (showMoreFields.value) {
-    return !(
-      payload.ultimate_business_owner_name &&
-      payload.ultimate_business_owner_name_2 &&
-      payload.ultimate_business_owner_address &&
-      payload.ultimate_business_owner_address_2 &&
-      validity.ultimate_business_owner_name &&
-      validity.ultimate_business_owner_name_2 &&
-      validity.ultimate_business_owner_address &&
-      validity.ultimate_business_owner_address_2
+  return props.merchantPayload.ultimate_business_owner.every((owner, index) => {
+    return (
+      owner.name &&
+      owner.address &&
+      props.payloadValidity.ultimate_business_owner[index]?.name &&
+      props.payloadValidity.ultimate_business_owner[index]?.address
     );
-  } else {
-    return !(
-      payload.ultimate_business_owner_name &&
-      payload.ultimate_business_owner_address &&
-      validity.ultimate_business_owner_name &&
-      validity.ultimate_business_owner_address
-    );
-  }
+  });
 });
 
 watch(isActionReady, (newVal) => {
-  emit("update:isPrimaryActionDisabled", newVal);
-});
-
-emit("update:isPrimaryActionDisabled", isActionReady.value);
+  emit("update:isPrimaryActionDisabled", !newVal);
+}, { immediate: true });
 </script>
+
+
 
 <style scoped></style>

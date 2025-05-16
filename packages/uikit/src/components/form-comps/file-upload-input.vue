@@ -50,7 +50,7 @@
       class="hidden"
       :disabled="isUploading"
       @change="processDocumentUpload"
-      accept=".jpg, .jpeg, .png, .pdf"
+      accept=".jpg, .jpeg, .png, .pdf .xls, .xlsx"
     />
   </div>
 
@@ -103,7 +103,7 @@ const { processFileType, processFileSize } = useFile();
 const { pushToastAlert, processAPIRequest } = useEvents();
 
 const fileUploadRef = ref<HTMLInputElement | null>(null);
-const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
+const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png", "xls", "xlsx"]);
 
 const isDocUploaded = ref<boolean>(props.hasDocumentUploaded || false);
 // const isDocUploaded = computed(() => props.hasDocumentUploaded || false);
@@ -126,7 +126,7 @@ const processDocumentUpload = async ($event: Event) => {
   if (!processFileType(uploadedFile.name, allowedFiles.value)) {
     pushToastAlert({
       message: "File type is not supported!",
-      description: "Document file type should either be jpg, jpeg, png or pdf",
+      description: "Document file type should either be jpg, jpeg, png, xls, xlsx or pdf",
       type: "warning",
     });
 

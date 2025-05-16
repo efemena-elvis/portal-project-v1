@@ -18,12 +18,12 @@
 
     <TextFieldInput
       :labelCompact="false"
-      labelId="business_email"
+      labelId="email"
       labelTitle="Business Email"
       :inputType="IInputType.Email"
-      :inputValue="props.merchantPayload.business_email"
-      @inputChanged="props.merchantPayload.business_email = $event"
-      @inputValidated="props.payloadValidity.business_email = $event"
+      :inputValue="props.merchantPayload.email"
+      @inputChanged="props.merchantPayload.email = $event"
+      @inputValidated="props.payloadValidity.email = $event"
       inputPlaceholder="e.g.johndoe@businessname.com"
       isRequired
       :errorHandler="{
@@ -109,12 +109,12 @@ const isActionReady = computed(() => {
 
   return !(
     payload.business_name &&
-    payload.business_email &&
+    payload.email &&
     payload.phone_number &&
     payload.website_link &&
     payload.business_address &&
     validity.business_name &&
-    validity.business_email &&
+    validity.email &&
     validity.phone_number &&
     validity.website_link &&
     validity.business_address

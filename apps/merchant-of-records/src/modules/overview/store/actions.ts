@@ -49,3 +49,10 @@ export const getWallets = async () => {
 export const createWallet = async (payload: any) => {
   return await $api.push(overviewRoutes.createWallet, payload);
 };
+
+export const onboardMerchant = async (payload: any) => {
+  return await $api.push(overviewRoutes.onboardMerchant, payload);
+};
+export const bulkUploadMerchants = async (payload: any) => {
+  return await $api.push(overviewRoutes.bulkUploadMerchant, payload);
+};

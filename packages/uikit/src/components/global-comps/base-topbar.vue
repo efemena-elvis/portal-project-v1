@@ -123,28 +123,28 @@
         >
           <div class="dropdown-wrapper">
             <router-link to="/settings/profile" class="app-dropdown-item">
-              <div class="icon icon-user text-base"></div>
+              <div class="text-base icon icon-user"></div>
               <div class="text">Profile</div>
             </router-link>
 
             <!-- <router-link to="/settings/preferences" class="app-dropdown-item">
-              <div class="icon icon-tool text-base"></div>
+              <div class="text-base icon icon-tool"></div>
               <div class="text">Preferences</div>
             </router-link> -->
 
             <router-link to="/settings/developer" class="app-dropdown-item">
-              <div class="icon icon-developer text-base"></div>
+              <div class="text-base icon icon-developer"></div>
               <div class="text">Developers</div>
             </router-link>
 
             <!-- <router-link to="/user-support" class="app-dropdown-item">
-              <div class="icon icon-chat text-base"></div>
+              <div class="text-base icon icon-chat"></div>
               <div class="text">Help & Support</div>
             </router-link> -->
 
             <router-link to="/logout" class="app-dropdown-item">
-              <div class="icon icon-logout text-lg text-red-600"></div>
-              <div class="text text-red-600">Sign Out</div>
+              <div class="text-lg text-red-600 icon icon-logout"></div>
+              <div class="text-red-600 text">Sign Out</div>
             </router-link>
           </div>
         </div>
@@ -287,7 +287,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:py-2 flex justify-between items-center h-auto bg-neutral-10;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:py-2 flex justify-between items-center h-auto bg-neutral-10 my-3.5;
 
   &--left {
     @apply flex justify-start items-center gap-x-2.5 w-1/2;

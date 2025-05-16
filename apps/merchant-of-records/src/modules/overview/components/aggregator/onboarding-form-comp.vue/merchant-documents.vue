@@ -5,19 +5,19 @@
         Upload Business Certificate
       </h2>
       <FileUploadInput
-        id="business_certificate"
-        :hasDocumentUploaded="!!merchantPayload.business_certificate"
+        id="business_certificate_url"
+        :hasDocumentUploaded="!!merchantPayload.business_certificate_url"
         :uploadAction="uploadFile"
-        @onDocumentUploaded="merchantPayload.business_certificate = $event"
+        @onDocumentUploaded="merchantPayload.business_certificate_url = $event"
       />
     </div>
     <div class="mt-4">
       <h2 class="mb-4 text-sm font-semibold text-grey-900">Upload Form 3</h2>
       <FileUploadInput
-        id="form_3"
-        :hasDocumentUploaded="!!merchantPayload.form_3"
+        id="form3_url"
+        :hasDocumentUploaded="!!merchantPayload.form3_url"
         :uploadAction="uploadFile"
-        @onDocumentUploaded="merchantPayload.form_3 = $event"
+        @onDocumentUploaded="merchantPayload.form3_url = $event"
       />
     </div>
   </form>
@@ -43,10 +43,10 @@ const isActionReady = computed(() => {
   const validity = props.payloadValidity;
 
   return (
-    payload.business_certificate &&
-    payload.form_3 &&
-    validity.business_certificate &&
-    validity.form_3
+    payload.business_certificate_url &&
+    payload.form3_url &&
+    validity.business_certificate_url &&
+    validity.form3_url
   );
 });
 
