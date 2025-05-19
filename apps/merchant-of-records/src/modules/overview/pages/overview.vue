@@ -5,7 +5,7 @@
         <router-link
           :to="
             morAccountType === 'aggregator'
-              ? '/merchants/add'
+              ? '/merchant/add'
               : '/market/wallet-entry'
           "
           class="btn btn-primary btn-sm hover:text-white"
@@ -75,17 +75,16 @@ const profileUtil = new useProfile(authStore);
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
 
-const morAccountType = ref("aggregator");
 
 const { processAPIRequest } = useEvents();
 
 const walletBalance = ref([]);
 const taxBalance = ref([]);
 
-// const morAccountType = computed(() => {
-//   const userProfile = profileUtil?.getUser();
-//   return userProfile?.morAccountType;
-// });
+const morAccountType = computed(() => {
+  const userProfile = profileUtil?.getUser();
+  return userProfile?.morAccountType;
+});
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();

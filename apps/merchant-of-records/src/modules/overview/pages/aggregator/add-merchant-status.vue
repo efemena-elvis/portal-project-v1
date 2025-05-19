@@ -1,6 +1,6 @@
 <template>
   <div class="layout-wrapper">
-    <div class="submitted-layout transition duration-300 ease-in-out">
+    <div class="transition duration-300 ease-in-out submitted-layout">
       <!-- ICON IMAGE -->
       <div class="icon-img">
         <img src="@images/pending-icon.png" alt="emptyComplianceSection" />
@@ -28,7 +28,7 @@
           Go to Dashboard
         </button>
         <button
-          class="btn btn-primary mt-2 mb-1 sm:mb-0"
+          class="mt-2 mb-1 btn btn-primary sm:mb-0"
           @click="accessAddMerchants"
         >
           Add Merchants
@@ -48,7 +48,7 @@ const accessDashboard = () => {
   router.push("/overview");
 };
 const accessAddMerchants = () => {
-  router.push("/merchants/add");
+  router.push("/merchant/add");
 };
 </script>
 

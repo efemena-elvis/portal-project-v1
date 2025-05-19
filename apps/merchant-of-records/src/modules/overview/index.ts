@@ -91,7 +91,7 @@ const overviewRoutes: IRouteType[] = [
   },
 
   {
-    path: "/merchants",
+    path: "/merchant",
     component: () => Promise.resolve(FullPageLayout),
     children: [
       {

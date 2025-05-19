@@ -54,7 +54,7 @@
 
     <!-- BOTTOM-LEVEL CATEGORIES -->
     <div
-      class="sidebar-bottom-area text-white text-xs"
+      class="text-xs text-white sidebar-bottom-area"
       v-if="sidebarRouteList.bottomLevel.length"
     >
       <router-link
@@ -79,6 +79,7 @@ import { computed, reactive } from "vue";
 import { useRoute } from "vue-router";
 import { ISidebarRouteType, IRouteGroupType } from "@packages/models";
 import BaseClientArea from "./base-client-area.vue";
+import { ref } from "vue";
 
 interface ISidebarProps {
   routes: ISidebarRouteType;
@@ -101,9 +102,6 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
 const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 
-const morAccountType = computed(() => {
-  return profileUtil?.getUser?.().morAccountType ?? "merchant";
-});
 
 const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
   return items.reduce((grouped, item) => {
@@ -113,6 +111,11 @@ const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
     return grouped;
   }, {} as GroupedByCategory);
 };
+
+
+const morAccountType = computed(() => {
+  return profileUtil?.getUser?.().morAccountType ?? "merchant";
+});
 
 const groupedAndFilteredRoutes = computed(() => {
   const grouped: GroupedByCategory = groupRoutesByCategory(sidebarRouteList.subLevel);

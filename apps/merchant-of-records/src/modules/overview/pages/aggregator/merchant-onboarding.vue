@@ -200,7 +200,7 @@ const handleOnboardMerchant = async () => {
         message: "Merchant onboarded successfully.",
         type: "success",
       });
-      router.push("/merchants/add-merchant-status");
+      router.push("/merchant/add-merchant-status");
     } else {
       pushToastAlert({
         message: response.error.message,

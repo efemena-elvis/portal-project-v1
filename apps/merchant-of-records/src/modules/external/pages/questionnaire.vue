@@ -15,8 +15,8 @@
         Aggregators Questionnaire
       </h1>
       <p class="max-w-3xl text-grey-500">
-       Expand your business rapidly with Vesicash across these markets: Nigeria, Ghana, Tanzania, Kenya, Zambia,
-        and Rwanda.
+        Expand your business rapidly with Vesicash across these markets:
+        Nigeria, Ghana, Tanzania, Kenya, Zambia, and Rwanda.
       </p>
     </div>
 
@@ -212,6 +212,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useImage } from "@/shared/composables";
 import { IInputType } from "@packages/models";
 import TextFieldInput from "@packages/uikit/src/components/form-comps/text-field-input.vue";
@@ -245,6 +246,7 @@ const { renderImg } = useImage();
 const { getBusinessCountries, uploadFile } = useGlobalStore();
 const { formatPhoneNumber } = useString();
 const { submitQuestionnaire } = useExternalStore();
+const router = useRouter();
 
 const phoneCountryCode = ref("234");
 const phoneNumberInput = ref("");
@@ -378,6 +380,8 @@ const handleSubmitQuestionnaire = async () => {
           message: "Response submitted successfully.",
           type: "success",
         });
+
+        router.push("/login");
       } else {
         pushToastAlert({
           message: response.error.message,

@@ -32,7 +32,7 @@
       
         <FileUploadInput
         
-          id="merchants"
+          id="link"
           :hasDocumentUploaded="!!merchantPayload.link"
           :uploadAction="uploadFile"
           @onDocumentUploaded="(val) => merchantPayload.link = val"
