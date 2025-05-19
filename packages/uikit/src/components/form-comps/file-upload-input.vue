@@ -118,7 +118,7 @@ const docPayload = ref<{ name: string; link: string }>({
 const processDocumentUpload = async ($event: Event) => {
   const inputElement = $event.target as HTMLInputElement;
   const uploadedFile = inputElement.files ? inputElement.files[0] : null;
- 
+
   if (!uploadedFile) return;
 
   isUploading.value = true;
@@ -126,7 +126,7 @@ const processDocumentUpload = async ($event: Event) => {
   if (!processFileType(uploadedFile.name, allowedFiles.value)) {
     pushToastAlert({
       message: "File type is not supported!",
-      description: "Document file type should either be jpg, jpeg, png, xls, xlsx or pdf",
+      description: "Document file type should either be jpg, jpeg, png or pdf",
       type: "warning",
     });
 
@@ -147,57 +147,40 @@ const processDocumentUpload = async ($event: Event) => {
   }
 
   // UPLOAD FILE TO BUCKET
-  const UPLOAD_PRESET = "vesicash";
   const payload = new FormData();
-  payload.append("file", uploadedFile);
-  payload.append("upload_preset", UPLOAD_PRESET);
-
+  payload.append("files", uploadedFile);
 
   const response = await processAPIRequest({
     action: props.uploadAction,
     payload,
-    // alertHandler: {
-    //   200: {
-    //     message: "Document uploaded successfully",
-    //     type: "success",
-    //   },
+    alertHandler: {
+      201: {
+        message: "Document uploaded successfully",
+        type: "success",
+      },
 
-    //   400: {
-    //     message: "Document upload failed",
-    //     type: "error",
-    //   },
-    // },
+      400: {
+        message: "Document upload failed",
+        type: "error",
+      },
+    },
   });
 
-
-  if (response.status == 200) {
+  if (response.code == 201) {
     docPayload.value = response.data;
     isDocUploaded.value = true;
-    
-    pushToastAlert({
-      message: "Document uploaded successfully",
-      type: "success",
-    });
 
     inputElement.value = "";
     isUploading.value = false;
 
     docPayload.value.name = uploadedFile.name;
-    docPayload.value.link = response.data.secure_url;
+    docPayload.value.link = response.data[0].file_url;
 
-      docPayload.value[inputElement.name] =
-        response.data.url;
-    
-    emits("onDocumentUploaded", response.data.secure_url);
+    emits("onDocumentUploaded", response.data[0].file_url);
   }
 
   // FAILED STATE
   else {
-    pushToastAlert({
-      message: "Document upload failed",
-      type: "error",
-    });
-
     inputElement.value = "";
     isUploading.value = false;
     isDocUploaded.value = false;

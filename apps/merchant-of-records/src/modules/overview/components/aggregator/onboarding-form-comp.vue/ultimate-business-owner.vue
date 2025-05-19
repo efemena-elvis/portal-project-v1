@@ -10,9 +10,9 @@
         :labelId="`ultimate_business_owner_name_${index}`"
         :labelTitle="`Ultimate Business Owner's Name ${index + 1}`"
         :inputType="IInputType.Text"
-        :inputValue="owner.name"
-        @inputChanged="owner.name = $event"
-        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].name = val"
+        :inputValue="owner.ultimate_business_owner_name"
+        @inputChanged="owner.ultimate_business_owner_name = $event"
+        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].ultimate_business_owner_name = val"
         inputPlaceholder="Enter name"
         isRequired
         :errorHandler="{
@@ -26,9 +26,9 @@
         :labelId="`ultimate_business_owner_address_${index}`"
         :labelTitle="`Ultimate Business Owner's Address ${index + 1}`"
         :inputType="IInputType.Text"
-        :inputValue="owner.address"
-        @inputChanged="owner.address = $event"
-        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].address = val"
+        :inputValue="owner.ultimate_business_owner_address"
+        @inputChanged="owner.ultimate_business_owner_address = $event"
+        @inputValidated="(val) => payloadValidity.ultimate_business_owner[index].ultimate_business_owner_address = val"
         inputPlaceholder="Enter the address"
         isRequired
         :errorHandler="{
@@ -64,8 +64,8 @@ import TextFieldInput from "@packages/uikit/src/components/form-comps/text-field
 import { IInputType } from "@packages/models";
 
 interface Owner {
-  name: string;
-  address: string;
+  ultimate_business_owner_name: string;
+  ultimate_business_owner_address: string;
 }
 
 interface MerchantPayload {
@@ -74,8 +74,8 @@ interface MerchantPayload {
 
 interface PayloadValidity {
   ultimate_business_owner: {
-    name: boolean;
-    address: boolean;
+    ultimate_business_owner_name: boolean;
+    ultimate_business_owner_address: boolean;
   }[];
 }
 
@@ -87,8 +87,8 @@ const props = defineProps<{
 const emit = defineEmits(["update:isPrimaryActionDisabled"]);
 
 const addOwner = () => {
-  props.merchantPayload.ultimate_business_owner.push({ name: "", address: "" });
-  props.payloadValidity.ultimate_business_owner.push({ name: false, address: false });
+  props.merchantPayload.ultimate_business_owner.push({ ultimate_business_owner_name: "", ultimate_business_owner_address: "" });
+  props.payloadValidity.ultimate_business_owner.push({ ultimate_business_owner_name: false, ultimate_business_owner_address: false });
 };
 
 const removeOwner = (index: number) => {
@@ -99,10 +99,10 @@ const removeOwner = (index: number) => {
 const isActionReady = computed(() => {
   return props.merchantPayload.ultimate_business_owner.every((owner, index) => {
     return (
-      owner.name &&
-      owner.address &&
-      props.payloadValidity.ultimate_business_owner[index]?.name &&
-      props.payloadValidity.ultimate_business_owner[index]?.address
+      owner.ultimate_business_owner_name &&
+      owner.ultimate_business_owner_address &&
+      props.payloadValidity.ultimate_business_owner[index]?.ultimate_business_owner_name &&
+      props.payloadValidity.ultimate_business_owner[index]?.ultimate_business_owner_address
     );
   });
 });

@@ -14,8 +14,8 @@
       <!-- DESCRIPTION TEXT -->
       <div class="description-text">
         <p>
-          We are currently verifying your compliance, you can start to add
-          Merchants while your verification is pending.
+          We are currently verifying your compliance, you can continue to add more
+          merchants while your verification is pending.
         </p>
       </div>
 
