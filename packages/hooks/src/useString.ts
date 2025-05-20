@@ -158,10 +158,17 @@ export default function useString() {
       successful: "bg-green-50/75 text-green-700 border-green-100/40",
       pending: "bg-yellow-50/75 text-yellow-400 border-yellow-100/40",
       failed: "bg-red-100/75 text-red-700 border-red-300/40",
-      verified: "bg-green-50/75 text-green-400 border-green-100/40"
+      verified: "bg-green-50/75 text-green-400 border-green-100/40",
     };
 
-    return `<div class='w-max border font-medium text-[13px] rounded-full py-1 px-3 text-center ${statusData[status]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
+    return `<div class='w-[80px] border font-medium text-[12px] rounded-full py-1 px-3 text-center ${statusData[status]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
+  };
+
+  // MASK CARD NUMBER
+  const maskCardNumber = (cardNumber: string): string => {
+    const visibleDigits = cardNumber.slice(-4);
+    const maskedSection = "*".repeat(cardNumber.length - 4);
+    return maskedSection + visibleDigits;
   };
 
   // ======================================================
@@ -206,5 +213,6 @@ export default function useString() {
     transactionFlowIcon,
     notAvailable,
     createPreviewLink,
+    maskCardNumber
   };
 }

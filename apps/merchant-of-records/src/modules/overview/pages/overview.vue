@@ -68,6 +68,23 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
 import Overview from "./aggregator/overview.vue";
 
+
+interface IWalletBalance {
+  countryFlag?:string;
+  description?: string;
+  currencyShort?:string;
+  currencySign?: string;
+  amount?: number
+
+}
+interface ITaxBalance {
+  countryFlag?:string;
+  currencyShort?:string;
+  currencySign?: string;
+  amount?: number
+
+}
+
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
 const profileUtil = new useProfile(authStore);
@@ -78,8 +95,8 @@ const { getAllWallets } = storeToRefs(overviewStore);
 
 const { processAPIRequest } = useEvents();
 
-const walletBalance = ref([]);
-const taxBalance = ref([]);
+const walletBalance = ref<IWalletBalance[]>([]);
+const taxBalance = ref<ITaxBalance[]>([]);
 
 const morAccountType = computed(() => {
   const userProfile = profileUtil?.getUser();
@@ -91,7 +108,7 @@ const getLocalCurrencyCode = computed(() => {
   return userProfile?.country?.currency_code;
 });
 
-const loadLocalCountryCurrency = (country: string) => {
+const loadLocalCountryCurrency = () => {
   const localCountryPayload = countryCurrencies.find(
     (country) => country.currency.short === getLocalCurrencyCode.value
   );

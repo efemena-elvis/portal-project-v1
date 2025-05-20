@@ -2,7 +2,7 @@
   <div class="overview-card">
     <div class="top-row">
       <div class="country-flag">
-        <img :src="wallet.countryFlag" :alt="wallet.countryFlag" />
+        <img :src="wallet.countryFlag" :alt="wallet.currencyShort" />
       </div>
 
       <div class="country-currency">

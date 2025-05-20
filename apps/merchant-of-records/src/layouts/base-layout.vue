@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, inject, onMounted } from "vue";
+import { ref, watch, inject, onMounted, computed } from "vue";
 import { Emitter } from "mitt";
 import { useRoute } from "vue-router";
 import { useColor, useProfile } from "@packages/hooks";
@@ -83,6 +83,11 @@ const alertTopText = ref<string>("");
 const alertTopActionText = ref<string>("");
 const alertTopActionRoute = ref<string>("");
 
+const morAccountType = computed(() => {
+  const userProfile = profileUtil?.getUser();
+  return userProfile?.morAccountType;
+});
+
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
 };
@@ -91,6 +96,27 @@ const showSupportModal = ref(false);
 
 const toggleSupportModal = () => {
   showSupportModal.value = !showSupportModal.value;
+};
+
+const getActivationStatus = () => {
+  if (
+    profileUtil.getBusinessActivatedStatus() !== "true" ||
+    morAccountType.value === "aggregator"
+  ) {
+    showAlertTop.value = true;
+
+    if (profileUtil.getBusiness()?.activateMyBusiness) {
+      alertTopText.value = "Your business compliance is in review.";
+      alertTopActionText.value = "View compliance";
+      alertTopActionRoute.value = "/compliance/compliance-summary";
+    } else {
+      alertTopText.value = "You are on Sandbox mode";
+      alertTopActionText.value = "Activate business";
+      alertTopActionRoute.value = "/compliance/business-profile";
+    }
+  } else {
+    showAlertTop.value = false;
+  }
 };
 
 watch(route, () => {
@@ -103,22 +129,6 @@ onMounted(() => {
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
   getActivationStatus();
 });
-
-const getActivationStatus = () => {
-  if (profileUtil.getBusinessActivatedStatus() !== "true") {
-    showAlertTop.value = true;
-
-    if (profileUtil.getBusiness()?.activateMyBusiness) {
-      alertTopText.value = "Your business compliance is in review.";
-      alertTopActionText.value = "View compliance";
-      alertTopActionRoute.value = "/compliance/compliance-summary";
-    } else {
-      alertTopText.value = "You are on Sandbox mode";
-      alertTopActionText.value = "Activate business";
-      alertTopActionRoute.value = "/compliance/business-profile";
-    }
-  } else showAlertTop.value = false;
-};
 
 // Set page background color
 setPageBackgroundColor("#ffffff");

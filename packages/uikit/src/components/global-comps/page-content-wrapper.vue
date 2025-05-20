@@ -3,7 +3,7 @@
     <!-- TOP ROW -->
     <div class="top-row">
       <div class="top-row--left">
-        <div class="page-title">{{ pageTitle }}</div>
+        <div class="page-title" v-if = "props.showTitle">{{ pageTitle }}</div>
       </div>
 
       <div class="top-row--right">
@@ -35,11 +35,13 @@ import Pagination from "./pagination.vue";
 interface IPageContentType {
   pagingData?: any;
   pagingDescription?: string;
+  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   pagingDescription: "",
   pagingData: { page_count: 0 },
+  showTitle: true
 });
 
 const route = useRoute();
