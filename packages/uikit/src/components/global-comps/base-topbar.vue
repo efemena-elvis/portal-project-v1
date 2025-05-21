@@ -86,7 +86,7 @@
       </div> -->
 
       <!-- MODE TOGGLER -->
-      <div class="relative">
+      <div class="relative right-0">
         <div class="mode-toggler" ref="togglerModeRef" @click="canSwtchMode">
           <div
             class="mode-toggler-control"
@@ -287,13 +287,13 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between items-center h-auto bg-neutral-10 my-3.5 sm:my-2;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto bg-neutral-10 my-3.5 sm:my-2;
 
   &--left {
     @apply flex justify-start items-center gap-x-2.5 w-1/2 sm:w-full sm:flex-wrap sm:gap-x-3 sm:gap-y-2;
 
     &-menu {
-      @apply hidden mdLg:block text-3xl sm:text-2xl cursor-pointer text-grey-500/90;
+      @apply hidden mdLg:block text-3xl sm:text-2xl cursor-pointer text-grey-500/90 sm:absolute top-8;
     }
 
     &-wrapper {
@@ -321,7 +321,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
   }
 
   &--right {
-    @apply flex justify-end items-center gap-x-6 sm:gap-x-3 w-2/5 sm:w-full sm:mt-3 sm:justify-between sm:flex-wrap;
+    @apply flex justify-end items-center  right-2 gap-x-6 sm:gap-x-3 w-2/5 sm:w-full sm:mt-3 sm:justify-between sm:flex-wrap;
 
     .notification-wrapper {
       @apply flex justify-center items-center text-neutral-500 hover:text-green-800 relative cursor-pointer;

@@ -70,7 +70,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
       @apply flex justify-start items-center gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl;
+        @apply font-bold text-grey-900 text-2xl sm:-my-12;
       }
     }
 

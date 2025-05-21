@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper :showTitle="false">
+  <PageContentWrapper>
     <template v-slot:pageContent>
       <div class="tax-balance-row">
         <TaxBalanceCard

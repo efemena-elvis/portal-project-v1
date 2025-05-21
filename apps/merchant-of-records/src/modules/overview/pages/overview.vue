@@ -220,7 +220,7 @@ onMounted(() => fetchAllWallets());
 <style lang="scss" scoped>
 .button-row {
   .btn-sm {
-    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold;
+    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold sm:mt-12;
   }
 }
 

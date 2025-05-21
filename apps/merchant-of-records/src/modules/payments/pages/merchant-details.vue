@@ -10,7 +10,6 @@ import { computed, defineComponent, ref } from "vue";
 import { useRoute } from "vue-router";
 import MerchantDetailsWrapper from "../components/merchant-details-wrapper.vue";
 import MerchantTabs from "../components/merchant-tabs.vue";
-import Compliance from "../components/compliance.vue";
 import Profile from "../components/profile.vue";
 import TaxRecord from "../components/tax-record.vue";
 import Balances from "../components/balances.vue";
@@ -27,8 +26,7 @@ const tabComponents: Record<string, ReturnType<typeof defineComponent>> = {
   Balances,
   "Payout history": PayoutHistory,
   "Tax record": TaxRecord,
-  Profile,
-  Compliance,
+  Profile
 };
 
 const currentComponent = computed(() => tabComponents[activeTab.value]);

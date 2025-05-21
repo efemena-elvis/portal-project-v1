@@ -20,12 +20,10 @@ const tabsList = [
   "Payout history",
   "Tax record",
   "Profile",
-  "Compliance",
 ];
 
-
 defineProps<{ activeTab: string }>();
-const emit = defineEmits(['update:activeTab']);
+const emit = defineEmits(["update:activeTab"]);
 </script>
 
 <style scoped lang="scss">
@@ -38,7 +36,7 @@ const emit = defineEmits(['update:activeTab']);
 }
 
 .tab-item {
-  @apply cursor-pointer transition-all duration-300 min-w-max pr-8 text-grey-600;
+  @apply cursor-pointer transition-all ease-in-out duration-300 min-w-max pr-8 text-grey-600;
 
   &.active {
     @apply text-green-500;
