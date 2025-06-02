@@ -93,7 +93,7 @@
           labelId="website"
           labelTitle="Company Website"
           isRequired
-          inputPlaceholder="www.companyname.com"
+          inputPlaceholder="https://www.companyname.com"
           :inputType="IInputType.Url"
           :inputValue="questionnairePayload.website_link"
           @inputChanged="questionnairePayload.website_link = $event"
@@ -382,7 +382,16 @@ const handleSubmitQuestionnaire = async () => {
         });
 
         router.push("/login");
-      } else {
+      }
+
+      else if(response.error.code === 400){
+        pushToastAlert({
+           message: "Email already exists.",
+          type: "error",
+        })
+      }
+      
+      else {
         pushToastAlert({
           message: response.error.message,
           type: "error",

@@ -99,7 +99,7 @@ const overviewRoutes: IRouteType[] = [
         name: "addMerchants",
         component: () =>
           import(
-            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/add-merchants.vue"
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/merchant-onboarding.vue"
           ),
           meta: {
           requiresAuth: true,
@@ -110,42 +110,8 @@ const overviewRoutes: IRouteType[] = [
           },
           
         },
-      },
-         {
-        path: "add/bulk",
-        name: "bulkUploadMerchants",
-        component: () =>
-          import(
-            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/bulk-merchants-upload.vue"
-          ),
-          meta: {
-          requiresAuth: true,
-          title: "Bulk upload merchants",
-          pageMeta: {
-            title: "Upload-Merchants",
-            description: "Uploading merchants",
-          },
-          
-        },
-      },
-         {
-        path: "onboard",
-        name: "merchantOnboarding",
-        component: () =>
-          import(
-            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/merchant-onboarding.vue"
-          ),
-          meta: {
-          requiresAuth: true,
-          title: "Onboard Merchant",
-          pageMeta: {
-            title: "Onboard-Merchants",
-            description: "Onboarding merchants",
-          },
-          
-        },
-        
-      },
+       },
+     
 
         {
         path: "add-merchant-status",
