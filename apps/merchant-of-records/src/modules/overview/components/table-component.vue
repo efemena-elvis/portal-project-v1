@@ -1,33 +1,34 @@
 <template>
-  <h2 class="text-xl font-bold text-grey-900 mb-6">{{ title }}</h2>
+  <h2 class="mb-6 text-xl font-bold text-grey-900">{{ title }}</h2>
 
-  <div class="space-y-4 border border-grey-200 rounded-md">
-    <table class="min-w-full table-auto border border-grey-200 rounded-md">
-      <thead class="bg-grey-100 h-16">
+  <div class="space-y-4 rounded-md ">
+    <table class="min-w-full border rounded-md table-auto">
+      <thead class="h-16 bg-grey-100">
         <tr>
           <th
             v-for="header in headers"
             :key="header.key"
-            class="text-left px-4 py-2 text-grey-500 border-r border-r-grey-200"
+            class="px-4 py-2 text-left border border-gray-200 text-grey-500 "
           >
             {{ header.label }}
           </th>
           <th
             v-if="showDeleteButton"
-            class="text-left px-4 py-2 text-grey-500"
+            class="px-4 py-2 text-left text-grey-500"
           ></th>
         </tr>
       </thead>
 
       <tbody class="text-grey-600">
-        <tr v-for="(row, rowIndex) in data" :key="row.id" class="border-t">
+        <tr v-for="(row, rowIndex) in data" :key="row.id" class="">
           <td
             v-for="header in headers"
             :key="header.key"
             :class="[
-              'border-r min-w-full py-2',
-              header.readonly ? 'bg-grey-100 px-0 mx-4' : 'bg-transparent',
-            ]"
+  'min-w-full py-2 border border-gray-200',
+  header.readonly ? 'bg-grey-100 px-0 mx-4' : 'bg-transparent',
+]"
+
           >
             <input
               v-if="['text', 'email', 'number', 'url'].includes(header.type)"
@@ -48,10 +49,14 @@
               "
             />
 
-            <div v-else-if="header.type === 'file'" class="">
+            <div
+              v-else-if="header.type === 'file'"
+              accept=".png, .jpeg, .png, .pdf .xls, .xlsx"
+              class=""
+            >
               <label
                 :for="`${header.key}-${rowIndex}`"
-                class="text-green-600 flex items-center gap-2 cursor-pointer"
+                class="flex items-center gap-2 text-green-600 cursor-pointer"
               >
                 <div class="icon-file"></div>
                 <span v-if="docPayload[row.id]?.[header.key]?.link">
@@ -69,7 +74,7 @@
               <input
                 :id="`${header.key}-${rowIndex}`"
                 type="file"
-                class="py-1 w-full hidden focus:outline-none h-12 bg-transparent px-0"
+                class="hidden w-full h-12 px-0 py-1 bg-transparent focus:outline-none"
                 @change="
                   processDocumentUpload($event, row.id, header.key, rowIndex)
                 "
@@ -77,7 +82,7 @@
             </div>
             <select
               v-else-if="header.type === 'select'"
-              class="py-1 w-full focus:outline-none h-12 bg-transparent px-0 text-grey-500"
+              class="w-full h-12 px-0 py-1 bg-transparent focus:outline-none text-grey-500"
               v-model="editableData[rowIndex][header.key]"
               @change="
                 updateField(
@@ -101,10 +106,10 @@
             <span v-else>{{ row[header.key] }}</span>
           </td>
 
-          <td v-if="showDeleteButton" class="text-center px-4 py-2">
+          <td v-if="showDeleteButton" class="px-4 py-2 text-center">
             <button
               @click="$emit('delete-row', row.id)"
-              class="hover:text-red-600 text-lg bg-grey-100 h-8 w-8 rounded-full p-1"
+              class="w-8 h-8 p-1 text-lg rounded-full hover:text-red-600 bg-grey-100"
               title="Delete row"
             >
               <div class="icon-trash"></div>
@@ -117,7 +122,7 @@
 
   <button
     v-if="showAddButton"
-    class="hover:bg-green-500 hover:text-white flex items-center justify-center gap-2 font-semibold px-4 py-2 rounded-md border text-grey-900 w-[80px] mt-6"
+    class="hover:bg-green-500 hover:text-white flex items-center justify-center gap-2 font-semibold px-4 py-3 rounded-md border text-grey-900 w-[80px] mt-6"
     @click="$emit('add-row')"
   >
     <div class="icon-add"></div>
@@ -276,7 +281,5 @@ watch(
 </script>
 
 <style scoped>
-table {
-  border-collapse: collapse;
-}
+
 </style>

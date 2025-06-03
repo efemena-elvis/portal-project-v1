@@ -14,15 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, defineExpose, watch } from "vue";
+import { ITableHeaderType } from "@packages/models";
 import TableComponent from "../../table-component.vue";
-
-interface TableHeader {
-  key: string;
-  label: string;
-  type: string;
-  options?: { value: string; label: string }[];
-}
 
 interface TableRow {
   id: number;
@@ -33,25 +27,23 @@ interface TableRow {
   website: string;
 }
 
-
 const props = defineProps<{
   merchantPayload: TableRow[];
 }>();
 
-
 const emit = defineEmits<{
   (e: "update:merchantPayload", payload: TableRow[]): void;
+  (e: "stepComplete"): void;
+  (e: "showError", message: string): void;
 }>();
 
-
-const tableHeaders = ref<TableHeader[]>([
+const tableHeaders = ref<ITableHeaderType[]>([
   { key: "business_name", label: "Business name", type: "text" },
   {
     key: "business_sector",
     label: "Business sector",
     type: "select",
     options: [
-
       { value: "int_decors", label: "Int & Decors" },
       { value: "small_business", label: "Small business" },
       { value: "technology", label: "Technology" },
@@ -65,14 +57,28 @@ const tableHeaders = ref<TableHeader[]>([
   { key: "website", label: "Website", type: "url" },
 ]);
 
-
 const tableData = ref<TableRow[]>([]);
-
+let stepCompleted = false;
 
 watchEffect(() => {
   tableData.value = props.merchantPayload.map((row) => ({ ...row }));
 });
 
+function validate(): boolean {
+  for (const row of tableData.value) {
+    if (
+      !row.business_name ||
+      !row.business_sector ||
+      !row.email ||
+      !row.phone_number ||
+      !row.website ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
 
 function handleAddRow() {
   const newId =
@@ -81,7 +87,6 @@ function handleAddRow() {
       : 1;
 
   const newRow: TableRow = {
-  
     id: newId,
     business_name: "",
     business_sector: "",
@@ -94,16 +99,39 @@ function handleAddRow() {
   emit("update:merchantPayload", [...tableData.value]);
 }
 
-
-function handleUpdateRow(rowId: number, field: string, value: string | number) {
+function handleUpdateRow(
+  rowId: string | number,
+  field: string,
+  value: string | number | File
+) {
+  const id = typeof rowId === "string" ? Number(rowId) : rowId;
   tableData.value = tableData.value.map((row) =>
-    row.id === rowId ? { ...row, [field]: value } : row
+    row.id === id ? { ...row, [field]: value } : row
   );
   emit("update:merchantPayload", [...tableData.value]);
+
 }
 
-function handleDeleteRow(rowId: number) {
-  tableData.value = tableData.value.filter((row) => row.id !== rowId);
+function handleDeleteRow(rowId: string | number) {
+  const id = typeof rowId === "string" ? Number(rowId) : rowId;
+  tableData.value = tableData.value.filter((row) => row.id !== id);
   emit("update:merchantPayload", [...tableData.value]);
 }
+
+watch(
+  tableData,
+  (newVal) => {
+    if (validate()) {
+      stepCompleted = true;
+      emit("stepComplete");
+    }
+
+    else {
+      emit("showError", "Please complete all required fields correctly.");
+    }
+  },
+  { deep: true }
+);
+
+defineExpose({ validate });
 </script>

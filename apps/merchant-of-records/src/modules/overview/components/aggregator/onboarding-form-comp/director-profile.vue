@@ -1,99 +1,165 @@
 <template>
   <div class="p-6">
     <TableComponent
-      title="Business Address"
+      title="Director's Details"
       :headers="tableHeaders"
       :data="tableData"
-      @delete-row="handleDeleteRow"
       @update-row="handleUpdateRow"
-      :showDeleteButton="true"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect } from "vue";
+import { ref, watchEffect, watch, defineExpose, onMounted } from "vue";
 import TableComponent from "../../table-component.vue";
-import { countryCurrencies } from "@packages/constants";
-
+import { useEvents } from "@packages/hooks";
+import { useGlobalStore } from "@/modules/global/store";
+import {
+  ITableHeaderType,
+  IMerchantType,
+  IDirectorOrOwnerType,
+} from "@packages/models";
 
 const props = defineProps<{
-  merchantPayload: any[]; 
+  merchantPayload: IMerchantType[];
+  directorKey: "director1" | "director2";
 }>();
 
 const emit = defineEmits<{
-  (e: "update:merchantPayload", payload: any[]): void;
+  (e: "update:merchantPayload", payload: IMerchantType[]): void;
+  (e: "stepComplete"): void;
+  (e: "showError", message: string): void;
 }>();
 
+const { processAPIRequest } = useEvents();
+const { getBusinessCountries } = useGlobalStore();
 
-interface TableHeader {
-  key: string;
-  label: string;
-  type: string;
-  options?: { value: string; label: string }[];
-  readonly?: boolean;
-}
-
-const tableData = ref<any[]>([]);
 const countryList = ref<{ value: string; label: string }[]>([]);
+const countryNameToIdMap = ref<Record<string, string>>({});
+const countryIdToNameMap = ref<Record<string, string>>({});
+const tableData = ref<any[]>([]);
 
-
-const loadCountryList = () => {
-  countryList.value = countryCurrencies.map(({ country }) => ({
-    value: country.toLowerCase(),
-    label: country,
-  }));
-
-  const countryHeader = tableHeaders.value.find((header) => header.key === "directors_country");
-  if (countryHeader) {
-    countryHeader.options = countryList.value;
-  }
-};
-
-
-const tableHeaders = ref<TableHeader[]>([
-  { key: "business_name", label: "Business name", type: "text", readonly: true },
+const tableHeaders = ref<ITableHeaderType[]>([
+  {
+    key: "business_name",
+    label: "Business Name",
+    type: "text",
+    readonly: true,
+  },
   { key: "full_name", label: "Full Name", type: "text" },
   {
     key: "directors_country",
     label: "Country",
     type: "select",
-    options: countryList.value,
+    options: [],
   },
   { key: "directors_address", label: "Address", type: "text" },
-
   { key: "directors_id", label: "Director's ID", type: "file" },
 ]);
 
+const loadCountryList = async () => {
+  const response = await processAPIRequest({
+    action: getBusinessCountries,
+    payload: {},
+  });
+
+  if (response.code === 200) {
+    countryList.value = response.data.map((item: { id: string; name: string }) => {
+      const nameLower = item.name.trim().toLowerCase();
+      countryNameToIdMap.value[nameLower] = item.id;
+      countryIdToNameMap.value[item.id] = item.name;
+      return {
+        value: item.id,
+        label: item.name,
+      };
+    });
+
+    const countryHeader = tableHeaders.value.find(
+      (header) => header.key === "directors_country"
+    );
+    if (countryHeader) {
+      countryHeader.options = countryList.value;
+    }
+  }
+};
 
 watchEffect(() => {
-  tableData.value = props.merchantPayload.map((merchant) => ({
-    ...merchant,
-    id: merchant.id,
-    business_name: merchant.business_name,
-    full_name: merchant.full_name ?? "",
-    directors_country: merchant.directors_country ?? "",
-    directors_address: merchant.directors_address ?? "",
-    directors_id: merchant.directors_id ?? "",
-  }));
-
+  tableData.value = props.merchantPayload.map((merchant) => {
+    const director = merchant[props.directorKey] as IDirectorOrOwnerType;
+    return {
+      id: `${merchant.id}-${props.directorKey}`,
+      merchantId: merchant?.id,
+      directorKey: props.directorKey,
+      business_name: merchant?.business_name,
+      full_name: director?.full_name || "",
+      directors_country: director?.directors_country || "",
+      directors_address: director?.directors_address || "",
+      directors_id: director?.directors_id || "",
+    };
+  });
 });
 
+function handleUpdateRow(
+  rowId: string | number,
+  field: string,
+  value: string | number | File
+) {
+  const [merchantIdStr, directorKey] = rowId.toString().split("-");
+  const merchantId = Number(merchantIdStr);
 
-function handleDeleteRow(rowId: number) {
-  tableData.value = tableData.value.filter((row) => row.id !== rowId);
-  emit("update:merchantPayload", [...tableData.value]);
+  const updated = props.merchantPayload.map((merchant) => {
+    if (merchant.id === merchantId) {
+      return {
+        ...merchant,
+        [directorKey]: {
+          ...merchant[directorKey],
+          [field]: value,
+        },
+      };
+    }
+    return merchant;
+  });
+
+  emit("update:merchantPayload", updated);
+
 }
 
+function validate(): boolean {
+  for (const row of tableData.value) {
+    const isEmpty = !row.full_name && !row.directors_country && !row.directors_address && !row.directors_id;
 
-function handleUpdateRow(rowId: number, field: string, value: any) {
-  tableData.value = tableData.value.map((row) =>
-    row.id === rowId ? { ...row, [field]: value } : row
-  );
-  emit("update:merchantPayload", [...tableData.value]);
-  console.log("Updated merchantPayload:", props.merchantPayload);
+    if (props.directorKey === "director2" && isEmpty) {
+      continue; 
+    }
+
+    if (
+      !row.full_name ||
+      !row.directors_country ||
+      !row.directors_address ||
+      !row.directors_id
+    ) {
+      return false;
+    }
+  }
+  return true;
 }
 
+watch(
+  tableData,
+  () => {
+    if (validate()) {
+      emit("stepComplete");
+    }
+    else if (props.directorKey === "director1") {
+    emit("showError", "Please complete all required Director 1 fields.");
+  }
+  },
+  { deep: true }
+);
 
-loadCountryList();
+onMounted(() => {
+  loadCountryList();
+});
+
+defineExpose({ validate });
 </script>

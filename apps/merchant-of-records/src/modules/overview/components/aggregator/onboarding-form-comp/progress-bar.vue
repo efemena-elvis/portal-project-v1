@@ -1,7 +1,7 @@
 <template>
   <div class="flex gap-4 w-[20%]">
     <div
-      class="bg-teal-50 rounded-full flex flex-col gap-7 p-2 text-lg my-2 h-fit"
+      class="flex flex-col p-2 my-2 text-lg rounded-full bg-teal-50 gap-7 h-fit"
     >
       <div
         v-for="(step, index) in props.steps"
@@ -11,7 +11,7 @@
       >
        
           <div
-            class="w-8 h-8 rounded-full p-4 flex justify-center items-center"
+            class="flex items-center justify-center w-8 h-8 p-4 rounded-full"
             :class="
               props.isActiveStep === step.label
                 ? 'bg-green-500'
@@ -29,6 +29,7 @@
           :class="props.isActiveStep === step.label ? 'text-green-500' : 'text-gray-900'"
       >
         {{ step.label }}
+        <span class="ml-2 text-sm text-grey-400" v-if = "step.optional">Optional</span>
       </div>
     </div>
   </div>
