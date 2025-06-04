@@ -52,6 +52,8 @@ const props = withDefaults(defineProps<IFullPageContentProps>(), {
 
 const route = useRoute();
 
+
+
 const getCurrentPage = computed(() => {
   return props.pageRouteData.find((pageItem) => pageItem.route === route.name);
 });
@@ -59,10 +61,10 @@ const getCurrentPage = computed(() => {
 
 <style lang="scss" scoped>
 .full-page-content {
-  @apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto;
+  @apply w-full xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto;
 
   .form-wrapper {
-    @apply w-[70%] lg:w-[78%] mdLg:w-full;
+    @apply w-[70%] lg:w-[78%] mdLg:w-full ml-12 lg:ml-0 mdLg:ml-0;
 
     .form-top {
       .title-text {
@@ -74,7 +76,7 @@ const getCurrentPage = computed(() => {
       }
 
       .flow-row {
-        @apply w-full bg-grey-50 border border-grey-100 rounded-full p-2 flex justify-start items-center gap-5 overflow-auto;
+        @apply w-fit bg-grey-50 border border-grey-100 rounded-full p-2 flex justify-start items-center gap-5 overflow-auto;
 
         .flow-item {
           @apply flex justify-start items-center gap-3 font-medium text-grey-600 text-sm md:text-[13.5px] transition-all duration-300 ease-in-out;
@@ -97,7 +99,7 @@ const getCurrentPage = computed(() => {
     }
 
     .form-base {
-      @apply mt-9 mb-20 md:mb-24;
+      @apply mt-9 mb-20 md:mb-24  w-full;
     }
   }
 }

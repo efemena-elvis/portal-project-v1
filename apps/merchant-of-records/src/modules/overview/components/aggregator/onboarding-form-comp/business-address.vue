@@ -1,20 +1,30 @@
 <template>
-  <div class="p-6">
-    <TableComponent
-      title="Business Address"
-      :headers="tableHeaders"
-      :data="tableData"
-      @update-row="handleUpdateRow"
-    />
-  </div>
+  <OnboardingWrapper
+    :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
+    @onBackClick="router.push({ name: 'MerchantBusinessProfile' })"
+    @onContinueClick="handleMerchantAgreementUpdate"
+    :showActionRow="true"
+  >
+
+      <BulkUploadTable
+        :headers="tableHeaders"
+        :data="tableData"
+        @update-row="handleUpdateRow"
+      />
+
+  </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, watchEffect, onMounted, watch, defineExpose } from "vue";
-import TableComponent from "../../table-component.vue";
+import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
 import { ITableHeaderType } from "@packages/models";
 import { useGlobalStore } from "@/modules/global/store";
 import { useEvents } from "@packages/hooks";
+import OnboardingWrapper from "./onboarding-wrapper.vue";
+import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 interface TableRow {
   id: number;
@@ -37,11 +47,28 @@ const emit = defineEmits<{
 
 const { processAPIRequest } = useEvents();
 const { getBusinessCountries } = useGlobalStore();
+const router = useRouter();
 
-const tableData = ref<TableRow[]>([]);
+const tableData = ref<TableRow[]>([
+  {
+    id: 1,
+    business_name: "",
+    country: "",
+    address: "",
+    billing_descriptor_1: "",
+    billing_descriptor_2: "",
+  },
+]);
 const countryList = ref<{ value: string; label: string }[]>([]);
 const countryNameToIdMap = ref<Record<string, string>>({});
 const countryIdToNameMap = ref<Record<string, string>>({});
+
+const stopClickHandler = ref<boolean>(false);
+const businessPayload = ref({});
+
+const isActionReady = computed(() => {
+  return true;
+});
 
 const tableHeaders = ref<ITableHeaderType[]>([
   {
@@ -60,6 +87,8 @@ const tableHeaders = ref<ITableHeaderType[]>([
   { key: "billing_descriptor_1", label: "Billing Descriptor 1", type: "text" },
   { key: "billing_descriptor_2", label: "Billing Descriptor 2", type: "text" },
 ]);
+
+const handleMerchantAgreementUpdate = async () => {};
 
 const loadCountryList = async () => {
   const response = await processAPIRequest({
@@ -89,20 +118,20 @@ const loadCountryList = async () => {
   }
 };
 
-watchEffect(() => {
-  tableData.value = props.merchantPayload.map((merchant, index) => ({
-    id: merchant.id ?? index + 1,
-    business_name: merchant.business_name ?? "",
-    country: merchant.country ?? "",
-    address: merchant.address ?? "",
-    billing_descriptor_1: merchant.billing_descriptor_1 ?? "",
-    billing_descriptor_2: merchant.billing_descriptor_2 ?? "",
-  }));
-});
+// watchEffect(() => {
+//   tableData.value = props.merchantPayload.map((merchant, index) => ({
+//     id: merchant.id ?? index + 1,
+//     business_name: merchant.business_name ?? "",
+//     country: merchant.country ?? "",
+//     address: merchant.address ?? "",
+//     billing_descriptor_1: merchant.billing_descriptor_1 ?? "",
+//     billing_descriptor_2: merchant.billing_descriptor_2 ?? "",
+//   }));
+// });
 
 let stepCompleted = false;
 
-function validate(): boolean {
+const validate = (): boolean => {
   for (const row of tableData.value) {
     if (
       !row.business_name ||
@@ -115,27 +144,25 @@ function validate(): boolean {
     }
   }
   return true;
-}
+};
 
-function handleUpdateRow(
-  rowId: string | number,
-  field: string,
-  value: string | number | File
-) {
-  const id = typeof rowId === "string" ? Number(rowId) : rowId;
-  let updatedRow: TableRow | undefined;
+const handleUpdateRow =
+  () =>
+  (rowId: string | number, field: string, value: string | number | File) => {
+    const id = typeof rowId === "string" ? Number(rowId) : rowId;
+    let updatedRow: TableRow | undefined;
 
-  tableData.value = tableData.value.map((row) => {
-    if (row.id === id) {
-      const updated = { ...row, [field]: value };
-      updatedRow = updated;
-      return updated;
-    }
-    return row;
-  });
+    tableData.value = tableData.value.map((row) => {
+      if (row.id === id) {
+        const updated = { ...row, [field]: value };
+        updatedRow = updated;
+        return updated;
+      }
+      return row;
+    });
 
-  emit("update:merchantPayload", [...tableData.value]);
-}
+    emit("update:merchantPayload", [...tableData.value]);
+  };
 
 watch(
   tableData,

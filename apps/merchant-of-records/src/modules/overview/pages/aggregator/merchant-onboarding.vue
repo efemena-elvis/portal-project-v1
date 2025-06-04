@@ -1,57 +1,61 @@
 <template>
-  <div class="flex gap-8 p-12">
-    <ProgressBar
-      :isActiveStep="isActiveStep"
-      @stepChanged="onStepChange"
-      :steps="stepList"
-    />
-    <div class="relative w-full">
-      <div class="pl-5 text-teal-700">
-        <h1 class="font-semibold text-[28px] md:text-2xl leading-[32px] mb-2.5">
-          Merchant Onboarding
-        </h1>
-        <p
-          class="text-[14.75px] md:text-[14.5px] leading-[22px] md:leading-[22px] mb-4"
-        >
-          Follow these simple steps to get your merchants onboarded and start to
-          unlock seamless transactions.
-        </p>
-      </div>
-
-      <component
-        :is="steps[currentStep]"
-        v-model:merchantPayload="merchantPayload"
-        v-model:isPrimaryActionDisabled="isPrimaryActionDisabled"
-        v-bind="getStepProps(currentStep)"
-        v-if="currentStep === 0"
-        v-model:phoneNumberInput="phoneNumberInput"
-        v-model:phoneCountryCode="phoneCountryCode"
-        @stepComplete="goToNextStep"
-        @showError="showAlert"
-      />
-      <component
-        v-else
-        :is="steps[currentStep]"
-        v-model:merchantPayload="merchantPayload"
-        v-model:isPrimaryActionDisabled="isPrimaryActionDisabled"
-        v-bind="getStepProps(currentStep)"
-        @stepComplete="goToNextStep"
-        @showError="showAlert"
-      />
-
-      <div class="absolute right-6">
-        <button
-          @click="handleOnboardMerchant"
-          class="btn btn-primary btn-sm my-8 !w-[150px]"
-          v-if="currentStep === steps.length - 1"
-          :disabled="isPrimaryActionDisabled"
-          ref="onboardMerchantBtnRef"
-        >
-          Onboard Merchants
-        </button>
-      </div>
+  <OnboardingWrapper  
+    :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
+    @onBackClick="router.push({ name: 'AddMerchants' })"
+    @onContinueClick="handleMerchantAgreementUpdate">
+    <div class="flex gap-2 p-12 md:flex-col md:p-4 mdLg:flex-col mdLg:p-2">
+      <!-- <ProgressBar
+        :isActiveStep="isActiveStep"
+        @stepChanged="onStepChange"
+        :steps="stepList"
+      /> -->
+      <!-- <div class="relative min-w-[70%]">
+        <div class="pl-5 text-teal-700 md:mt-4 mdLg:mt-4">
+          <h1 class="font-semibold text-[28px] md:text-2xl leading-[32px] mb-2.5">
+            Merchant Onboarding
+          </h1>
+          <p
+            class="text-[14.75px] md:text-[14.5px] leading-[22px] md:leading-[22px] mb-4"
+          >
+            Follow these simple steps to get your merchants onboarded and start to
+            unlock seamless transactions.
+          </p>
+        </div>
+        <component
+          :is="steps[currentStep]"
+          v-model:merchantPayload="merchantPayload"
+          v-model:isPrimaryActionDisabled="isPrimaryActionDisabled"
+          v-bind="getStepProps(currentStep)"
+          v-if="currentStep === 0"
+          v-model:phoneNumberInput="phoneNumberInput"
+          v-model:phoneCountryCode="phoneCountryCode"
+          @stepComplete="goToNextStep"
+          @showError="showAlert"
+        />
+        <component
+          v-else
+          :is="steps[currentStep]"
+          v-model:merchantPayload="merchantPayload"
+          v-model:isPrimaryActionDisabled="isPrimaryActionDisabled"
+          v-bind="getStepProps(currentStep)"
+          @stepComplete="goToNextStep"
+          @showError="showAlert"
+        />
+        <div class="absolute right-6">
+          <button
+            @click="handleOnboardMerchant"
+            class="btn btn-primary btn-sm my-8 !w-[150px]"
+            v-if="currentStep === steps.length - 1"
+            :disabled="isPrimaryActionDisabled"
+            ref="onboardMerchantBtnRef"
+          >
+            Onboard Merchants
+          </button>
+        </div>
+      </div> -->
     </div>
-  </div>
+  </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
@@ -69,6 +73,7 @@ import BusinessDocuments from "../../components/aggregator/onboarding-form-comp/
 import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
 import { onboardMerchant } from "../../store/actions";
+import OnboardingWrapper from "../../components/aggregator/onboarding-form-comp/onboarding-wrapper.vue";
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -117,6 +122,21 @@ const fetchSingleCountryUUID = async (): Promise<string> => {
 
   return "";
 };
+
+const stopClickHandler = ref<boolean>(false);
+
+
+
+const isActionReady = computed(() => {
+ return false
+});
+
+
+
+const handleMerchantAgreementUpdate = async () => {
+ 
+};
+
 
 const onboardMerchantBtnRef = ref<HTMLButtonElement | null>(null);
 

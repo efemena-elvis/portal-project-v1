@@ -1,22 +1,32 @@
 <template>
-  <div class="p-6">
-    <TableComponent
-      title="Business Profile"
-      :headers="tableHeaders"
-      :data="tableData"
-      :showAddButton="true"
-      @add-row="handleAddRow"
-      @update-row="handleUpdateRow"
-      @delete-row="handleDeleteRow"
-      :showDeleteButton="true"
+  <OnboardingWrapper
+    :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
+    @onBackClick="router.push({ name: 'MerchantBusinessProfile' })"
+    @onContinueClick="handleMerchantAgreementUpdate"
+     :showActionRow="true"
+  >
+  
+      <BulkUploadTable
+        :headers="tableHeaders"
+        :data="tableData"
+        :showAddButton="true"
+        @add-row="handleAddRow"
+        @update-row="handleUpdateRow"
+        @delete-row="handleDeleteRow"
+        :showDeleteButton="true"
+
     />
-  </div>
+  </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, watchEffect, defineExpose, watch } from "vue";
 import { ITableHeaderType } from "@packages/models";
-import TableComponent from "../../table-component.vue";
+import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import OnboardingWrapper from "./onboarding-wrapper.vue";
 
 interface TableRow {
   id: number;
@@ -27,6 +37,7 @@ interface TableRow {
   website: string;
 }
 
+const router = useRouter();
 const props = defineProps<{
   merchantPayload: TableRow[];
 }>();
@@ -57,14 +68,34 @@ const tableHeaders = ref<ITableHeaderType[]>([
   { key: "website", label: "Website", type: "url" },
 ]);
 
-const tableData = ref<TableRow[]>([]);
+
+const tableData = ref<TableRow[]>([
+  {
+    id: 1,
+    business_name: "",
+    business_sector: "",
+    email: "",
+    phone_number: "",
+    website: "",
+  },
+ 
+
+]);
 let stepCompleted = false;
 
-watchEffect(() => {
-  tableData.value = props.merchantPayload.map((row) => ({ ...row }));
+// watchEffect(() => {
+//   tableData.value = props.merchantPayload.map((row) => ({ ...row }));
+// });
+
+const stopClickHandler = ref<boolean>(false);
+const businessPayload = ref({});
+
+const isActionReady = computed(() => {
+  return true;
 });
 
-function validate(): boolean {
+const handleMerchantAgreementUpdate = async () => {};
+const validate = (): boolean => {
   for (const row of tableData.value) {
     if (
       !row.business_name ||
@@ -78,9 +109,9 @@ function validate(): boolean {
     }
   }
   return true;
-}
+};
 
-function handleAddRow() {
+const handleAddRow = () => {
   const newId =
     tableData.value.length > 0
       ? Math.max(...tableData.value.map((row) => row.id)) + 1
@@ -97,41 +128,38 @@ function handleAddRow() {
 
   tableData.value.push(newRow);
   emit("update:merchantPayload", [...tableData.value]);
-}
+};
 
-function handleUpdateRow(
+const handleUpdateRow = (
   rowId: string | number,
   field: string,
   value: string | number | File
-) {
+) => {
   const id = typeof rowId === "string" ? Number(rowId) : rowId;
   tableData.value = tableData.value.map((row) =>
     row.id === id ? { ...row, [field]: value } : row
   );
   emit("update:merchantPayload", [...tableData.value]);
+};
 
-}
-
-function handleDeleteRow(rowId: string | number) {
+const handleDeleteRow = (rowId: string | number) => {
   const id = typeof rowId === "string" ? Number(rowId) : rowId;
   tableData.value = tableData.value.filter((row) => row.id !== id);
   emit("update:merchantPayload", [...tableData.value]);
-}
+};
 
-watch(
-  tableData,
-  (newVal) => {
-    if (validate()) {
-      stepCompleted = true;
-      emit("stepComplete");
-    }
-
-    else {
-      emit("showError", "Please complete all required fields correctly.");
-    }
-  },
-  { deep: true }
-);
+// watch(
+//   tableData,
+//   (newVal) => {
+//     if (validate()) {
+//       stepCompleted = true;
+//       emit("stepComplete");
+//     } else {
+//       emit("showError", "Please complete all required fields correctly.");
+//     }
+//   },
+//   { deep: true }
+// );
 
 defineExpose({ validate });
 </script>

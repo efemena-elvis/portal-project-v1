@@ -96,20 +96,147 @@ const overviewRoutes: IRouteType[] = [
     children: [
       {
         path: "add",
-        name: "addMerchants",
+        name: "AddMerchants",
         component: () =>
           import(
             /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/merchant-onboarding.vue"
           ),
           meta: {
           requiresAuth: true,
-          title: "Add merchants",
+          title: "Merchants Onboarding",
           pageMeta: {
             title: "Add-Merchants",
             description: "Adding and uploading merchants",
           },
           
         },
+
+       },
+      {
+        path: "business-profile",
+        name: "MerchantBusinessProfile",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/business-profile.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "Business-Profile",
+            description: "Vesicash merchant's profile",
+          },
+          
+        },
+
+       },
+      {
+        path: "director-details",
+        name: "DirectorDetails1",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/director-profile.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "Director1-Details",
+            description: "Vesicash director's details",
+          },
+          
+        },
+
+       },
+      {
+        path: "director2-details",
+        name: "DirectorDetails2",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/director-profile.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "Director2-Details",
+            description: "Vesicash director's details",
+          },
+          
+        },
+
+       },
+      {
+        path: "ultimate-business-owner",
+        name: "UboDetails1",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/ultimate-business-owner.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "UBO1-Details",
+            description: "Vesicash ultimate business owner",
+          },
+          
+        },
+
+       },
+      {
+        path: "ultimate-business-owner2",
+        name: "UboDetails2",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/ultimate-business-owner.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "UBO2-Details",
+            description: "Vesicash ultimate business owner",
+          },
+          
+        },
+
+       },
+      {
+        path: "business-address",
+        name: "MerchantBusinessAddress",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/business-address.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "Address",
+            description: "Vesicash merchant's address",
+          },
+          
+        },
+
+       },
+      {
+        path: "business-documents",
+        name: "BusinessDocuments",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/overview/components/aggregator/onboarding-form-comp/business-documents.vue"
+          ),
+          meta: {
+          requiresAuth: true,
+          title: "Merchants Onboarding",
+          pageMeta: {
+            title: "Registration-Documents",
+            description: "Vesicash merchant's business documents",
+          },
+          
+        },
+
        },
      
 

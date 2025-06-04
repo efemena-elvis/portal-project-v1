@@ -1,20 +1,18 @@
 <template>
-  <h2 class="mb-6 text-xl font-bold text-grey-900">{{ title }}</h2>
-
-  <div class="space-y-4 rounded-md ">
+  <div class="rounded-md overflow-x-auto  custom-scrollbar w-full">
     <table class="min-w-full border rounded-md table-auto">
       <thead class="h-16 bg-grey-100">
         <tr>
           <th
             v-for="header in headers"
             :key="header.key"
-            class="px-4 py-2 text-left border border-gray-200 text-grey-500 "
+            class="px-4 py-2 text-left border border-gray-200 text-grey-500 whitespace-nowrap w-auto max-w-max"
           >
             {{ header.label }}
           </th>
           <th
             v-if="showDeleteButton"
-            class="px-4 py-2 text-left text-grey-500"
+            class="px-4 py-2 text-left text-grey-500 whitespace-nowrap w-auto max-w-max"
           ></th>
         </tr>
       </thead>
@@ -25,10 +23,9 @@
             v-for="header in headers"
             :key="header.key"
             :class="[
-  'min-w-full py-2 border border-gray-200',
-  header.readonly ? 'bg-grey-100 px-0 mx-4' : 'bg-transparent',
-]"
-
+              'min-w-[150px] py-2 border border-gray-200 whitespace-nowrap',
+              header.readonly ? 'bg-grey-100 px-0 mx-4' : 'bg-transparent',
+            ]"
           >
             <input
               v-if="['text', 'email', 'number', 'url'].includes(header.type)"
@@ -153,7 +150,6 @@ const { processFileType, processFileSize } = useFile();
 const isUploading = ref(false);
 
 const props = defineProps<{
-  title: string;
   headers: TableHeader[];
   data: TableRow[];
   showAddButton?: boolean;
@@ -281,5 +277,7 @@ watch(
 </script>
 
 <style scoped>
-
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 </style>

@@ -5,7 +5,7 @@
         <router-link
           :to="
             morAccountType === 'aggregator'
-              ? '/merchant/add'
+              ? '/merchant/business-profile'
               : '/market/wallet-entry'
           "
           class="btn btn-primary btn-sm hover:text-white"

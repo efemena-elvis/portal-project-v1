@@ -1,17 +1,23 @@
 <template>
-  <div class="p-6">
-    <TableComponent
-      title="Ultimate Business Owner"
-      :headers="tableHeaders"
-      :data="tableData"
-      @update-row="handleUpdateRow"
-    />
-  </div>
+  <OnboardingWrapper
+    :isPrimaryActionDisabled="isActionReady"
+    :stopClickHandler="stopClickHandler"
+    @onBackClick="router.push({ name: 'DirectorDetails1' })"
+    @onContinueClick="handleMerchantAgreementUpdate"
+    :showActionRow="true"
+  >
+   
+      <BulkUploadTable
+        :headers="tableHeaders"
+        :data="tableData"
+        @update-row="handleUpdateRow"
+      />
+  </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, watchEffect, onMounted, defineExpose, watch } from "vue";
-import TableComponent from "../../table-component.vue";
+import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
 
 import {
   IDirectorOrOwnerType,
@@ -20,6 +26,9 @@ import {
 } from "@packages/models";
 import { useGlobalStore } from "@/modules/global/store";
 import { useEvents } from "@packages/hooks";
+import OnboardingWrapper from "./onboarding-wrapper.vue";
+import { computed } from "vue";
+import { useRouter } from "vue-router";
 
 const props = defineProps<{
   merchantPayload: IMerchantType[];
@@ -34,6 +43,7 @@ const emit = defineEmits<{
 
 const { processAPIRequest } = useEvents();
 const { getBusinessCountries } = useGlobalStore();
+const router = useRouter();
 
 const countryList = ref<{ value: string; label: string }[]>([]);
 const countryNameToIdMap = ref<Record<string, string>>({});
@@ -60,7 +70,19 @@ const tableHeaders = ref<ITableHeaderType[]>([
   },
 ]);
 
-const tableData = ref<any[]>([]);
+const tableData = ref<any[]>([
+  {
+    id: 1,
+    merchantId: 0,
+    uboKey: props.uboKey,
+    business_name: "",
+    full_name: "",
+    ultimate_business_owners_country: "",
+    ultimate_business_owners_address: "",
+  },
+]);
+const stopClickHandler = ref<boolean>(false);
+const businessPayload = ref({});
 
 const loadCountryList = async () => {
   const response = await processAPIRequest({
@@ -90,22 +112,22 @@ const loadCountryList = async () => {
   }
 };
 
-watchEffect(() => {
-  tableData.value = props.merchantPayload.map((merchant) => {
-    const ubo = merchant[props.uboKey] as IDirectorOrOwnerType;
-    return {
-      id: `${merchant.id}-${props.uboKey}`,
-      merchantId: merchant?.id,
-      uboKey: props.uboKey,
-      business_name: merchant?.business_name,
-      full_name: ubo?.full_name || "",
-      ultimate_business_owners_country:
-        ubo?.ultimate_business_owners_country || "",
-      ultimate_business_owners_address:
-        ubo?.ultimate_business_owners_address || "",
-    };
-  });
-});
+// watchEffect(() => {
+//   tableData.value = props.merchantPayload.map((merchant) => {
+//     const ubo = merchant[props.uboKey] as IDirectorOrOwnerType;
+//     return {
+//       id: `${merchant.id}-${props.uboKey}`,
+//       merchantId: merchant?.id,
+//       uboKey: props.uboKey,
+//       business_name: merchant?.business_name,
+//       full_name: ubo?.full_name || "",
+//       ultimate_business_owners_country:
+//         ubo?.ultimate_business_owners_country || "",
+//       ultimate_business_owners_address:
+//         ubo?.ultimate_business_owners_address || "",
+//     };
+//   });
+// });
 
 function validate(): boolean {
   for (const row of tableData.value) {
@@ -128,6 +150,12 @@ function validate(): boolean {
   }
   return true;
 }
+
+const isActionReady = computed(() => {
+  return true;
+});
+
+const handleMerchantAgreementUpdate = async () => {};
 
 function handleUpdateRow(
   rowId: string | number,
