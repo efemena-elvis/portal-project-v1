@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8 w-full">
+  <div class="p-8">
     <FullPageSidebar
       :routeList="merchantOnboardingRouteList"
       :activeRouteCategory="getActiveRouteCategory"
@@ -7,11 +7,11 @@
 
     <!-- CONTENT AREA -->
     <FullPageContent :pageRouteData="getActiveRouteData">
-      <!-- <template v-if="isComplianceLoading">
+      <!-- <template v-if="isMerchantsDataLoading">
         <ComplianceSkeleton />
       </template> -->
 
-      <div class="form-data-block" >
+      <div class="form-data-block">
         <div class="form-data">
           <slot></slot>
         </div>
@@ -27,8 +27,8 @@
           <button
             class="btn btn-sm btn-primary"
             ref="btnRef"
-            :disabled="validateActionButton"
-            @click="triggerPrimaryActionClick"
+            @click = "triggerPrimaryActionClick"
+        
           >
             {{ primaryActionText }}
           </button>
@@ -47,10 +47,10 @@ import {
   FullPageContent,
   ComplianceSkeleton,
 } from "@packages/uikit";
-import { complianceRouteList } from "@/modules/compliance/constants/route-list";
-import { useComplianceStore } from "@/modules/compliance/store";
+
 import { useAuthStore } from "@/modules/auth/store";
 import { merchantOnboardingRouteList } from "@/modules/overview/constants/route-list";
+import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
 
 type IPageRouteType = {
   name: string;
@@ -59,31 +59,31 @@ type IPageRouteType = {
   description: string;
 };
 
-interface IComplianceInfoType {
+interface IOnboardingInfoType {
   showActionRow?: boolean;
   primaryActionText?: string;
   isPrimaryActionDisabled?: boolean;
   stopClickHandler?: boolean;
+
 }
 
 const route = useRoute();
 const emits = defineEmits(["onBackClick", "onContinueClick"]);
 
-const props = withDefaults(defineProps<IComplianceInfoType>(), {
+const props = withDefaults(defineProps<IOnboardingInfoType>(), {
   showActionRow: false,
   primaryActionText: "Continue",
-  isPrimaryActionDisabled: false,
+  // isPrimaryActionDisabled: false,
   stopClickHandler: false,
 });
 
-const authStore = useAuthStore();
-const profileUtil = new useProfile(authStore);
+
 
 const { processAPIRequest, clickHandler } = useEvents();
-const { getCompliance, mutateCompliance } = useComplianceStore();
+const merchanStore = useMerchantUtils();
 
 const btnRef = ref(null);
-const isComplianceLoading = ref<boolean>(true);
+
 
 /* Get active route category */
 const getActiveRouteCategory = computed(() => {
@@ -94,19 +94,11 @@ const getActiveRouteCategory = computed(() => {
   return title.split("-")[0]?.toLowerCase() || "";
 });
 
-
 /* Get active route data */
 const getActiveRouteData = computed(() => {
   return merchantOnboardingRouteList.find(
     (route) => route.category === getActiveRouteCategory.value
   )?.metadata as IPageRouteType[];
-});
-
-/* Validate action button */
-const validateActionButton = computed(() => {
-  if (profileUtil.getBusinessActivatedStatus() === "true") return true;
-  else if (profileUtil.getBusiness()?.activateMyBusiness) return true;
-  else return props.isPrimaryActionDisabled;
 });
 
 /* Trigger primary action click */
@@ -116,21 +108,21 @@ const triggerPrimaryActionClick = () => {
 };
 
 // Fetch all compliance data
-const fetchComplianceData = async () => {
-  const response = await processAPIRequest({
-    action: getCompliance,
-    payload: {},
-    showAlert: false,
-  });
+// const fetchComplianceData = async () => {
+//   const response = await processAPIRequest({
+//     action: getCompliance,
+//     payload: {},
+//     showAlert: false,
+//   });
 
-  if ([200, 400].includes(response.code || response.status)) {
-    isComplianceLoading.value = false;
-    mutateCompliance(response);
-  }
-};
+//   if ([200, 400].includes(response.code || response.status)) {
+//     isComplianceLoading.value = false;
+//     mutateCompliance(response);
+//   }
+// };
 
 // Fetch compliance data
-fetchComplianceData();
+// fetchComplianceData();
 
 /* Watch for props changes **/
 watch(

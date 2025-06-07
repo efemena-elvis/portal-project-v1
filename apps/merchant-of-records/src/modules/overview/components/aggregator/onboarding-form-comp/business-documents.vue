@@ -1,60 +1,46 @@
 <template>
   <OnboardingWrapper
-    :showActionRow="true"
-    :isPrimaryActionDisabled="isActionReady"
+    :isPrimaryActionDisabled="!isActionReady"
     :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'UboDetails1' })"
-    @onContinueClick="handleMerchantAgreementUpdate"
-
+    @onContinueClick="handleBusinessDocumentsUpdate"
+    :showActionRow="true"
+    primaryActionText="Onboard Merchants"
   >
- 
     <BulkUploadTable
-    
       :headers="tableHeaders"
       :data="tableData"
+      :showAddButton="false"
+      :showDeleteButton="false"
       @update-row="handleUpdateRow"
     />
-
   </OnboardingWrapper>
-
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, defineExpose, watch } from "vue";
-import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
-import { ITableHeaderType } from "@packages/models";
-import { computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
 import OnboardingWrapper from "./onboarding-wrapper.vue";
-
-// const props = defineProps<{
-//   merchantPayload: any[];
-//   isPrimaryActionDisabled: boolean;
-// }>();
-
-const emit = defineEmits<{
-  (e: "update:merchantPayload", payload: any[]): void;
-  (e: "stepComplete"): void;
-  (e: "showError", message: string): void;
-  (e: "update:isPrimaryActionDisabled", value: boolean): void;
-}>();
-
-const handleMerchantAgreementUpdate = async () => {};
-
-const tableData = ref<any[]>([
-  {
-    id: 1,
-    business_name: "",
-    tin_number: "",
-    business_certificate: "",
-    form_3: "",
-    optional_document: "",
-  },
-]);
+import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
+import { onboardMerchant } from "@/modules/overview/store/actions";
+import { useEvents } from "@packages/hooks";
 
 const router = useRouter();
+const merchantStore = useMerchantUtils();
 
-const tableHeaders = ref<ITableHeaderType[]>([
+interface TableRow {
+  id: number;
+  business_name: string;
+  tin_number: string;
+  business_certificate: string;
+  form_3: string;
+  optional_document: string;
+}
+
+const { processAPIRequest, pushToastAlert } = useEvents();
+
+const tableHeaders = ref([
   {
     key: "business_name",
     label: "Business name",
@@ -67,65 +53,121 @@ const tableHeaders = ref<ITableHeaderType[]>([
   { key: "optional_document", label: "Optional Document", type: "file" },
 ]);
 
-const stopClickHandler = ref<boolean>(false);
-const businessPayload = ref({});
+const tableData = ref<TableRow[]>([]);
 
-const isActionReady = computed(() => {
-  return true;
-});
+const stopClickHandler = ref(false);
+const onboardMerchantBtnRef = ref<HTMLButtonElement | null>(null);
 
-// watchEffect(() => {
-//   tableData.value = props.merchantPayload.map((merchant) => ({
-//     ...merchant,
-//     id: merchant.id,
-//     tin: merchant.tin ?? "",
-//     business_certificate: merchant.business_certificate ?? "",
-//     form_3: merchant.form_3 ?? "",
-//     optional_document: merchant.optional_document ?? "",
-//   }));
-// });
-
-const handleUpdateRow = (
-  rowId: string | number,
-  field: string,
-  value: string | number | File
-) => {
-  tableData.value = tableData.value.map((row) =>
-    row.id === rowId ? { ...row, [field]: value } : row
-  );
-  emit("update:merchantPayload", [...tableData.value]);
-};
-
-const validate = (): boolean => {
-  for (const row of tableData.value) {
-    if (!row.tin || !row.business_certificate || !row.form_3) {
-      return false;
-    }
+const initializeTableData = () => {
+  if (merchantStore.businessProfile.length) {
+    tableData.value = merchantStore.businessProfile.map((merchant, idx) => ({
+      id: idx + 1,
+      business_name: merchant.business_name || "",
+      tin_number: "",
+      business_certificate: "",
+      form_3: "",
+      optional_document: "",
+    }));
+  } else {
+    tableData.value = [
+      {
+        id: 1,
+        business_name: "",
+        tin_number: "",
+        business_certificate: "",
+        form_3: "",
+        optional_document: "",
+      },
+    ];
   }
-  return true;
 };
 
-// watch(
-//   tableData,
-//   () => {
-//     if (tableData.value.length === 0) {
-//       emit("update:isPrimaryActionDisabled", true);
-//       return;
-//     }
-//     const isValid = validate();
-//     emit("update:isPrimaryActionDisabled", !isValid);
+const handleUpdateRow = (rowId: number | string, field: string, value: any) => {
+  const id = typeof rowId === "string" ? Number(rowId) : rowId;
 
-//     if (isValid) {
-//       emit("stepComplete");
-//     } else {
-//       emit(
-//         "showError",
-//         "Please fill in all required business document fields."
-//       );
-//     }
-//   },
-//   { deep: true }
-// );
+  tableData.value = tableData.value.map((row) =>
+    row.id === id ? { ...row, [field]: value } : row
+  );
+};
 
-defineExpose({ validate });
+const isActionReady = computed(() =>
+  tableData.value.every((row) => row.business_name && row.tin_number)
+);
+
+const handleBusinessDocumentsUpdate = async () => {
+  const data = [...tableData.value];
+
+  const documentsPayload = data
+    .flatMap((row) => [
+      {
+        id: row.id,
+        type: "business_certificate",
+        url: row.business_certificate,
+        tin_number: row.tin_number,
+      },
+      {
+        id: row.id,
+        type: "form_3",
+        url: row.form_3,
+        tin_number: row.tin_number,
+      },
+      {
+        id: row.id,
+        type: "optional_document",
+        url: row.optional_document,
+        tin_number: row.tin_number,
+      },
+    ])
+    .filter((doc) => doc.url && typeof doc.url === "string");
+
+  const uniqueDocumentsPayload = documentsPayload.filter(
+    (doc, index, self) =>
+      index ===
+      self.findIndex(
+        (d) =>
+          d.id === doc.id &&
+          d.url === doc.url &&
+          d.type === doc.type &&
+          d.tin_number === doc.tin_number
+      )
+  );
+  merchantStore.setBusinessDocuments(uniqueDocumentsPayload);
+
+  merchantStore.setMerchantTable([...tableData.value]);
+
+  try {
+    try {
+      const response = await processAPIRequest({
+        action: onboardMerchant,
+        btnRef: onboardMerchantBtnRef,
+        btnText: "Next",
+        payload: merchantStore.getFullPayload(),
+        showAlert: true,
+      });
+
+      if (response.code === 201) {
+        pushToastAlert({
+          message: "Merchants onboarded successfully.",
+          type: "success",
+        });
+        router.push("/merchant/add-merchant-status");
+      } else {
+        pushToastAlert({
+          message: response.error.message,
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  } catch (error) {
+    console.error("Error during business documents update:", error);
+  }
+
+  // console.log("✅ Final merchant payload:", merchantStore.getFullPayload());
+};
+
+onMounted(() => {
+  initializeTableData();
+});
 </script>

@@ -94,24 +94,7 @@ const overviewRoutes: IRouteType[] = [
     path: "/merchant",
     component: () => Promise.resolve(FullPageLayout),
     children: [
-      {
-        path: "add",
-        name: "AddMerchants",
-        component: () =>
-          import(
-            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/aggregator/merchant-onboarding.vue"
-          ),
-          meta: {
-          requiresAuth: true,
-          title: "Merchants Onboarding",
-          pageMeta: {
-            title: "Add-Merchants",
-            description: "Adding and uploading merchants",
-          },
-          
-        },
-
-       },
+    
       {
         path: "business-profile",
         name: "MerchantBusinessProfile",

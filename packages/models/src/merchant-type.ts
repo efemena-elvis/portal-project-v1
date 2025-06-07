@@ -6,11 +6,11 @@ export interface IDirectorOrOwnerType {
 export interface IMerchantType {
   id: number;
   business_name: string;
-  business_sector: string;
-  country: string;
+  mcc: string;
+  country_id: string;
   email: string;
   phone_number: string;
-  website: string;
+  website_link: string;
   director1: IDirectorOrOwnerType;
   director2?: IDirectorOrOwnerType;
   ultimate_business_owner1: IDirectorOrOwnerType;

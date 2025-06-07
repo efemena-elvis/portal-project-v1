@@ -1,55 +1,50 @@
+This too:
 <template>
   <OnboardingWrapper
-    :isPrimaryActionDisabled="isActionReady"
+    :isPrimaryActionDisabled="!isActionReady"
     :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'DirectorDetails1' })"
-    @onContinueClick="handleMerchantAgreementUpdate"
+    @onContinueClick="handleUBODetailsUpdate"
     :showActionRow="true"
   >
-   
-      <BulkUploadTable
-        :headers="tableHeaders"
-        :data="tableData"
-        @update-row="handleUpdateRow"
-      />
+    <BulkUploadTable
+      :headers="tableHeaders"
+      :data="tableData"
+      @update-row="handleUpdateRow"
+    />
   </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, defineExpose, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
-
-import {
-  IDirectorOrOwnerType,
-  IMerchantType,
-  ITableHeaderType,
-} from "@packages/models";
-import { useGlobalStore } from "@/modules/global/store";
-import { useEvents } from "@packages/hooks";
 import OnboardingWrapper from "./onboarding-wrapper.vue";
-import { computed } from "vue";
-import { useRouter } from "vue-router";
+import { useEvents } from "@packages/hooks";
+import { useGlobalStore } from "@/modules/global/store";
+import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
 
-const props = defineProps<{
-  merchantPayload: IMerchantType[];
-  uboKey: "ultimate_business_owner1" | "ultimate_business_owner2";
-}>();
-
-const emit = defineEmits<{
-  (e: "update:merchantPayload", payload: any[]): void;
-  (e: "stepComplete"): void;
-  (e: "showError", message: string): void;
-}>();
-
+const router = useRouter();
+const route = useRoute()
 const { processAPIRequest } = useEvents();
 const { getBusinessCountries } = useGlobalStore();
-const router = useRouter();
+const merchantStore = useMerchantUtils();
+
+const stopClickHandler = ref(false);
 
 const countryList = ref<{ value: string; label: string }[]>([]);
 const countryNameToIdMap = ref<Record<string, string>>({});
 const countryIdToNameMap = ref<Record<string, string>>({});
 
-const tableHeaders = ref<ITableHeaderType[]>([
+interface TableHeader {
+  key: string;
+  label: string;
+  type: string;
+  readonly?: boolean;
+  options?: { value: string; label: string }[];
+}
+
+const tableHeaders = ref<TableHeader[]>([
   {
     key: "business_name",
     label: "Business name",
@@ -58,31 +53,27 @@ const tableHeaders = ref<ITableHeaderType[]>([
   },
   { key: "full_name", label: "Full Name", type: "text" },
   {
-    key: "ultimate_business_owners_country",
+    key: "country_id",
     label: "Country",
     type: "select",
     options: [],
   },
   {
-    key: "ultimate_business_owners_address",
+    key: "address",
     label: "Address",
     type: "text",
   },
 ]);
 
-const tableData = ref<any[]>([
-  {
-    id: 1,
-    merchantId: 0,
-    uboKey: props.uboKey,
-    business_name: "",
-    full_name: "",
-    ultimate_business_owners_country: "",
-    ultimate_business_owners_address: "",
-  },
-]);
-const stopClickHandler = ref<boolean>(false);
-const businessPayload = ref({});
+interface TableRow {
+  id: number | string;
+  business_name: string;
+  full_name: string;
+  country_id: string;
+  address: string;
+}
+
+const tableData = ref<TableRow[]>([]);
 
 const loadCountryList = async () => {
   const response = await processAPIRequest({
@@ -93,18 +84,14 @@ const loadCountryList = async () => {
   if (response.code === 200) {
     countryList.value = response.data.map(
       (item: { id: string; name: string }) => {
-        const nameLower = item.name.trim().toLowerCase();
-        countryNameToIdMap.value[nameLower] = item.id;
+        countryNameToIdMap.value[item.name.trim().toLowerCase()] = item.id;
         countryIdToNameMap.value[item.id] = item.name;
-        return {
-          value: item.id,
-          label: item.name,
-        };
+        return { value: item.id, label: item.name };
       }
     );
 
     const countryHeader = tableHeaders.value.find(
-      (header) => header.key === "ultimate_business_owners_country"
+      (h) => h.key === "country_id"
     );
     if (countryHeader) {
       countryHeader.options = countryList.value;
@@ -112,91 +99,70 @@ const loadCountryList = async () => {
   }
 };
 
-// watchEffect(() => {
-//   tableData.value = props.merchantPayload.map((merchant) => {
-//     const ubo = merchant[props.uboKey] as IDirectorOrOwnerType;
-//     return {
-//       id: `${merchant.id}-${props.uboKey}`,
-//       merchantId: merchant?.id,
-//       uboKey: props.uboKey,
-//       business_name: merchant?.business_name,
-//       full_name: ubo?.full_name || "",
-//       ultimate_business_owners_country:
-//         ubo?.ultimate_business_owners_country || "",
-//       ultimate_business_owners_address:
-//         ubo?.ultimate_business_owners_address || "",
-//     };
-//   });
-// });
+const initializeTableData = () => {
+  if (merchantStore.business.length) {
+    tableData.value = merchantStore.business.map((merchant, idx) => {
+      const existingRep = merchantStore.representative.find(
+        (rep) => rep.id === idx + 1 && rep.business_role?.includes("ubo")
+      );
 
-function validate(): boolean {
-  for (const row of tableData.value) {
-    const isEmpty =
-      !row.full_name &&
-      !row.ultimate_business_owners_country &&
-      !row.ultimate_business_owners_address;
-
-    if (props.uboKey === "ultimate_business_owner2" && isEmpty) {
-      continue;
-    }
-
-    if (
-      !row.full_name ||
-      !row.ultimate_business_owners_country ||
-      !row.ultimate_business_owners_address
-    ) {
-      return false;
-    }
-  }
-  return true;
-}
-
-const isActionReady = computed(() => {
-  return true;
-});
-
-const handleMerchantAgreementUpdate = async () => {};
-
-function handleUpdateRow(
-  rowId: string | number,
-  field: string,
-  value: string | number | File
-) {
-  const rowIdStr = typeof rowId === "number" ? rowId.toString() : rowId;
-  const [merchantIdStr, uboKey] = rowIdStr.split("-");
-  const merchantId = Number(merchantIdStr);
-
-  const updated = props.merchantPayload.map((merchant) => {
-    if (merchant.id === merchantId) {
       return {
-        ...merchant,
-        [uboKey]: {
-          ...merchant[uboKey],
-          [field]: value,
-        },
+        id: idx + 1,
+        business_name: merchant.business_name || "",
+        full_name: existingRep?.full_name || "",
+        country_id: existingRep?.country_id || "",
+        address: existingRep?.address || "",
       };
-    }
-    return merchant;
-  });
+    });
+  } else {
+    tableData.value = [
+      {
+        id: 1,
+        business_name: "",
+        country_id: "",
+        address: "",
+        full_name: "",
+      },
+    ];
+  }
+};
 
-  emit("update:merchantPayload", updated);
-}
-
-watch(
-  tableData,
-  () => {
-    if (validate()) {
-      emit("stepComplete");
-    } else if (props.uboKey === "ultimate_business_owner1") {
-      emit("showError", "Please complete all required UBO 1 fields.");
-    }
-  },
-  { deep: true }
+const isActionReady = computed(() =>
+  tableData.value.every((row) => row.full_name && row.country_id && row.address)
 );
 
-onMounted(() => {
-  loadCountryList();
-});
+const handleUBODetailsUpdate = async () => {
+  const data = [...tableData.value];
 
-defineExpose({ validate });
+  const updatedUBOs = data.map((row) => ({
+    id: typeof row.id === "string" ? Number(row.id) : row.id,
+    full_name: row.full_name,
+    country_id: row.country_id,
+    address: row.address,
+    business_role: ["ubo"]
+  }));
+
+  merchantStore.addRepresentatives([
+    ...merchantStore.representative,
+    ...updatedUBOs,
+  ]);
+  router.push({name: route.path.includes('/ultimate-business-owner') ?  "UboDetails2" : "BusinessDocuments"})
+  console.log("✅ Final merchant payload:", merchantStore.getFullPayload());
+};
+
+const handleUpdateRow = (
+  rowId: number | string,
+  field: string,
+  value: string | number | File
+) => {
+  const id = typeof rowId === "string" ? Number(rowId) : rowId;
+  tableData.value = tableData.value.map((row) =>
+    row.id === id ? { ...row, [field]: value } : row
+  );
+};
+
+onMounted(async () => {
+  await loadCountryList();
+  initializeTableData();
+});
 </script>

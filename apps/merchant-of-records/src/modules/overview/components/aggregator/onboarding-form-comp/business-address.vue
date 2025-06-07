@@ -1,94 +1,60 @@
 <template>
   <OnboardingWrapper
-    :isPrimaryActionDisabled="isActionReady"
+    :isPrimaryActionDisabled="!isActionReady"
     :stopClickHandler="stopClickHandler"
     @onBackClick="router.push({ name: 'MerchantBusinessProfile' })"
-    @onContinueClick="handleMerchantAgreementUpdate"
+    @onContinueClick="handleBusinessAddressUpdate"
     :showActionRow="true"
   >
-
-      <BulkUploadTable
-        :headers="tableHeaders"
-        :data="tableData"
-        @update-row="handleUpdateRow"
-      />
-
+    <BulkUploadTable
+      :headers="tableHeaders"
+      :data="tableData"
+      :showAddButton="false"
+      :showDeleteButton="false"
+      @update-row="handleUpdateRow"
+    />
   </OnboardingWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, watch, defineExpose } from "vue";
-import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
-import { ITableHeaderType } from "@packages/models";
-import { useGlobalStore } from "@/modules/global/store";
-import { useEvents } from "@packages/hooks";
-import OnboardingWrapper from "./onboarding-wrapper.vue";
-import { computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
+import OnboardingWrapper from "./onboarding-wrapper.vue";
+import { useEvents } from "@packages/hooks";
+import { useGlobalStore } from "@/modules/global/store";
+import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
+
+const router = useRouter();
+const { processAPIRequest } = useEvents();
+const { getBusinessCountries } = useGlobalStore();
+const merchantStore = useMerchantUtils();
 
 interface TableRow {
   id: number;
   business_name: string;
-  country: string;
+  country_id: string;
   address: string;
   billing_descriptor_1: string;
   billing_descriptor_2: string;
 }
 
-const props = defineProps<{
-  merchantPayload: Partial<TableRow>[];
-}>();
-
-const emit = defineEmits<{
-  (e: "update:merchantPayload", payload: TableRow[]): void;
-  (e: "stepComplete"): void;
-  (e: "showError", message: string): void;
-}>();
-
-const { processAPIRequest } = useEvents();
-const { getBusinessCountries } = useGlobalStore();
-const router = useRouter();
-
-const tableData = ref<TableRow[]>([
-  {
-    id: 1,
-    business_name: "",
-    country: "",
-    address: "",
-    billing_descriptor_1: "",
-    billing_descriptor_2: "",
-  },
-]);
-const countryList = ref<{ value: string; label: string }[]>([]);
-const countryNameToIdMap = ref<Record<string, string>>({});
-const countryIdToNameMap = ref<Record<string, string>>({});
-
-const stopClickHandler = ref<boolean>(false);
-const businessPayload = ref({});
-
-const isActionReady = computed(() => {
-  return true;
-});
-
-const tableHeaders = ref<ITableHeaderType[]>([
+const tableHeaders = ref([
   {
     key: "business_name",
     label: "Business name",
     type: "text",
     readonly: true,
   },
-  {
-    key: "country",
-    label: "Country",
-    type: "select",
-    options: [],
-  },
+  { key: "country_id", label: "Country", type: "select", options: [] },
   { key: "address", label: "Address", type: "text" },
   { key: "billing_descriptor_1", label: "Billing Descriptor 1", type: "text" },
   { key: "billing_descriptor_2", label: "Billing Descriptor 2", type: "text" },
 ]);
 
-const handleMerchantAgreementUpdate = async () => {};
+const tableData = ref<TableRow[]>([]);
+
+const stopClickHandler = ref(false);
 
 const loadCountryList = async () => {
   const response = await processAPIRequest({
@@ -97,89 +63,82 @@ const loadCountryList = async () => {
   });
 
   if (response.code === 200) {
-    countryList.value = response.data.map(
-      (item: { id: string; name: string }) => {
-        const nameLower = item.name.trim().toLowerCase();
-        countryNameToIdMap.value[nameLower] = item.id;
-        countryIdToNameMap.value[item.id] = item.name;
-        return {
-          value: item.id,
-          label: item.name,
-        };
-      }
+    const countries = response.data.map(
+      (item: { id: string; name: string }) => ({
+        value: item.id,
+        label: item.name,
+      })
     );
 
     const countryHeader = tableHeaders.value.find(
-      (header) => header.key === "country"
+      (h) => h.key === "country_id"
     );
-    if (countryHeader) {
-      countryHeader.options = countryList.value;
-    }
+    if (countryHeader) countryHeader.options = countries;
   }
 };
 
-// watchEffect(() => {
-//   tableData.value = props.merchantPayload.map((merchant, index) => ({
-//     id: merchant.id ?? index + 1,
-//     business_name: merchant.business_name ?? "",
-//     country: merchant.country ?? "",
-//     address: merchant.address ?? "",
-//     billing_descriptor_1: merchant.billing_descriptor_1 ?? "",
-//     billing_descriptor_2: merchant.billing_descriptor_2 ?? "",
-//   }));
-// });
-
-let stepCompleted = false;
-
-const validate = (): boolean => {
-  for (const row of tableData.value) {
-    if (
-      !row.business_name ||
-      !row.country ||
-      !row.address ||
-      !row.billing_descriptor_1 ||
-      !row.billing_descriptor_2
-    ) {
-      return false;
-    }
+const initializeTableData = () => {
+  if (merchantStore.business.length) {
+    tableData.value = merchantStore.business.map((merchant, idx) => ({
+      id: idx + 1,
+      business_name: merchant.business_name || "",
+      country_id: "",
+      address: "",
+      billing_descriptor_1: "",
+      billing_descriptor_2: "",
+    }));
+  } else {
+    tableData.value = [
+      {
+        id: 1,
+        business_name: "",
+        country_id: "",
+        address: "",
+        billing_descriptor_1: "",
+        billing_descriptor_2: "",
+      },
+    ];
   }
-  return true;
 };
 
-const handleUpdateRow =
-  () =>
-  (rowId: string | number, field: string, value: string | number | File) => {
-    const id = typeof rowId === "string" ? Number(rowId) : rowId;
-    let updatedRow: TableRow | undefined;
+const handleUpdateRow = (rowId: number | string, field: string, value: any) => {
+  const id = typeof rowId === "string" ? Number(rowId) : rowId;
 
-    tableData.value = tableData.value.map((row) => {
-      if (row.id === id) {
-        const updated = { ...row, [field]: value };
-        updatedRow = updated;
-        return updated;
-      }
-      return row;
-    });
+  tableData.value = tableData.value.map((row) =>
+    row.id === id ? { ...row, [field]: value } : row
+  );
+};
 
-    emit("update:merchantPayload", [...tableData.value]);
-  };
-
-watch(
-  tableData,
-  () => {
-    if (validate()) {
-      stepCompleted = true;
-      emit("stepComplete");
-    } else {
-      emit("showError", "Please complete all required address fields.");
-    }
-  },
-  { deep: true }
+const isActionReady = computed(() =>
+  tableData.value.every(
+    (row) =>
+      row.business_name &&
+      row.country_id &&
+      row.address &&
+      row.billing_descriptor_1 &&
+      row.billing_descriptor_2
+  )
 );
+
+const handleBusinessAddressUpdate = async () => {
+  const data = [...tableData.value];
+
+  const addressPayload = data.map((row) => ({
+    business_name: row.business_name,
+    country_id: row.country_id,
+    address: row.address,
+    billing_descriptor_1: row.billing_descriptor_1,
+    billing_descriptor_2: row.billing_descriptor_2,
+  }));
+
+  merchantStore.setMerchantTable([...tableData.value]);
+  merchantStore.setBusinessAddress(addressPayload);
+  router.push({name :  "DirectorDetails1"})
+  // console.log("✅ Final merchant payload:", merchantStore.getFullPayload());
+};
 
 onMounted(() => {
   loadCountryList();
+  initializeTableData();
 });
-
-defineExpose({ validate });
 </script>
