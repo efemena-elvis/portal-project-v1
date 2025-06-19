@@ -86,7 +86,7 @@
       </div> -->
 
       <!-- MODE TOGGLER -->
-      <div class="relative">
+      <div class="relative right-0">
         <div class="mode-toggler" ref="togglerModeRef" @click="canSwtchMode">
           <div
             class="mode-toggler-control"
@@ -123,28 +123,28 @@
         >
           <div class="dropdown-wrapper">
             <router-link to="/settings/profile" class="app-dropdown-item">
-              <div class="icon icon-user text-base"></div>
+              <div class="text-base icon icon-user"></div>
               <div class="text">Profile</div>
             </router-link>
 
             <!-- <router-link to="/settings/preferences" class="app-dropdown-item">
-              <div class="icon icon-tool text-base"></div>
+              <div class="text-base icon icon-tool"></div>
               <div class="text">Preferences</div>
             </router-link> -->
 
             <router-link to="/settings/developer" class="app-dropdown-item">
-              <div class="icon icon-developer text-base"></div>
+              <div class="text-base icon icon-developer"></div>
               <div class="text">Developers</div>
             </router-link>
 
             <!-- <router-link to="/user-support" class="app-dropdown-item">
-              <div class="icon icon-chat text-base"></div>
+              <div class="text-base icon icon-chat"></div>
               <div class="text">Help & Support</div>
             </router-link> -->
 
             <router-link to="/logout" class="app-dropdown-item">
-              <div class="icon icon-logout text-lg text-red-600"></div>
-              <div class="text text-red-600">Sign Out</div>
+              <div class="text-lg text-red-600 icon icon-logout"></div>
+              <div class="text-red-600 text">Sign Out</div>
             </router-link>
           </div>
         </div>
@@ -287,20 +287,20 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:py-2 flex justify-between items-center h-auto bg-neutral-10;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto bg-neutral-10 my-3.5 sm:my-2;
 
   &--left {
-    @apply flex justify-start items-center gap-x-2.5 w-1/2;
+    @apply flex justify-start items-center gap-x-2.5 w-1/2 sm:w-full sm:flex-wrap sm:gap-x-3 sm:gap-y-2;
 
     &-menu {
-      @apply hidden mdLg:block text-3xl sm:text-2xl cursor-pointer text-grey-500/90;
+      @apply hidden mdLg:block text-3xl sm:text-2xl cursor-pointer text-grey-500/90 sm:absolute top-8;
     }
 
     &-wrapper {
       @apply flex flex-col justify-center items-start mdLg:gap-y-0.5 w-full;
 
       .search-bar {
-        @apply relative w-[544px];
+        @apply relative w-[500px] sm:w-full sm:my-4;
 
         .search-area {
           @apply relative;
@@ -310,7 +310,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
           }
 
           .form-control {
-            @apply bg-grey-50/75 h-11 pl-11 py-5 border border-grey-100 rounded-lg focus:border-green-500/60 focus:bg-grey-50/50 placeholder:text-grey-700;
+            @apply bg-grey-50/75 h-11 pl-11 py-5 border border-grey-100 rounded-lg focus:border-green-500/60 focus:bg-grey-50/50 placeholder:text-grey-700 w-full text-sm sm:h-10 sm:text-xs;
           }
         }
 
@@ -321,18 +321,14 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
   }
 
   &--right {
-    @apply flex justify-end items-center gap-x-6 xs:gap-x-2.5 w-2/5;
+    @apply flex justify-end items-center  right-2 gap-x-6 sm:gap-x-3 w-2/5 sm:w-full sm:mt-3 sm:justify-between sm:flex-wrap;
 
     .notification-wrapper {
       @apply flex justify-center items-center text-neutral-500 hover:text-green-800 relative cursor-pointer;
-
-      .icon-notification {
-        @apply text-[22px];
-      }
     }
 
     .notification-dropdown {
-      @apply w-[340px] -right-[45px] pb-0;
+      @apply w-[340px] -right-[45px] pb-0 sm:right-0 sm:left-auto;
 
       .dropdown-wrapper {
         @apply after:right-[14.5%];
@@ -395,7 +391,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
       }
 
       .text {
-        @apply text-[13.5px] xs:text-[12.5px] capitalize font-medium;
+        @apply text-[13.5px] xs:text-[12.5px] capitalize font-medium sm:text-xs;
       }
     }
 
@@ -420,4 +416,5 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
     }
   }
 }
+
 </style>

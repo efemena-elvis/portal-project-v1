@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, h } from "vue";
 import { Line } from "vue-chartjs";
 import {
   Chart as ChartJS,
@@ -35,14 +35,19 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  dataLabels: { type: Array, required: true },
+  labels: {
+    type: Array,
+    required: true,
+  },
 });
 
 // Set up the chart data
 const chartData = computed(() => ({
-  labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  labels: props.labels,
   datasets: [
     {
-      label: "Successful",
+      label: props.dataLabels[0],
       borderColor: "#4caf50",
       backgroundColor: "#4caf50",
       data: props.data[0],
@@ -50,7 +55,7 @@ const chartData = computed(() => ({
       tension: 0.4, // smooth curve
     },
     {
-      label: "Failed",
+      label: props.dataLabels[1],
       borderColor: "#f44336",
       backgroundColor: "#f44336",
       data: props.data[1],
@@ -63,13 +68,23 @@ const chartData = computed(() => ({
 // Set up the chart options
 const chartOptions = ref({
   responsive: true,
+
   plugins: {
     legend: {
-      display: false,
+      display: true,
+      backgroundColor: "#fff",
+      position: "top",
+      labels: {
+        boxWidth: 5,
+        boxHeight: 5,
+        usePointStyle: true,
+        pointStyle: "circle",
+        color: "#c6c9c9",
+      },
     },
     tooltip: {
       mode: "index",
-      intersect: false,
+      intersect: true,
     },
   },
   scales: {
@@ -77,14 +92,26 @@ const chartOptions = ref({
       title: {
         display: true,
       },
-    },
-    y: {
-      display: false, // Disable y-axis numbers and labels
-      title: {
+      grid: {
         display: false,
       },
       ticks: {
-        display: false, // Remove y-axis ticks and labels
+        color: "#c6c9c9",
+      },
+    },
+
+    y: {
+      display: true,
+      title: {
+        display: true,
+      },
+      grid: {
+        display: false, // Remove y-axis grid lines
+      },
+      ticks: {
+        display: true,
+
+        color: "#c6c9c9",
       },
       beginAtZero: true,
     },

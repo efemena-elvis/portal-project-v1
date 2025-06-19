@@ -47,6 +47,15 @@ export const sidebarRoutes: ISidebarRouteType = {
       icon: "icon-profile-users",
       active: true,
       category: "payments",
+      type: "merchant"
+    },
+    {
+      link: "/merchants",
+      title: "Merchants",
+      icon: "icon-profile-users",
+      active: true,
+      category: "payments",
+      type: "aggregator"
     },
     // {
     //   link: "/refunds",
@@ -107,3 +116,5 @@ export const settingsSidebarRoutes: ISideNavType[] = [
     routeLinkName: "VesicashDeveloper",
   },
 ];
+
+

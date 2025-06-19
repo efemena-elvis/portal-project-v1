@@ -3,7 +3,7 @@ import { IRouteType } from "@packages/models";
 // *********** REDSTONE EXTERNAL ROUTES *********** //
 const externalRoutes: IRouteType[] = [
   {
-    path: "/onboarding/aggregator-merchant",
+    path: "/onboarding/aggregator",
     name: "MerchntAggregatorQuestionnaire",
     component: () =>
       import(

@@ -15,9 +15,8 @@
         Aggregators Questionnaire
       </h1>
       <p class="max-w-3xl text-grey-500">
-        Expand your business rapidly across Africa with Vesicash. Launch
-        operations in these markets: Nigeria, Ghana, Tanzania, Kenya, Zambia,
-        and Rwanda.
+        Expand your business rapidly with Vesicash across these markets:
+        Nigeria, Ghana, Tanzania, Kenya, Zambia, and Rwanda.
       </p>
     </div>
 
@@ -94,7 +93,7 @@
           labelId="website"
           labelTitle="Company Website"
           isRequired
-          inputPlaceholder="www.companyname.com"
+          inputPlaceholder="https://www.companyname.com"
           :inputType="IInputType.Url"
           :inputValue="questionnairePayload.website_link"
           @inputChanged="questionnairePayload.website_link = $event"
@@ -114,20 +113,6 @@
           @onSelectionChange="questionnairePayload.sub_merchant_range = $event"
           isRequired
         />
-        <div v-if="questionnairePayload.sub_merchant_range === 'above-1000'">
-          <TextFieldInput
-            labelId="subMerchantsOther"
-            inputPlaceholder="Please Specify"
-            :inputType="IInputType.Text"
-            :inputValue="subMerchantsOther"
-            @inputChanged="subMerchantsOther = $event"
-            isRequired
-            :errorHandler="{
-              validator: 'validateRequired',
-              message: 'Please specify a value.',
-            }"
-          />
-        </div>
 
         <MultiSelectFieldInput
           :labelCompact="false"
@@ -160,25 +145,6 @@
           "
           isRequired
         />
-        <div
-          v-if="
-            questionnairePayload.estimated_monthly_transactions_value ===
-            'above-1000000'
-          "
-        >
-          <TextFieldInput
-            labelId="transactionValueOther"
-            inputPlaceholder="Please Specify"
-            :inputType="IInputType.Text"
-            :inputValue="transactionValueOther"
-            @inputChanged="transactionValueOther = $event"
-            isRequired
-            :errorHandler="{
-              validator: 'validateRequired',
-              message: 'Please specify a value.',
-            }"
-          />
-        </div>
 
         <div class="mb-4">
           <h2 class="mb-4 text-sm font-semibold text-grey-900">
@@ -246,6 +212,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useImage } from "@/shared/composables";
 import { IInputType } from "@packages/models";
 import TextFieldInput from "@packages/uikit/src/components/form-comps/text-field-input.vue";
@@ -257,7 +224,6 @@ import { useGlobalStore } from "@/modules/global/store";
 import { useEvents, useString } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
 import { useExternalStore } from "../store";
-import axios from "axios";
 
 interface IQuestionnairePayload {
   full_name: string;
@@ -280,12 +246,10 @@ const { renderImg } = useImage();
 const { getBusinessCountries, uploadFile } = useGlobalStore();
 const { formatPhoneNumber } = useString();
 const { submitQuestionnaire } = useExternalStore();
+const router = useRouter();
 
 const phoneCountryCode = ref("234");
 const phoneNumberInput = ref("");
-const subMerchantsOther = ref("");
-const transactionValueOther = ref("");
-
 const questionnaireBtnRef = ref(null);
 
 const subMerchantsOptions = [
@@ -299,7 +263,7 @@ const transactionValues = [
   { value: "500001-1000000", name: "$500001 - $1000000" },
   { value: "1000001-5000000", name: "$1000001 - $5000000" },
   { value: "5000001-10000000", name: "$5000001 - $10000000" },
-  { value: "above-1000000", name: "Above $1000,000" },
+  { value: "above-10000000", name: "Above $10000000" },
 ];
 
 const questionnairePayload = ref<IQuestionnairePayload>({
@@ -371,18 +335,6 @@ const fetchCountriesUUID = async (): Promise<string[]> => {
   return [];
 };
 
-const finalTransactionValue = computed(() =>
-  questionnairePayload.value.estimated_monthly_transactions_value ===
-  "above-1000000"
-    ? transactionValueOther.value
-    : questionnairePayload.value.estimated_monthly_transactions_value
-);
-const finalSubMerchants = computed(() =>
-  questionnairePayload.value.sub_merchant_range === "above-1000"
-    ? subMerchantsOther.value
-    : questionnairePayload.value.sub_merchant_range
-);
-
 const isQuestionnaireReady = computed(() => {
   const payload = questionnairePayload.value;
   return !!(
@@ -417,8 +369,6 @@ const handleSubmitQuestionnaire = async () => {
         btnText: "Submit Questionnaire",
         payload: {
           ...questionnairePayload.value,
-          estimated_monthly_transactions_value: finalTransactionValue.value,
-          sub_merchant_range: finalSubMerchants.value,
           country_uuid,
           countries,
         },
@@ -431,15 +381,19 @@ const handleSubmitQuestionnaire = async () => {
           type: "success",
         });
 
-       
-      } else if (response.code === 400) {
+        router.push("/login");
+      }
+
+      else if(response.error.code === 400){
         pushToastAlert({
-          message: "Email already exists.",
+           message: "Email already exists.",
           type: "error",
-        });
-      } else {
+        })
+      }
+      
+      else {
         pushToastAlert({
-          message: "Response submission failed.",
+          message: response.error.message,
           type: "error",
         });
       }

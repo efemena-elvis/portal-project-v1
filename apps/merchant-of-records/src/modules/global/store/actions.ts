@@ -15,22 +15,14 @@ export function useGlobalActions() {
 
   const { mutateBusinessMode } = useAuthMutations();
 
-  // cloudinary
-  const CLOUD_NAME = "dszsvnwtb";
+ 
 
   const uploadFile = async (payload: any) => {
-    return await axios.post(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`,
-      payload
-    );
+    const response: any = await $api.push(globalRoutes.fileUpload, payload, {
+      hasAttachment: true,
+    });
+    return response;
   };
-
-  // const uploadFile = async (payload: any) => {
-  //   const response: any = await $api.push(globalRoutes.fileUpload, payload, {
-  //     hasAttachment: true,
-  //   });
-  //   return response;
-  // };
 
   const switchAppMode = async (payload: any) => {
     const response: any = await $api.push(globalRoutes.switchMode, payload);

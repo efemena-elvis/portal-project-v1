@@ -50,17 +50,23 @@ interface ITaxData {
   countryFlag: string;
   currencyShort: string;
   currencySign: string;
-  amount: string;
+  amount: number;
 }
 
 const props = withDefaults(
   defineProps<{
-    taxData: ITaxData;
+    taxData?: ITaxData;
   }>(),
   {
-    taxData: () => ({}),
+    taxData: () => ({
+      countryFlag: "",
+      currencyShort: "",
+      currencySign: "",
+      amount: 0,
+    }),
   }
 );
+
 </script>
 
 <style lang="scss" scoped>

@@ -3,7 +3,7 @@
     <!-- TOP ROW -->
     <div class="top-row">
       <div class="top-row--left">
-        <div class="page-title">{{ pageTitle }}</div>
+        <div class="page-title" v-if = "props.showTitle">{{ pageTitle }}</div>
       </div>
 
       <div class="top-row--right">
@@ -35,11 +35,13 @@ import Pagination from "./pagination.vue";
 interface IPageContentType {
   pagingData?: any;
   pagingDescription?: string;
+  showTitle?: boolean
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   pagingDescription: "",
   pagingData: { page_count: 0 },
+  showTitle: true
 });
 
 const route = useRoute();
@@ -59,7 +61,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
 
 <style lang="scss">
 .page-content-wrapper {
-  @apply w-full h-full flex flex-col justify-between items-start gap-y-9 pb-10;
+  @apply w-full h-full flex flex-col justify-between items-start gap-y-20 pb-10 relative bottom-[8px];
 
   .top-row {
     @apply flex sm:flex-wrap justify-between items-center gap-4 sm:gap-3 w-full -mb-4;
@@ -68,7 +70,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
       @apply flex justify-start items-center gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl;
+        @apply font-bold text-grey-900 text-2xl sm:-my-12;
       }
     }
 

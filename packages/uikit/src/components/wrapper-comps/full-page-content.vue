@@ -1,6 +1,6 @@
 <template>
-  <div class="full-page-content">
-    <div class="form-wrapper">
+  <div class="full-page-content" :class="fullPageContentClass">
+    <div class="form-wrapper" :class="fullFormWrapperClass">
       <div class="form-top">
         <div class="title-text">{{ getCurrentPage?.title }}</div>
         <div class="description-text">
@@ -52,6 +52,18 @@ const props = withDefaults(defineProps<IFullPageContentProps>(), {
 
 const route = useRoute();
 
+const fullFormWrapperClass = computed(() => {
+  return typeof window !== "undefined" && route.path.includes("/merchant")
+    ? "w-full mx-auto lg:ml-28 xl:ml-36 mdLg:ml-0 "
+    : "w-[74%] lg:w-[78%] mdLg:w-full ml-28 lg:ml-0 mdLg:ml-0";
+});
+
+const fullPageContentClass = computed(() => {
+  return typeof window !== "undefined" && route.path.includes("/merchant")
+    ? "w-[68%] xl:w-[68%] lg:w-[70%] mdLg:w-full flex justify-center items-start mx-auto"
+    : "@apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto";
+});
+
 const getCurrentPage = computed(() => {
   return props.pageRouteData.find((pageItem) => pageItem.route === route.name);
 });
@@ -59,11 +71,7 @@ const getCurrentPage = computed(() => {
 
 <style lang="scss" scoped>
 .full-page-content {
-  @apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto;
-
   .form-wrapper {
-    @apply w-[70%] lg:w-[78%] mdLg:w-full;
-
     .form-top {
       .title-text {
         @apply text-grey-900 font-semibold text-[28px] md:text-2xl leading-[32px] mb-2.5;
@@ -74,7 +82,7 @@ const getCurrentPage = computed(() => {
       }
 
       .flow-row {
-        @apply w-full bg-grey-50 border border-grey-100 rounded-full p-2 flex justify-start items-center gap-5 overflow-auto;
+        @apply w-fit bg-grey-50 border border-grey-100 rounded-full p-2 flex justify-start items-center gap-5 overflow-auto;
 
         .flow-item {
           @apply flex justify-start items-center gap-3 font-medium text-grey-600 text-sm md:text-[13.5px] transition-all duration-300 ease-in-out;
@@ -97,7 +105,7 @@ const getCurrentPage = computed(() => {
     }
 
     .form-base {
-      @apply mt-9 mb-20 md:mb-24;
+      @apply mt-9 mb-20 md:mb-24  w-full;
     }
   }
 }

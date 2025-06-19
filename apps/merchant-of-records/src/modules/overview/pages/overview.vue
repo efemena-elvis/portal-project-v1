@@ -3,33 +3,44 @@
     <template v-slot:pageOptions>
       <div class="button-row">
         <router-link
-          to="/market/wallet-entry"
+          :to="
+            morAccountType === 'aggregator'
+              ? '/merchant/business-profile'
+              : '/market/wallet-entry'
+          "
           class="btn btn-primary btn-sm hover:text-white"
         >
-          <div class="icon icon-add text-xl font-semibold"></div>
-          Deploy a wallet
+          <div class="text-xl font-semibold icon icon-add"></div>
+          {{
+            morAccountType === "aggregator"
+              ? "Add merchants"
+              : " Deploy a wallet"
+          }}
         </router-link>
       </div>
     </template>
 
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
-      <div class="overflow-row">
-        <OverviewCard
-          v-for="(wallet, index) in walletBalance"
-          :key="index"
-          :wallet="wallet"
-        />
-      </div>
-
-      <!-- TAX ROW -->
-      <div class="tax-row">
-        <div class="tax-row--left">
-          <TaxBlock :taxList="taxBalance" />
+      <Overview v-if="morAccountType === 'aggregator'" />
+      <div v-else>
+        <div class="overflow-row">
+          <OverviewCard
+            v-for="(wallet, index) in walletBalance"
+            :key="index"
+            :wallet="wallet"
+          />
         </div>
 
-        <div class="tax-row--right">
-          <TransactionMetrics />
+        <!-- TAX ROW -->
+        <div class="tax-row">
+          <div class="tax-row--left">
+            <TaxBlock :taxList="taxBalance" />
+          </div>
+
+          <div class="tax-row--right">
+            <TransactionMetrics />
+          </div>
         </div>
       </div>
 
@@ -55,6 +66,24 @@ import {
 } from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import Overview from "./aggregator/overview.vue";
+
+
+interface IWalletBalance {
+  countryFlag?:string;
+  description?: string;
+  currencyShort?:string;
+  currencySign?: string;
+  amount?: number
+
+}
+interface ITaxBalance {
+  countryFlag?:string;
+  currencyShort?:string;
+  currencySign?: string;
+  amount?: number
+
+}
 
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
@@ -63,17 +92,23 @@ const profileUtil = new useProfile(authStore);
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
 
+
 const { processAPIRequest } = useEvents();
 
-const walletBalance = ref([]);
-const taxBalance = ref([]);
+const walletBalance = ref<IWalletBalance[]>([]);
+const taxBalance = ref<ITaxBalance[]>([]);
+
+const morAccountType = computed(() => {
+  const userProfile = profileUtil?.getUser();
+  return userProfile?.morAccountType;
+});
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
   return userProfile?.country?.currency_code;
 });
 
-const loadLocalCountryCurrency = (country: string) => {
+const loadLocalCountryCurrency = () => {
   const localCountryPayload = countryCurrencies.find(
     (country) => country.currency.short === getLocalCurrencyCode.value
   );
@@ -185,7 +220,7 @@ onMounted(() => fetchAllWallets());
 <style lang="scss" scoped>
 .button-row {
   .btn-sm {
-    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold;
+    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold sm:mt-12;
   }
 }
 

@@ -59,12 +59,14 @@ import {
 import { MarketWrapper } from "@/modules/overview/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import { useEvents } from "@packages/hooks";
 
 const route = useRoute();
 const router = useRouter();
 
 const { uploadFile } = useGlobalStore();
 const { createWallet } = useOverviewStore();
+const {processAPIRequest} = useEvents()
 
 const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
