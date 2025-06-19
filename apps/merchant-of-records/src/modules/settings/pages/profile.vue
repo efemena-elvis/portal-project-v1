@@ -1,7 +1,7 @@
 <template>
   <div class="profile-area">
     <div class="profile-input">
-      <div class="title-text">{{ getBusinessProfile.businessName }}</div>
+      <div class="title-text">{{ getBusinessProfile?.businessName }}</div>
 
       <FileUploadInput
         :showSkip="false"
@@ -93,7 +93,7 @@
     </div>
   </div>
 
-  <teleport to="body" v-if="showChangePasswordtModal">
+  <teleport to="body" v-if="showChangePasswordModal">
     <ChangePasswordModal @closeTriggered="toggleChangePasswordModal" />
   </teleport>
 </template>
@@ -135,7 +135,7 @@ const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
 
 const businessLogo = ref<string>("");
-const showChangePasswordtModal = ref<boolean>(false);
+const showChangePasswordModal = ref<boolean>(false);
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUserProfile = computed(() => profileUtil.getUser());
@@ -162,7 +162,7 @@ const getPayload = computed(() => {
 });
 
 const toggleChangePasswordModal = () => {
-  showChangePasswordtModal.value = !showChangePasswordtModal.value;
+  showChangePasswordModal.value = !showChangePasswordModal.value;
 };
 
 // Fetch all profile data

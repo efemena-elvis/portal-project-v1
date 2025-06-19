@@ -30,10 +30,10 @@ defineProps({
   @apply flex justify-start items-center gap-x-3;
 
   .image-display {
-    @apply relative size-[60px] min-w-[60px] min-h-[60px] bg-[#f0f0f1] rounded-lg flex justify-center items-center;
+    @apply relative size-[60px] min-w-[55px] min-h-[60px] bg-[#f0f0f1] rounded-lg overflow-hidden flex justify-center items-center;
 
     img {
-      @apply w-auto h-[60px];
+      @apply w-auto h-[55px];
     }
   }
 
@@ -41,7 +41,7 @@ defineProps({
     @apply flex flex-col justify-start items-start gap-y-[3px];
 
     .primary-column-text {
-      @apply text-grey-800/90 font-medium text-sm;
+      @apply text-grey-800/90 font-semibold text-sm;
     }
 
     .secondary-column-text {

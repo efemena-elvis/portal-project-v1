@@ -14,7 +14,11 @@
     "dev:staging:merchant-of-records": "turbo run dev --filter=merchant-of-records -- --mode=staging",
     "dev:prod:merchant-of-records": "turbo run dev --filter=merchant-of-records -- --mode=production",
     "build:staging:merchant-of-records": "turbo run build --filter=merchant-of-records -- --mode=staging",
-    "build:prod:merchant-of-records": "turbo run build --filter=merchant-of-records -- --mode=production"
+    "build:prod:merchant-of-records": "turbo run build --filter=merchant-of-records -- --mode=production",
+    "dev:staging:merchant-storefront": "turbo run dev --filter=merchant-storefront -- --mode=staging",
+    "dev:prod:merchant-storefront": "turbo run dev --filter=merchant-storefront -- --mode=production",
+    "build:staging:merchant-storefront": "turbo run build --filter=merchant-storefront -- --mode=staging",
+    "build:prod:merchant-storefront": "turbo run build --filter=merchant-storefront -- --mode=production"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

@@ -230,11 +230,14 @@ watch(
         : dialing_code === newCode;
     });
 
-    if (currentSelection) {
-      countryFlag.value = currentSelection.flag;
-    } else {
-      countryFlag.value = "https://flagsapi.com/NG/flat/64.png";
-    }
+    const getActiveCountryFlag = countryListRepo.value.find(
+      (countryData) => countryData.dialing_code === newCode
+    );
+
+    countryFlag.value =
+      getActiveCountryFlag?.flag || "https://flagsapi.com/NG/flat/64.png";
+    countryName.value = currentSelection?.country || "";
+    countryCode.value = currentSelection?.dialing_code || "260";
   },
   { immediate: true }
 );

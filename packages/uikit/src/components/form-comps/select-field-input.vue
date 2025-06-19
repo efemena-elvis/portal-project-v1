@@ -54,7 +54,7 @@ const props = withDefaults(defineProps<ISelectInputField>(), {
   labelCompact: false,
   inputValue: "",
   inputPlaceholder: "",
-  inputBaseColor: "bg-neutral-10",
+  inputBaseColor: "bg-transparent",
   isRequired: false,
   isDisabled: false,
   hasBottomPadding: true,

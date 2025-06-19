@@ -2,16 +2,22 @@
   <div class="client-area-wrapper">
     <div class="client-area">
       <div class="client-area-brand">
-        {{ getBrandInitials(getBusinessProfile.businessName) }}
+        {{
+          getBrandInitials(
+            getBusinessProfile?.businessName ?? "No business name"
+          )
+        }}
       </div>
 
       <div class="client-area-details">
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
-          <div class="brand-name">{{ getBusinessProfile.businessName }}</div>
+          <div class="brand-name">
+            {{ getBusinessProfile?.businessName ?? "No business name" }}
+          </div>
 
           <div class="brand-id-row">
-            <div class="brand-id">{{ getUser.email }}</div>
+            <div class="brand-id">{{ getUser?.email ?? "No email" }}</div>
           </div>
         </div>
       </div>

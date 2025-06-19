@@ -10,7 +10,7 @@
 
     <button
       class="table-action-btn table-action-icon secondary-action"
-      :class="isSecondaryActionDelete ? 'hover:!bg-red-500' : ''"
+      :class="isSecondaryActionDelete ? 'hover:!bg-[#f44336]' : ''"
       @click="$emit('deleteClick')"
       v-if="showSecondaryBtn"
     >

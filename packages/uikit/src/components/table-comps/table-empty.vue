@@ -18,10 +18,11 @@
 
     <!-- ACTION BUTTON -->
     <button
-      class="btn btn-primary btn-sm mt-6"
+      class="btn btn-primary btn-xs mt-6"
       v-if="actionText.length"
       @click="$emit('onActionClicked')"
     >
+      <div class="icon icon-add"></div>
       {{ actionText }}
     </button>
   </div>
@@ -63,11 +64,11 @@ defineProps({
   }
 
   .title-text {
-    @apply text-center text-[19px] font-medium text-teal-900/80;
+    @apply text-center text-[20px] font-semibold text-teal-900/85;
   }
 
   .description-text {
-    @apply text-[15px] mdLg:text-sm leading-6 mdLg:leading-[24.25px] text-grey-600/95 text-center mx-auto w-[48%] xl:w-[54%] lg:w-4/5 sm:w-[98%];
+    @apply text-[14.75px] mdLg:text-sm leading-6 mdLg:leading-[24.25px] text-grey-600/95 text-center mx-auto w-[42%] xl:w-[54%] lg:w-4/5 sm:w-[98%];
   }
 }
 </style>

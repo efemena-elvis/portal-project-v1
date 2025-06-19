@@ -1,7 +1,12 @@
 <template>
   <div class="base-sidebar">
     <!-- CLIENT BUSINESS AREA -->
-    <BaseClientArea :businessProfile="businessProfile" />
+
+    <BaseClientAreaStore
+      v-if="isStoreLayout"
+      :businessProfile="businessProfile"
+    />
+    <BaseClientArea v-else :businessProfile="businessProfile" />
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
@@ -74,10 +79,12 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { ISidebarRouteType, IRouteGroupType } from "@packages/models";
 import BaseClientArea from "./base-client-area.vue";
+import BaseClientAreaStore from "./base-client-area-store.vue";
 
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
+  isStoreLayout: boolean;
 }
 
 interface GroupedByCategory {
@@ -92,6 +99,8 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
   }),
 
   businessProfile: () => ({}),
+
+  isStoreLayout: false,
 });
 
 const appRoute = useRoute();
@@ -136,7 +145,7 @@ onMounted(() => {
       @apply relative mb-6;
 
       &-title {
-        @apply px-6 text-[13.5px] mb-[6px] capitalize text-grey-600;
+        @apply px-6 text-[12px] mb-[6px] uppercase text-grey-600;
       }
     }
   }
@@ -146,10 +155,10 @@ onMounted(() => {
   }
 
   .sidebar-item {
-    @apply w-full px-6 py-2.5 text-neutral-800 flex justify-start items-center gap-x-[12px] transition duration-300 ease-in-out hover:bg-grey-100/60;
+    @apply w-full px-6 py-2.5 text-neutral-800/95 flex justify-start items-center gap-x-[12px] transition duration-300 ease-in-out hover:bg-grey-100/60;
 
     .icon {
-      @apply text-[17px];
+      @apply text-[18px];
     }
 
     .sidebar-text {

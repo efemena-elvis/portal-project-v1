@@ -1,7 +1,10 @@
 <template>
   <div class="full-page-layout">
     <div class="top-area">
-      <router-link to="/overview" class="icon icon-caret-left"></router-link>
+      <router-link
+        :to="getBackRoute"
+        class="icon icon-caret-left"
+      ></router-link>
       <div class="divider-line"></div>
       <div class="page-title">{{ pageTitle }}</div>
     </div>
@@ -15,12 +18,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
 
 const pageTitle = ref<string>("");
+
+const backRouteHistory = ref<Record<string, string>>({
+  AddStoreProduct: "/products",
+  all: "/overview",
+});
+
+const getBackRoute = computed(() => {
+  const routeName = route.name;
+
+  if (route.query.redirect) return `/${route.query.redirect}`;
+
+  if (
+    typeof routeName === "string" &&
+    backRouteHistory.value.hasOwnProperty(routeName)
+  ) {
+    return backRouteHistory.value[routeName];
+  }
+  return backRouteHistory.value["all"];
+});
 
 // UPDATE PAGE TITLE
 const updatePageTitle = () => {

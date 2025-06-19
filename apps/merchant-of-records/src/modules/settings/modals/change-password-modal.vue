@@ -99,9 +99,7 @@ const emits = defineEmits(["closeTriggered"]);
 const { updateUserPassword } = useSettingsStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 
-console.log(">>>>>>>> p ", updateUserPassword);
-
-const changePasswordBtnRef = ref<boolean>(false);
+const changePasswordBtnRef = ref(null);
 
 const payload = ref<IPayloadInputType>({
   old_password: "",

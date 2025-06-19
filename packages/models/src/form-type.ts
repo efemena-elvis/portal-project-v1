@@ -5,7 +5,7 @@ export enum IInputType {
   Date = "date",
   Number = "number",
   Search = "search",
-  Url = "url"
+  Url = "url",
 }
 
 export enum ISelectType {
@@ -30,6 +30,7 @@ export interface ITextInputField {
   isTextArea?: boolean;
   isRequired?: boolean;
   isDisabled?: boolean;
+  suffixText?: string;
   showPasswordDisplay?: boolean;
   showTextCopy?: boolean;
   copiedText?: string;

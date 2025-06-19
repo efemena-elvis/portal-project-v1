@@ -2,7 +2,7 @@
   <MetaData
     baseTitle="Merchant of Records"
     pageDescription="RedstonePGS offers seamless and secure payment gateway services for mobile money, card payments, and bank transfers. We ensure your transactions are fraud-free, collected efficiently, and settled on time. Discover reliable payment solutions with RedstonePGS."
-    keywords="RedstonePGS, payment gateway service, secure payment solutions, mobile money payments, card payment gateway, bank transfer solutions, fraud-free payment service, seamless payment processing, timely payment settlement, online payment solutions"
+    keywords="payment gateway service, secure payment solutions, mobile money payments, card payment gateway, bank transfer solutions, fraud-free payment service, seamless payment processing, timely payment settlement, online payment solutions"
     companyName="Vesicash Innovative Technologies"
     companyCreator="Vesicash Innovative Technologies Tech Team"
     companyBaseUrl="https://www.vesicash.com"

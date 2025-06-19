@@ -22,15 +22,14 @@
           <SearchIcon class="prefix-icon" fillColor="#818988" />
         </div>
 
-        <!-- inputBaseColor, -->
-        <slot>
+        <div :class="[suffixText ? 'input-wrapper form-control' : '']">
           <input
             :type="getInputType"
             :id="labelId"
             ref="inputRef"
             v-model="formValue"
             :class="[
-              'form-control',
+              !suffixText && 'form-control',
               !isInputValid && 'form-control-error',
               placeTextCenter && 'text-center',
             ]"
@@ -43,7 +42,10 @@
             @change="handleFormInput"
             @keydown.enter="handleFormInput"
           />
-        </slot>
+
+          <!-- INPUT SUFFIX -->
+          <div class="input-suffix" v-if="suffixText">{{ suffixText }}</div>
+        </div>
 
         <!-- SUFFIX ITEM FOR PASSWORD FIELD TYPE -->
         <div
@@ -127,6 +129,7 @@ const props = withDefaults(defineProps<ITextInputField>(), {
   inputValue: "",
   inputPlaceholder: "",
   inputBaseColor: "bg-neutral-10",
+  suffixText: "",
   isTextArea: false,
   isRequired: false,
   isDisabled: false,
@@ -189,6 +192,7 @@ const getInputTypeView = () => {
   const typeView = {
     text: null,
     number: null,
+    url: null,
     email: "has-suffix",
     search: "has-prefix",
     password: "has-suffix",
@@ -305,6 +309,18 @@ const triggerCopyText = async () => {
 .form-text-block {
   .form-block-input {
     @apply relative;
+
+    .input-wrapper {
+      @apply relative overflow-hidden;
+
+      input {
+        @apply w-3/5;
+      }
+
+      .input-suffix {
+        @apply absolute w-auto h-full top-1/2 -translate-y-1/2 right-0 z-10 bg-teal-50 px-8 text-center text-sm text-grey-900 font-medium flex flex-col justify-center items-center;
+      }
+    }
 
     .prefix-item,
     .suffix-item,

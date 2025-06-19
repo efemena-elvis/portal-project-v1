@@ -4,39 +4,41 @@
     <TableLoading v-if="isLoading" />
 
     <template v-else>
-      <template v-if="tableBody.length">
-        <div class="table-container">
-          <table class="table">
-            <thead v-if="showTableHeader">
-              <tr>
-                <td v-for="(header, index) in tableHeader" :key="index">
-                  <div class="table-header">
-                    <div>{{ header.title }}</div>
-                    <div
-                      v-if="header.sortable"
-                      class="table-sort-icon icon-double-caret-fill"
-                    ></div>
-                  </div>
-                </td>
-              </tr>
-            </thead>
+      <div class="table-container-wrapper">
+        <template v-if="true">
+          <div class="table-container">
+            <table class="table">
+              <thead v-if="showTableHeader">
+                <tr>
+                  <td v-for="(header, index) in tableHeader" :key="index">
+                    <div class="table-header">
+                      <div>{{ header.title }}</div>
+                      <div
+                        v-if="header.sortable"
+                        class="table-sort-icon icon-double-caret-fill"
+                      ></div>
+                    </div>
+                  </td>
+                </tr>
+              </thead>
 
-            <tbody>
-              <slot />
-            </tbody>
-          </table>
-        </div>
-      </template>
+              <tbody v-if="tableBody.length">
+                <slot />
+              </tbody>
+            </table>
+          </div>
+        </template>
 
-      <!-- TABLE EMPTY STATE -->
-      <TableEmpty
-        :title="emptyData.title"
-        :description="emptyData.description"
-        :actionText="emptyData.actionText"
-        :customImg="emptyData.customImg"
-        @onActionClicked="$emit('onActionClicked')"
-        v-else
-      />
+        <!-- TABLE EMPTY STATE -->
+        <TableEmpty
+          v-if="!isLoading && !tableBody.length"
+          :title="emptyData.title"
+          :description="emptyData.description"
+          :actionText="emptyData.actionText"
+          :customImg="emptyData.customImg"
+          @onActionClicked="$emit('onActionClicked')"
+        />
+      </div>
     </template>
   </div>
 </template>
@@ -79,6 +81,10 @@ const { tableHeader, tableBody, isLoading } = toRefs(props);
 </script>
 
 <style lang="scss">
+.table-container-wrapper {
+  @apply border border-grey-200/90 border-t-0 overflow-hidden rounded-lg;
+}
+
 .table-container {
   @apply overflow-auto w-full p-0;
 }
@@ -104,7 +110,7 @@ thead {
 }
 
 thead tr {
-  @apply border-0 border-y border-y-grey-200/75 bg-grey-50/45;
+  @apply border-0 border-y border-y-grey-200/75 bg-grey-50/80;
 }
 
 thead tr td {
@@ -112,7 +118,7 @@ thead tr td {
 }
 
 thead tr td .table-header {
-  @apply flex justify-start items-center;
+  @apply flex justify-start items-center font-medium;
 }
 
 thead tr td .table-header .table-sort-icon {
@@ -124,7 +130,7 @@ tbody {
 }
 
 tbody tr {
-  @apply cursor-pointer align-middle transition duration-300 ease-in-out border-b border-b-grey-200/60 hover:bg-green-100/20;
+  @apply cursor-pointer align-middle transition duration-300 ease-in-out border-b border-b-grey-200/60 hover:bg-green-100/20 last-of-type:border-b-0;
 }
 
 tbody tr td {

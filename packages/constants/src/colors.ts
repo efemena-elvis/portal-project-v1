@@ -39,11 +39,11 @@ const COLORS: Record<string, string> = {
   "yellow-10": "#fffdf7",
 
   // RED COLOR THEME
-  "red-900": "#2d0a14",
-  "red-800": "#521224",
-  "red-700": "#7b1c38",
-  "red-600": "#a3284c",
-  "red-500": "#cd3c64",
+  "red-900": "#df1e10",
+  "red-800": "#dd3315",
+  "red-700": "#d6341b",
+  "red-600": "#db481b",
+  "red-500": "#F44336",
   "red-400": "#d45d7f",
   "red-300": "#de7d99",
   "red-200": "#eaadbf",
