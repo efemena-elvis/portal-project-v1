@@ -223,6 +223,149 @@ const overviewRoutes: IRouteType[] = [
       },
     ],
   },
+
+  // *********** ADD MERCHANT COMPLIANCE *********** //
+  {
+    path: "/aggregator-merchant",
+    component: () => Promise.resolve(FullPageLayout),
+    children: [
+      {
+        path: "business-profile",
+        name: "AggregatorBusinessProfile",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/business-profile.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "Profile-Merchant",
+            description: "Aggregator merchant's profile",
+          },
+        },
+      },
+
+      {
+        path: "business-address",
+        name: "AggregatorMerchantBusinessAddress",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/business-address.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "Address-Merchant",
+            description: "Aggregator merchant's address",
+          },
+        },
+      },
+
+      {
+        path: "business-documents",
+        name: "AggregatorBusinessDocuments",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/business-documents.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "Registration-Documents",
+            description: "Vesicash merchant's business documents",
+          },
+        },
+      },
+
+      {
+        path: "director-details",
+        name: "AggregatorDirectorDetails1",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/director-profile.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "Director1-Details",
+            description: "Vesicash director's details",
+          },
+        },
+      },
+
+      {
+        path: "director2-details",
+        name: "AggregatorDirectorDetails2",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/director-profile.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "Director2-Details",
+            description: "Vesicash director's details",
+          },
+        },
+      },
+
+      {
+        path: "ultimate-business-owner",
+        name: "AggregatorUboDetails1",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/ultimate-business-owner.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "UBO1-Details",
+            description: "Vesicash ultimate business owner",
+          },
+        },
+      },
+
+      {
+        path: "ultimate-business-owner2",
+        name: "AggregatorUboDetails2",
+        component: () =>
+          import(
+            /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/ultimate-business-owner.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Add Merchants",
+          pageMeta: {
+            title: "UBO2-Details",
+            description: "Vesicash ultimate business owner",
+          },
+        },
+      },
+
+      // {
+      //   path: "add-merchant-status",
+      //   name: "AggregatorAddMerchantStatus",
+      //   component: () =>
+      //     import(
+      //       /* webpackChunkName: "overview-module" */ "@/modules/compliance/pages/aggregator-merchant/add-merchant-status.vue"
+      //     ),
+      //   meta: {
+      //     requiresAuth: true,
+      //     title: "Add Merchants",
+      //     pageMeta: {
+      //       title: "Status-Add-Merchant",
+      //       description: "Vesicash merchant addition status",
+      //     },
+      //   },
+      // },
+    ],
+  },
 ];
 
 export default overviewRoutes;

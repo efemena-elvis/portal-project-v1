@@ -24,13 +24,20 @@ ChartJS.register(
 );
 
 const chartData = {
-  labels: ["January", "February", "March"], // Ensure this is defined
+  labels: ["Mon", " Tue", "Wed", "Thur", "Fri", "Sat", "Sun"], // Ensure this is defined
   datasets: [
     {
       //   label: "Dataset 1",
-      data: [65, 59, 80],
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderColor: "rgba(75, 192, 192, 1)",
+      data: [10, 20, 30, 15, 40, 35, 20],
+      backgroundColor: "#de7d99",
+      borderRadius: 4,
+      borderWidth: 1,
+    },
+    {
+      //   label: "Dataset 1",
+      data: [42, 35, 90, 55, 65, 75, 85],
+      backgroundColor: "#8ddca2",
+      borderRadius: 4,
       borderWidth: 1,
     },
   ],
@@ -39,12 +46,27 @@ const chartData = {
 const chartOptions = {
   scales: {
     x: {
-      display: false, // Hides the x-axis
+      display: true,
+
+      grid: {
+        display: false, // Hides the grid lines
+      },
+      ticks: {
+        color: "#c6c9c9", // Gray-700
+      },
     },
     y: {
-      display: false, // Hides the y-axis
+      display: true, // Hides the y-axis
+
+      grid: {
+        display: false, // Hides the grid lines
+      },
+      ticks: {
+        color: "#c6c9c9", // Gray-700
+      },
     },
   },
+
   plugins: {
     legend: {
       display: false, // Hides the legend (if you want to hide it too)

@@ -80,6 +80,38 @@ const overviewRoutes: IRouteType[] = [
           },
         },
       },
+      {
+        path: "/merchants",
+        name: "VesicashMerchants",
+        component: () =>
+          import(
+            /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/merchants.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Merchants",
+          pageMeta: {
+            title: "Merchants",
+            description: "Merchants",
+          },
+        },
+      },
+      {
+        path: "/merchant/:id",
+        name: "MerchantDetails",
+        component: () =>
+          import(
+            /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/merchant-details.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Merchant's Details",
+          pageMeta: {
+            title: "Merchant's Details",
+            description: "Merchant's Details",
+          },
+        },
+      },
     ],
   },
 ];

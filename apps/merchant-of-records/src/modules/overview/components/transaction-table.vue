@@ -6,7 +6,6 @@
       :tableHeader="tableHeader"
       :tableBody="tableBody"
       :isLoading="isLoading"
-      :showTableHeader="false"
       :emptyData="{
         title: 'No transactions yet!',
         description: 'No transactions has been initiated on your account yet',
@@ -25,24 +24,26 @@
 <script setup lang="ts">
 import { ref, reactive, h, onMounted } from "vue";
 import { TableHeaderType } from "@packages/models";
+import { useString, useEvents, useDate } from "@packages/hooks";
+import { usePaymentStore } from "@/modules/payments/store";
 import {
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
 } from "@packages/uikit";
-import { useString, useEvents } from "@packages/hooks";
-import { usePaymentStore } from "@/modules/payments/store";
 
-const { formatNumber, getStatus } = useString();
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
+  useString();
 const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
-const isLoading = ref(false);
+const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "Product Details", slug: "product" },
-  { title: "Amount Per Unit", slug: "amount" },
-  { title: "Stock", slug: "quantity" },
+  { title: "Transaction Date", slug: "date_created" },
+  { title: "Customer Details", slug: "customer_details" },
+  { title: "Amount", slug: "amount" },
+  { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
 ]);
 
@@ -62,7 +63,7 @@ const fetchPaymentTransactions = async () => {
   });
 
   isLoading.value = false;
-  // console.log(response);
+
   if (response?.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
@@ -81,16 +82,7 @@ const fetchPaymentTransactions = async () => {
             secondaryText: `Charge: ${data.currency} ${formatNumber(data.charge)}`,
           },
         }),
-        payment_details: h(TableDoubleColumn, {
-          entry: {
-            primaryText: capitalizeFirstLetter(data.method),
-            secondaryText: `Type: ${
-              data.redirect_url.startsWith("https://store.redstonepgs.com/")
-                ? "Storefront"
-                : "Third party"
-            }`,
-          },
-        }),
+        payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
       });
     });
@@ -106,10 +98,10 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .transaction-table {
-  @apply w-full h-auto rounded-2xl p-6 pb-7 bg-grey-50/80;
+  @apply w-full h-auto rounded-2xl;
 
   .title-row {
-    @apply font-semibold text-lg text-grey-900 mb-4;
+    @apply font-semibold text-xl text-grey-900 mb-4;
   }
 }
 </style>

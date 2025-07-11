@@ -1,7 +1,7 @@
 <template>
   <div class="profile-area">
     <div class="profile-input">
-      <div class="title-text">{{ getBusinessProfile.businessName }}</div>
+      <div class="title-text">{{ "hello" }}</div>
 
       <FileUploadInput
         :showSkip="false"

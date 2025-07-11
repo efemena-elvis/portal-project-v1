@@ -50,7 +50,7 @@
       class="hidden"
       :disabled="isUploading"
       @change="processDocumentUpload"
-      accept=".jpg, .jpeg, .png, .pdf"
+      accept=".jpg, .jpeg, .png, .pdf .xls, .xlsx"
     />
   </div>
 
@@ -103,10 +103,10 @@ const { processFileType, processFileSize } = useFile();
 const { pushToastAlert, processAPIRequest } = useEvents();
 
 const fileUploadRef = ref<HTMLInputElement | null>(null);
-const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
+const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png", "xls", "xlsx"]);
 
 const isDocUploaded = ref<boolean>(props.hasDocumentUploaded || false);
-// const isDocUploaded = computed(() => props.hasDocumentUploaded || false);
+
 
 const isUploading = ref<boolean>(false);
 
@@ -118,7 +118,7 @@ const docPayload = ref<{ name: string; link: string }>({
 const processDocumentUpload = async ($event: Event) => {
   const inputElement = $event.target as HTMLInputElement;
   const uploadedFile = inputElement.files ? inputElement.files[0] : null;
- 
+
   if (!uploadedFile) return;
 
   isUploading.value = true;
@@ -147,71 +147,50 @@ const processDocumentUpload = async ($event: Event) => {
   }
 
   // UPLOAD FILE TO BUCKET
-  const UPLOAD_PRESET = "vesicash";
   const payload = new FormData();
-  payload.append("file", uploadedFile);
-  payload.append("upload_preset", UPLOAD_PRESET);
-
+  payload.append("files", uploadedFile);
 
   const response = await processAPIRequest({
     action: props.uploadAction,
     payload,
-    // alertHandler: {
-    //   200: {
-    //     message: "Document uploaded successfully",
-    //     type: "success",
-    //   },
+    alertHandler: {
+      201: {
+        message: "Document uploaded successfully",
+        type: "success",
+      },
 
-    //   400: {
-    //     message: "Document upload failed",
-    //     type: "error",
-    //   },
-    // },
+      400: {
+        message: "Document upload failed",
+        type: "error",
+      },
+    },
   });
 
-
-  if (response.status == 200) {
+  if (response.code == 201) {
     docPayload.value = response.data;
     isDocUploaded.value = true;
-    
-    pushToastAlert({
-      message: "Document uploaded successfully",
-      type: "success",
-    });
 
     inputElement.value = "";
     isUploading.value = false;
 
     docPayload.value.name = uploadedFile.name;
-    docPayload.value.link = response.data.secure_url;
-    
-    console.log(response);
+    docPayload.value.link = response.data[0].file_url;
 
-      docPayload.value[inputElement.name] =
-        response.data.url;
-    
-    emits("onDocumentUploaded", response.data.secure_url);
+    emits("onDocumentUploaded", response.data[0].file_url);
   }
 
   // FAILED STATE
   else {
-    pushToastAlert({
-      message: "Document upload failed",
-      type: "error",
-    });
-
     inputElement.value = "";
     isUploading.value = false;
     isDocUploaded.value = false;
   }
+
+  console.log(docPayload)
 };
 
-const removeUploadedFile = () => {
-  isDocUploaded.value = false;
-  docPayload.value = { name: "", link: "" };
 
-  emits("onDocumentUploaded", null);
-};
+
 </script>
 
 <style lang="scss" scoped>

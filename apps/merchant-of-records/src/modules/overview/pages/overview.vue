@@ -3,35 +3,55 @@
     <template v-slot:pageOptions>
       <div class="button-row">
         <router-link
-          to="/market/wallet-entry"
+          :to="
+            morAccountType === 'aggregator'
+              ? '/aggregator-merchant/business-profile'
+              : '/market/wallet-entry'
+          "
           class="btn btn-primary btn-sm hover:text-white"
         >
-          <div class="icon icon-add text-xl font-semibold"></div>
-          Deploy a wallet
+          <div class="text-xl font-semibold icon icon-add"></div>
+          {{
+            morAccountType === "aggregator"
+              ? "Add merchants"
+              : "Deploy a wallet"
+          }}
         </router-link>
       </div>
     </template>
 
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
-      <div class="overflow-row">
-        <OverviewCard
-          v-for="(wallet, index) in walletBalance"
-          :key="index"
-          :wallet="wallet"
-        />
-      </div>
+      <template v-if="morAccountType === 'aggregator'">
+        <AggregatorMetrics />
+      </template>
+
+      <template v-else>
+        <div class="overflow-row">
+          <OverviewCard
+            v-for="(wallet, index) in walletBalance"
+            :key="index"
+            :wallet="wallet"
+          />
+        </div>
+      </template>
 
       <!-- TAX ROW -->
-      <div class="tax-row">
-        <div class="tax-row--left">
-          <TaxBlock :taxList="taxBalance" />
-        </div>
+      <template v-if="morAccountType === 'aggregator'">
+        <AggregatorCharts />
+      </template>
 
-        <div class="tax-row--right">
-          <TransactionMetrics />
+      <template v-else>
+        <div class="tax-row">
+          <div class="tax-row--left">
+            <TaxBlock :taxList="taxBalance" />
+          </div>
+
+          <div class="tax-row--right">
+            <TransactionMetrics />
+          </div>
         </div>
-      </div>
+      </template>
 
       <!-- TRANSACTION ROW -->
       <div class="transaction-row">
@@ -52,9 +72,25 @@ import {
   TaxBlock,
   TransactionMetrics,
   TransactionTable,
+  AggregatorMetrics,
+  AggregatorCharts,
 } from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
+
+interface IWalletBalance {
+  countryFlag: string;
+  description: string;
+  currencyShort: string;
+  currencySign: string;
+  amount: number;
+}
+interface ITaxBalance {
+  countryFlag: string;
+  currencyShort: string;
+  currencySign: string;
+  amount: number;
+}
 
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
@@ -65,46 +101,47 @@ const { getAllWallets } = storeToRefs(overviewStore);
 
 const { processAPIRequest } = useEvents();
 
-const walletBalance = ref([]);
-const taxBalance = ref([]);
+const walletBalance = ref<IWalletBalance[]>([]);
+const taxBalance = ref<ITaxBalance[]>([]);
+
+const morAccountType = computed(() => {
+  const userProfile = profileUtil?.getUser();
+  return userProfile?.morAccountType;
+});
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
   return userProfile?.country?.currency_code;
 });
 
-const loadLocalCountryCurrency = (country: string) => {
+const loadLocalCountryCurrency = () => {
   const localCountryPayload = countryCurrencies.find(
     (country) => country.currency.short === getLocalCurrencyCode.value
   );
 
   walletBalance.value = [
     {
-      countryFlag: localCountryPayload?.flag,
-      description: localCountryPayload?.currency.description,
-      currencyShort: localCountryPayload?.currency.short,
-      currencySign: localCountryPayload?.currency.sign,
+      countryFlag: localCountryPayload?.flag ?? "",
+      description: localCountryPayload?.currency.description ?? "",
+      currencyShort: localCountryPayload?.currency.short ?? "",
+      currencySign: localCountryPayload?.currency.sign ?? "",
       amount: 0,
     },
   ];
 
   taxBalance.value = [
     {
-      countryFlag: localCountryPayload?.flag,
-      currencyShort: localCountryPayload?.currency.short,
-      currencySign: localCountryPayload?.currency.sign,
+      countryFlag: localCountryPayload?.flag ?? "",
+      currencyShort: localCountryPayload?.currency.short ?? "",
+      currencySign: localCountryPayload?.currency.sign ?? "",
       amount: 0,
     },
   ];
 };
 
 const fetchAllWallets = async () => {
-  // LOAD LOCAL CURRENCY
-  console.log(getAllWallets.value);
-  console.log(Object.keys(getAllWallets.value));
-
   if (getAllWallets?.value?.walletBalance.length === 0) {
-    await loadLocalCountryCurrency();
+    loadLocalCountryCurrency();
   } else {
     walletBalance.value = getAllWallets.value.walletBalance;
     taxBalance.value = getAllWallets.value.taxBalance;
@@ -132,28 +169,30 @@ const fetchAllWallets = async () => {
     );
 
     nonLocalWallets.forEach((wallet: any) => {
-      const walletPayload = {};
-      const taxWalletPayload = {};
-
       const walletCurrencyData = countryCurrencies.find(
         (country) => country.currency.short === wallet.currency
       );
 
-      walletPayload.countryFlag = walletCurrencyData?.flag;
-      walletPayload.description = walletCurrencyData?.currency.description;
-      walletPayload.currencyShort = walletCurrencyData?.currency.short;
-      walletPayload.currencySign = walletCurrencyData?.currency.sign;
-      walletPayload.amount = wallet?.market_balance ?? 0;
+      const walletPayload: IWalletBalance = {
+        countryFlag: walletCurrencyData?.flag ?? "",
+        description: walletCurrencyData?.currency.description ?? "",
+        currencyShort: walletCurrencyData?.currency.short ?? "",
+        currencySign: walletCurrencyData?.currency.sign ?? "",
+        amount: wallet?.market_balance ?? 0,
+      };
 
-      taxWalletPayload.countryFlag = walletCurrencyData?.flag;
-      taxWalletPayload.currencyShort = walletCurrencyData?.currency.short;
-      taxWalletPayload.currencySign = walletCurrencyData?.currency.sign;
-      taxWalletPayload.amount = wallet?.tax_balance ?? 0;
+      const taxWalletPayload: ITaxBalance = {
+        countryFlag: walletCurrencyData?.flag ?? "",
+        currencyShort: walletCurrencyData?.currency.short ?? "",
+        currencySign: walletCurrencyData?.currency.sign ?? "",
+        amount: wallet?.tax_balance ?? 0,
+      };
 
       // Replace or push for walletBalance
       const existingWalletIndex = walletBalance.value.findIndex(
         (entry) => entry.currencyShort === walletPayload.currencyShort
       );
+
       if (existingWalletIndex !== -1) {
         walletBalance.value[existingWalletIndex] = walletPayload;
       } else {
@@ -164,6 +203,7 @@ const fetchAllWallets = async () => {
       const existingTaxIndex = taxBalance.value.findIndex(
         (entry) => entry.currencyShort === taxWalletPayload.currencyShort
       );
+
       if (existingTaxIndex !== -1) {
         taxBalance.value[existingTaxIndex] = taxWalletPayload;
       } else {
@@ -185,7 +225,7 @@ onMounted(() => fetchAllWallets());
 <style lang="scss" scoped>
 .button-row {
   .btn-sm {
-    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold;
+    @apply py-0.5 px-5 h-[46px] gap-x-1 font-semibold sm:mt-12;
   }
 }
 

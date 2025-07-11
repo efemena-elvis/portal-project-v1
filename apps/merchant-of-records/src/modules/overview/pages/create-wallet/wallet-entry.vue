@@ -25,9 +25,8 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { IInputType } from "@packages/models";
 import { useEvents, useProfile } from "@packages/hooks";
-import { SelectOptionFieldInput, SelectFieldInput } from "@packages/uikit";
+import { SelectOptionFieldInput } from "@packages/uikit";
 import { supportedCurrencies } from "@packages/constants";
 import { MarketWrapper } from "@/modules/overview/components";
 import { useOverviewStore } from "@/modules/overview/store";
@@ -49,7 +48,6 @@ const router = useRouter();
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
 
-const { createWallet } = overviewStore;
 const { getBusinessCountries } = useGlobalStore();
 const { getAllWallets } = storeToRefs(overviewStore);
 
@@ -90,15 +88,6 @@ const isActionReady = computed(() => {
   return marketPayload.value.currency ? false : true;
 });
 
-const getMarketPayload = computed(() => {
-  const { currency, country_id } = marketPayload.value;
-
-  return {
-    currency,
-    countryId: country_id,
-  };
-});
-
 // FETCH BUSINESS COUNTRIES
 const fetchBusinessCountries = async () => {
   const response = await processAPIRequest({
@@ -127,7 +116,7 @@ watch(
   () => marketPayload.value.currency,
   (value) => {
     const selectedCountry = businessCountries.value.find(
-      (country) => country.currency_code === value
+      (country: any) => country.currency_code === value
     );
 
     marketPayload.value.country_id = selectedCountry?.id;

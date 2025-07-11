@@ -133,9 +133,10 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const getKeys = computed(() => {
-  if (getBusinessProfile.value.businessMode === "test") {
-    return getAPIKeys.value.test;
-  } else return getAPIKeys.value?.live;
+  // if (getBusinessProfile.value.businessMode === "test") {
+  //   return getAPIKeys.value.test;
+  // } else return getAPIKeys.value?.live;
+  return getAPIKeys.value?.live;
 });
 
 const isActionReady = computed(() => {

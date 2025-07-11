@@ -203,3 +203,115 @@ export const complianceSections: IComplianceSectionType[] = [
     completed: false,
   },
 ];
+
+// AGGREGATOR MERCHANT COMPLIANCE
+const aggregatorMerchantRouteMap = {
+  business: [
+    {
+      name: "Profile",
+      route: "AggregatorBusinessProfile",
+      title: "Let's know about your Merchant(s)",
+      description:
+        "As a financial service company, we would need to know about your Merchants business profile",
+    },
+  ],
+  address: [
+    {
+      name: "Address",
+      route: "AggregatorMerchantBusinessAddress",
+      title: "How can we locate your Merchant(s)?",
+      description:
+        "Provide merchant(s) business address, so we can identify thier physical location",
+    },
+  ],
+  registration: [
+    {
+      name: "Documents",
+      route: "AggregatorBusinessDocuments",
+      title: "Business registration documents",
+      description:
+        "Provide registered business documents, so Vesicash can verify your business information.",
+    },
+  ],
+  director1: [
+    {
+      name: "Director 1",
+      route: "AggregatorDirectorDetails1",
+      title: "Let's meet your director",
+      description: "Provide the profile details of merchant(s) director",
+    },
+  ],
+  director2: [
+    {
+      name: "Director 2",
+      route: "AggregatorDirectorDetails2",
+      title: "Let's meet another director",
+      description:
+        "Provide the profile details of another merchant(s) director",
+    },
+  ],
+
+  ubo1: [
+    {
+      name: "Ultimate Business Owner 1",
+      route: "AggregatorUboDetails1",
+      title: "Let's meet the Ultimate Business Owner",
+      description:
+        "Provide the profile details of the merchant(s) ultimate business owner",
+    },
+  ],
+  ubo2: [
+    {
+      name: "Ultimate Business Owner 2",
+      route: "AggregatorUboDetails2",
+      title: "Let's meet the Ultimate Business Owner",
+      description:
+        "Provide the profile details of the merchant(s) ultimate business owner",
+    },
+  ],
+};
+
+export const merchantOnboardingRouteList = [
+  {
+    name: "Business Profile",
+    route: "AggregatorBusinessProfile",
+    category: "profile",
+    metadata: aggregatorMerchantRouteMap.business,
+  },
+  {
+    name: "Business Address",
+    route: "AggregatorMerchantBusinessAddress",
+    category: "address",
+    metadata: aggregatorMerchantRouteMap.address,
+  },
+  {
+    name: "Business Documents",
+    route: "AggregatorBusinessDocuments",
+    category: "registration",
+    metadata: aggregatorMerchantRouteMap.registration,
+  },
+  {
+    name: "Director's Details",
+    route: "AggregatorDirectorDetails1",
+    category: "director1",
+    metadata: aggregatorMerchantRouteMap.director1,
+  },
+  {
+    name: "Director's Details 2",
+    route: "AggregatorDirectorDetails2",
+    category: "director2",
+    metadata: aggregatorMerchantRouteMap.director2,
+  },
+  {
+    name: "Ultimate Business Owner",
+    route: "AggregatorUboDetails1",
+    category: "ubo1",
+    metadata: aggregatorMerchantRouteMap.ubo1,
+  },
+  {
+    name: "Ultimate Business Owner 2",
+    route: "AggregatorUboDetails2",
+    category: "ubo2",
+    metadata: aggregatorMerchantRouteMap.ubo2,
+  },
+];

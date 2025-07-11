@@ -39,7 +39,7 @@ interface ITaxList {
   countryFlag: string;
   currencyShort: string;
   currencySign: string;
-  amount: string;
+  amount: number;
 }
 
 const props = withDefaults(

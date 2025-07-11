@@ -22,12 +22,19 @@ const publicKey = computed(() =>
     : profileUtil.getAPIKeys().live.public
 );
 
+const privateKey = computed(() =>
+  activeMode === "test"
+    ? profileUtil.getAPIKeys().test.secret
+    : profileUtil.getAPIKeys().live.secret
+);
+
 const $api = new useServiceAPI({
   API_BASE_URL: MOR_API_BASE_URL,
   API_VERSION: MOR_API_VERSION,
   TOKEN_KEY: MOR_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
+    "private-key": privateKey.value,
   },
 });
 
@@ -48,4 +55,12 @@ export const getWallets = async () => {
 
 export const createWallet = async (payload: any) => {
   return await $api.push(overviewRoutes.createWallet, payload);
+};
+
+export const onboardMerchant = async (payload: any) => {
+  return await $api.push(overviewRoutes.onboardMerchant, payload);
+};
+
+export const bulkUploadMerchants = async (payload: any) => {
+  return await $api.push(overviewRoutes.bulkUploadMerchant, payload);
 };

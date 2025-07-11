@@ -7,7 +7,7 @@
     </div>
 
     <div class="metric-stat">
-      {{ props.metricPercentageChange }} (Last Month)
+      {{ props.metricPercentageChange }} (Past 30 days)
     </div>
   </div>
 </template>
@@ -33,7 +33,7 @@ const props = withDefaults(defineProps<IMetricProps>(), {
   @apply border overflow-hidden rounded-[10px] px-5 py-6 flex flex-col justify-center items-start gap-y-0.5;
 
   .metric-title {
-    @apply text-grey-600 font-medium text-[13px] mb-2.5;
+    @apply text-grey-600 font-medium text-sm mb-2.5;
   }
 
   .metric-value {

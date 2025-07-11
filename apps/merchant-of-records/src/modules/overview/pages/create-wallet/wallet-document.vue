@@ -48,9 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { storeToRefs } from "pinia";
 import {
   SelectFieldInput,
   UploadGuidelines,
@@ -59,12 +58,14 @@ import {
 import { MarketWrapper } from "@/modules/overview/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import { useEvents } from "@packages/hooks";
 
 const route = useRoute();
 const router = useRouter();
 
 const { uploadFile } = useGlobalStore();
 const { createWallet } = useOverviewStore();
+const { processAPIRequest } = useEvents();
 
 const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
@@ -86,7 +87,8 @@ const getUploadedDocumentContent = computed(() => {
 });
 
 const isActionReady = computed(() => {
-  return uploadedDocument.value ? false : true;
+  if (isIncorporated.value === "not_incorporated") return false;
+  else return uploadedDocument.value ? false : true;
 });
 
 const getMarketPayload = computed(() => {

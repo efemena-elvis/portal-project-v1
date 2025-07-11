@@ -41,23 +41,18 @@ import {
   PageContentWrapper,
 } from "@packages/uikit";
 
-const {
-  formatNumber,
-  getStatus,
-  getBoldTableText,
-  notAvailable,
-  capitalizeFirstLetter,
-} = useString();
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
+  useString();
 const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
 const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "Transaction Info", slug: "info" },
-  { title: "Customer Details", slug: "customer" },
-  { title: "Payment Method", slug: "payment_method" },
+  { title: "Transaction Date", slug: "date_created" },
+  { title: "Customer Details", slug: "customer_details" },
   { title: "Amount", slug: "amount" },
+  { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
 ]);
 
@@ -77,7 +72,7 @@ const fetchPaymentTransactions = async () => {
   });
 
   isLoading.value = false;
-  // console.log(response);
+
   if (response?.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
@@ -96,16 +91,7 @@ const fetchPaymentTransactions = async () => {
             secondaryText: `Charge: ${data.currency} ${formatNumber(data.charge)}`,
           },
         }),
-        payment_details: h(TableDoubleColumn, {
-          entry: {
-            primaryText: capitalizeFirstLetter(data.method),
-            secondaryText: `Type: ${
-              data.redirect_url.startsWith("https://store.redstonepgs.com/")
-                ? "Storefront"
-                : "Third party"
-            }`,
-          },
-        }),
+        payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
       });
     });

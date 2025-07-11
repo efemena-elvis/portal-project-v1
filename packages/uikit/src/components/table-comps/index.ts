@@ -5,3 +5,4 @@ export { default as TableDoubleColumn } from "./table-double-column.vue";
 export { default as TableEmpty } from "./table-empty.vue";
 export { default as TableFormatString } from "./table-format-string.vue";
 export { default as TableLoading } from "./table-loading.vue";
+export { default as BulkUploadTable } from "./bulk-upload-table.vue";

@@ -93,12 +93,8 @@ export const settingsSidebarRoutes: ISideNavType[] = [
     routeTitle: "Bank Account",
     routeLinkName: "VesicashBankAccount",
   },
-  // {
-  //   routeTitle: "Teams",
-  //   routeLinkName: "RedstoneAccountSettings",
-  // },
   {
-    routeTitle: "Developer",
-    routeLinkName: "VesicashDeveloper",
+    routeTitle: "Custom Domain",
+    routeLinkName: "VesicashCustomDomain",
   },
 ];

@@ -2,7 +2,7 @@
   <PageContentWrapper>
     <template v-slot:pageContent>
       <!-- TOP BLOCK -->
-      <div class="top-block">
+      <div class="top-block pt-3">
         <div class="top-block--left">
           <OverviewBlock />
         </div>
@@ -16,7 +16,9 @@
       <div class="mid-block"></div>
 
       <!-- BOTTOM BLOCK -->
-      <div class="bottom-block"></div>
+      <div class="bottom-block">
+        <TransactionTable />
+      </div>
     </template>
   </PageContentWrapper>
 </template>
@@ -46,7 +48,7 @@ const { processAPIRequest } = useEvents();
 
 <style lang="scss" scoped>
 .top-block {
-  @apply flex justify-between items-start gap-x-8 mt-2;
+  @apply flex justify-between items-start gap-x-6 mt-2;
 
   &--left {
     @apply w-[55%];
@@ -62,6 +64,6 @@ const { processAPIRequest } = useEvents();
 }
 
 .bottom-block {
-  @apply mb-4;
+  @apply mt-12;
 }
 </style>

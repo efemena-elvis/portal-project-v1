@@ -29,10 +29,11 @@ import {
   TableContainerBody,
   TableDoubleColumn,
 } from "@packages/uikit";
-import { useString, useEvents } from "@packages/hooks";
+import { useString, useEvents, useDate } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 
-const { formatNumber, getStatus } = useString();
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
+  useString();
 const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
@@ -105,10 +106,10 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .transaction-table {
-  @apply w-full h-auto rounded-2xl p-6 pb-7 bg-grey-50/80;
+  @apply w-full h-auto rounded-2xl;
 
   .title-row {
-    @apply font-semibold text-lg text-grey-900 mb-4;
+    @apply font-semibold text-xl text-grey-900 mb-4;
   }
 }
 </style>

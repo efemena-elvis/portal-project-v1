@@ -30,7 +30,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();

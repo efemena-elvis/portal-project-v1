@@ -3,13 +3,13 @@ import middlewares from "@/middlewares";
 
 // IMPORTED ROUTES FROM RESPECTIVE APPLICATION MODULES
 import authRoutes from "@/modules/auth";
-import overviewRoutes from "@/modules/overview";
+
 import paymentRoutes from "@/modules/payments";
 import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
 import externalRoutes from "@/modules/external";
 import settingsRoutes from "@/modules/settings";
-// import storefrontRoutes from "@/modules/storefront";
+import overviewRoutes from "@/modules/overview";
 
 const routes = [
   ...authRoutes,
@@ -19,8 +19,6 @@ const routes = [
   ...complianceRoutes,
   ...externalRoutes,
   ...settingsRoutes,
-  //   ...transferRoutes,
-  //   ...storefrontRoutes
 
   {
     path: "/*",

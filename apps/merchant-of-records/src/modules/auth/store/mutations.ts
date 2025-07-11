@@ -51,6 +51,7 @@ export function useAuthMutations() {
       lastName: user.last_name,
       currentBusiness: user.current_business,
       isEmailVerified: payload.is_email_verified,
+      morAccountType: user.mor_account_type,
     };
 
     setStorage({

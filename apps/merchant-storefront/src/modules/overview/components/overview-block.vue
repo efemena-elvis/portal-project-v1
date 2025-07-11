@@ -23,18 +23,22 @@
       </div>
     </div>
 
-    <div class="overview-content--bottom"></div>
+    <div class="overview-content--bottom">
+      <BarChart />
+    </div>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { BarChart } from "@packages/uikit";
+</script>
 
 <style lang="scss" scoped>
 .overview-content {
   @apply border border-grey-200/90 overflow-hidden rounded-xl p-6;
 
   &--top {
-    @apply flex justify-between items-center gap-x-2;
+    @apply flex justify-between items-center gap-x-2 mb-[34px];
 
     &--left {
       @apply flex flex-col justify-center items-start gap-2;
