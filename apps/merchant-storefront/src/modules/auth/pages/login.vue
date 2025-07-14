@@ -103,7 +103,7 @@ const getLoginPayload = computed(() => {
 });
 
 const handleUserLogin = async () => {
-  const response = await processAPIRequest({
+  const response =  await processAPIRequest({
     action: loginUser,
     payload: getLoginPayload.value,
     btnRef: loginBtnRef,
@@ -121,6 +121,7 @@ const handleUserLogin = async () => {
       },
     },
   });
+
 
   if (response.code === 200) {
     // Check if user email is verified
