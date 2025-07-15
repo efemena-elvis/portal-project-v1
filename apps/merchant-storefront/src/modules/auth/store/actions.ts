@@ -18,7 +18,7 @@ const loginUser = async (payload: any): Promise<IAPIType> => {
   const response: any = await $api.push(authRoutes.login, payload);
 
   if (response?.code === 200) {
-    // Normalize the structure to match what `mutateUserData` expects
+  
     const normalizedPayload = {
       ...response.data,
       user: {
