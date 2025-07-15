@@ -9,12 +9,18 @@ import settingsRoutes from "@/modules/settings";
 import storefrontRoutes from "@/modules/storefront";
 
 const routes = [
+  
   ...authRoutes,
   ...overviewRoutes,
   ...paymentRoutes,
   ...settingsRoutes,
   ...storefrontRoutes,
   // *********** ERROR ROUTES *********** //
+
+    {
+    path: '/',
+    redirect: '/login', // ✅ forces "/" to redirect to "/login"
+  },
   {
     path: "/*",
     name: "NotFoundError",

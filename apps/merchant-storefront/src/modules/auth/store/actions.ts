@@ -15,12 +15,23 @@ export function useAuthActions() {
 
   const { mutateUserData } = useAuthMutations();
 
-  const loginUser = async (payload: any) => {
-    return await $api.push(authRoutes.login, payload);
+  const loginUser = async (payload: any): Promise<IAPIType>  => {
+    const response : any =  await $api.push(authRoutes.login, payload);
 
-    // response?.code === 200 && mutateUserData(response?.data);
-    
-    // return response;
+
+  if (response?.code === 200) {
+   
+    const normalizedPayload = {
+      ...response.data,
+      user: {
+        ...response.data.user,
+        business_users: [response.data.user.business_user], 
+      },
+    };
+
+    mutateUserData(normalizedPayload);
+  }
+  return response;
   };
 
   const signupUser = async (payload: any) => {
