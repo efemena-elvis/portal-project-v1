@@ -62,7 +62,7 @@ export function useAuthMutations() {
 
   // MUTATE AUTH BUSINESS
   const mutateAuthBusiness = (payload: any) => {
-    const { business } = payload.user.business_users[0];
+    const { business } = payload.user?.business_users[0] 
 
     authBusiness.value = {
       businessAddress: business.address,
