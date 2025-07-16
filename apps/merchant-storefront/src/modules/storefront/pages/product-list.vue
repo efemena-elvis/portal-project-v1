@@ -22,7 +22,7 @@
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
@@ -194,5 +194,5 @@ const handleDeleteProduct = (data: any) => {
   console.log("Delete Product:", data);
 };
 
-// onMounted(() => fetchProducts = async () => {());
+onMounted(() => fetchProducts() );
 </script>

@@ -20,7 +20,7 @@
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
@@ -97,7 +97,7 @@ import {
 const router = useRouter();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
-const { getStoreProducts } = useStoreStore();
+const { getStoreOrders } = useStoreStore();
 const { processAPIRequest } = useEvents();
 
 const renderOrderQuantity = (order: any) => {
@@ -185,9 +185,9 @@ const toggleViewOrdersModal = () => {
   showViewOrdersModal.value = !showViewOrdersModal.value;
 };
 
-const fetchProducts = async () => {
+const fetchOrders = async () => {
   const response = await processAPIRequest({
-    action: getStoreProducts,
+    action: getStoreOrders,
     payload: {},
     showAlert: false,
   });
@@ -214,15 +214,15 @@ const fetchProducts = async () => {
   }
 };
 
-const handleEditProduct = (data: any) => {
+const handleEditOrder = (data: any) => {
   // Logic to edit product
   console.log("Edit Product:", data);
 };
 
-const handleDeleteProduct = (data: any) => {
+const handleDeleteOrder = (data: any) => {
   // Logic to delete product
   console.log("Delete Product:", data);
 };
 
-// onMounted(() => fetchProducts = async () => {());
+// onMounted(() => fetchOrders());
 </script>

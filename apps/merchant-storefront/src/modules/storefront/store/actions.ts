@@ -33,6 +33,10 @@ const $api = new useServiceAPI({
   },
 });
 
+export const createStorefront = async (payload: any) => {
+  return await $api.push(storeRoutes.createStorefront, payload);
+};
+
 export const getStoreDetails = async () => {
   return await $api.fetch(storeRoutes.getStoreDetails);
 };

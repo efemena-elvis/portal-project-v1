@@ -17,10 +17,6 @@ const routes = [
   ...storefrontRoutes,
   // *********** ERROR ROUTES *********** //
 
-    {
-    path: '/',
-    redirect: '/login', // ✅ forces "/" to redirect to "/login"
-  },
   {
     path: "/*",
     name: "NotFoundError",

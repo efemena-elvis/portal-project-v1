@@ -82,7 +82,7 @@
         </div>
       </div>
 
-      <router-link to="/logout" class="dropdown-area select-none">
+      <router-link to="/storefront/create" class="dropdown-area select-none">
         <div class="dropdown-item">
           <div class="icon icon-add"></div>
           Create a new Store

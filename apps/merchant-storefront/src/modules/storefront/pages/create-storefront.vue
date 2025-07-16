@@ -4,7 +4,9 @@
     :pageData="[pageHeaderData]"
     :isPrimaryActionDisabled="isActionReady"
     :isSecondaryActionDisabled="isOnboardingPath"
+    @onContinueClick="handleCreateStorefront"
     primaryActionText="Create Store"
+    :btnRef="createStorefrontBtnRef"
   >
     <!-- STOREFRONT NAME -->
     <TextFieldInput
@@ -23,6 +25,22 @@
       }"
     />
 
+    <!-- STOREFRONT INSTAGRAM -->
+    <TextFieldInput
+      labelId="storeUrl"
+      labelTitle="Store Instagram Handle"
+      :labelCompact="false"
+      :inputValue="storefrontPayload.instagram"
+      inputPlaceholder="e.g. @yourstore"
+      :inputType="IInputType.Text"
+      :isRequired="true"
+      @inputChanged="storefrontPayload.instagram = $event"
+      @inputValidated="storeNameValidity = $event"
+      :errorHandler="{
+        validator: 'validateRequired',
+        message: 'Store Instagram handle is a required field',
+      }"
+    />
     <!-- STOREFRONT URL -->
     <TextFieldInput
       labelId="storeUrl"
@@ -74,18 +92,23 @@ import { IInputType } from "@packages/models";
 import { TextFieldInput, SelectFieldInput } from "@packages/uikit";
 import StorefrontEntryWrapper from "@/modules/storefront/components/storefront-entry-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
-import { useProfile } from "@packages/hooks";
+import { useProfile, useEvents } from "@packages/hooks";
 import { storefrontNiches } from "@/modules/storefront/constants/storefront-niches";
+import { useStoreStore } from "../store";
+
 
 type IStorefrontType = {
   name: string;
   currency: string;
   tag: string;
   business_id: string;
+  instagram: string;
 };
 
 const route = useRoute();
 const router = useRouter();
+const { processAPIRequest } = useEvents();
+const {createStorefront} = useStoreStore();
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
 
@@ -101,6 +124,7 @@ const pageHeaderData = ref({
 
 const storefrontPayload = ref<IStorefrontType>({
   name: "",
+  instagram: "",
   currency: "ZMW",
   tag: "",
   business_id: getBusinessProfile?.value?.businessId || "",
@@ -127,6 +151,34 @@ const isActionReady = computed(() => {
     ? false
     : true;
 });
+
+const handleCreateStorefront = async () => {
+
+  const response = await processAPIRequest({
+    action: createStorefront,
+    payload: storefrontPayload.value,
+    btnText: "Create Store",
+    alertHandler: {
+      200: {
+        message: "Store created successfully",
+        description: "You can now view your store",
+        type: "success",
+      },
+      400: {
+        message: "Storefront creation failed",
+        description: "Something went wrong",
+        type: "error",
+      },
+    },
+  });
+  if (response.code === 200) {
+    setTimeout(() => {
+      location.replace(
+       "/overview"
+      );
+    }, 1200);
+  }
+};
 
 const isOnboardingPath = computed(() => {
   return route.query?.onboarding === "true";

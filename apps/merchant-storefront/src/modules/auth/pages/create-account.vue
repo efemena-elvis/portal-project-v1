@@ -66,7 +66,7 @@
         }"
       />
 
-      <div class="helper-row mt-5 mb-6">
+      <div class="mt-5 mb-6 helper-row">
         <div class="text">
           By clicking the “<span class="font-semibold">Create your account</span
           >” button, you agree to Storo's <a href="">terms and conditions</a>.
@@ -74,14 +74,14 @@
       </div>
 
       <button
-        class="btn btn-primary w-full my-5"
+        class="w-full my-5 btn btn-primary"
         ref="signupBtnRef"
         :disabled="isSignupReady"
       >
         Create your account
       </button>
 
-      <div class="helper-row justify-center mt-5">
+      <div class="justify-center mt-5 helper-row">
         <div class="text">
           Already have an account?
           <router-link :to="{ name: 'StoroLogin' }">Login</router-link>

@@ -29,7 +29,7 @@ export function useAuthActions() {
       },
     };
 
-    mutateUserData(normalizedPayload);
+    mutateUserData(normalizedPayload); 
   }
   return response;
   };
