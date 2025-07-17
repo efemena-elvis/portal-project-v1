@@ -4,7 +4,7 @@ import { IRouteType } from "@packages/models";
 const authRoutes: IRouteType[] = [
   {
     path: "/login",
-    alias: "/",
+    alias: "",
     component: () =>
       import(
         /* webpackChunkName: "auth-layout" */ "@/modules/auth/layouts/auth-layout.vue"
