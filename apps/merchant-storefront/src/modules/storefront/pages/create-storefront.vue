@@ -20,8 +20,8 @@
       @inputChanged="storefrontPayload.name = $event"
       @inputValidated="storeNameValidity = $event"
       :errorHandler="{
-        validator: 'validateAlphanumeric',
-        message: 'Store name should only contain letters or numbers',
+        validator: 'validateRequired',
+        message: 'Store name is a required field.',
       }"
     />
 

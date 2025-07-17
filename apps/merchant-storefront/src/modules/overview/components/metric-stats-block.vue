@@ -41,6 +41,12 @@
 
 <script setup lang="ts">
 import { MetricItem } from "@/modules/overview/components";
+
+const props = defineProps({
+  metrics: {
+    default: () => [],
+  },
+});
 </script>
 
 <style lang="scss" scoped>

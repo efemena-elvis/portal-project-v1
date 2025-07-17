@@ -108,7 +108,7 @@
           </div>
 
           <div>
-            <div class="profile-name">Efemena Elvis</div>
+            <div class="profile-name">{{ getBusinessProfile?.businessName}}</div>
             <div class="profile-role">Store Owner</div>
           </div>
 

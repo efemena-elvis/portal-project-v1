@@ -121,51 +121,51 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([
-  {
-    counter: "1",
-    date_created: "22nd July, 2024",
-    customer: h(TableDoubleColumn, {
-      entry: {
-        primaryText: `Efemena Elvis`,
-        secondaryText: `efemena.elvis@example.com`,
-      },
-    }),
-    order: h(TableDoubleColumn, {
-      entry: {
-        primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
-        secondaryText: renderOrderQuantity({
-          order_details: [
-            { quantity: 2, product_name: "White Sneakers" },
-            { quantity: 1, product_name: "Black Sneakers" },
-          ],
-        }),
-      },
-    }),
-    payment_status: h(TableDoubleColumn, {
-      entry: {
-        primaryText: `<span class='text-green-600'>Paid</span>`,
-        secondaryText: `Order no: ${"N/A"}`,
-      },
-    }),
-    order_status: `${getStatus("success", "Completed")}`,
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: true,
-      primaryBtnText: "Manage",
-      showSecondaryText: true,
-      secondaryBtnIcon: "",
-      secondaryBtnText: "View",
-      isSecondaryActionDelete: false,
-      onManageClick: () => {
-        // productOrderDetails.value = data;
-        toggleManageOrdersModal();
-      },
-      onDeleteClick: () => {
-        // productOrderDetails.value = data;
-        toggleViewOrdersModal();
-      },
-    }),
-  },
+  // {
+  //   counter: "1",
+  //   date_created: "22nd July, 2024",
+  //   customer: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: `Efemena Elvis`,
+  //       secondaryText: `efemena.elvis@example.com`,
+  //     },
+  //   }),
+  //   order: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
+  //       secondaryText: renderOrderQuantity({
+  //         order_details: [
+  //           { quantity: 2, product_name: "White Sneakers" },
+  //           { quantity: 1, product_name: "Black Sneakers" },
+  //         ],
+  //       }),
+  //     },
+  //   }),
+  //   payment_status: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: `<span class='text-green-600'>Paid</span>`,
+  //       secondaryText: `Order no: ${"N/A"}`,
+  //     },
+  //   }),
+  //   order_status: `${getStatus("success", "Completed")}`,
+  //   action: h(TableActionBtn, {
+  //     showPrimaryBtn: true,
+  //     showSecondaryBtn: true,
+  //     primaryBtnText: "Manage",
+  //     showSecondaryText: true,
+  //     secondaryBtnIcon: "",
+  //     secondaryBtnText: "View",
+  //     isSecondaryActionDelete: false,
+  //     onManageClick: () => {
+  //       // productOrderDetails.value = data;
+  //       toggleManageOrdersModal();
+  //     },
+  //     onDeleteClick: () => {
+  //       // productOrderDetails.value = data;
+  //       toggleViewOrdersModal();
+  //     },
+  //   }),
+  // },
 ]);
 const tablePaging = ref<any>({});
 

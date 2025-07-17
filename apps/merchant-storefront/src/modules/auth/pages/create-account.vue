@@ -7,18 +7,18 @@
     <form @submit.prevent="handleUserSignup">
       <!-- BUSINESS NAME -->
       <TextFieldInput
-        labelId="fullName"
-        labelTitle="Full Name"
+        labelId="businessName"
+        labelTitle="Business Name"
         :labelCompact="false"
         :inputType="IInputType.Text"
-        :inputValue="signupPayload.full_name"
+        :inputValue="signupPayload.business_name"
         inputPlaceholder="Provide your first and last name"
         isRequired
-        @inputChanged="signupPayload.full_name = $event"
-        @inputValidated="payloadValidity.full_name = $event"
+        @inputChanged="signupPayload.business_name = $event"
+        @inputValidated="payloadValidity.business_name = $event"
         :errorHandler="{
           validator: 'validateRequired',
-          message: 'Fullname is a required field',
+          message: 'Business name is a required field',
         }"
       />
 
@@ -103,14 +103,14 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
 
 type ISignupInputType = {
-  full_name: string;
+  business_name: string;
   country_id: string;
   email: string;
   password: string;
 };
 
 type IInputValidity = {
-  full_name: boolean;
+  business_name: boolean;
   email: boolean;
   password: boolean;
 };
@@ -124,14 +124,14 @@ const { processAPIRequest } = useEvents();
 const signupBtnRef = ref(null);
 
 const signupPayload = ref<ISignupInputType>({
-  full_name: "",
+  business_name: "",
   country_id: "98e7ad5b-d718-41d1-ab38-10a245ff4279",
   email: "",
   password: "",
 });
 
 const payloadValidity = ref<IInputValidity>({
-  full_name: false,
+  business_name: false,
   email: false,
   password: false,
 });
@@ -146,18 +146,18 @@ const validCountries = ref<{ value: string; name: string }[]>([
 const isSignupReady = computed(() => {
   return signupPayload.value.email &&
     signupPayload.value.password &&
-    signupPayload.value.full_name &&
+    signupPayload.value.business_name &&
     signupPayload.value.country_id &&
     payloadValidity.value.email &&
     payloadValidity.value.password &&
-    payloadValidity.value.full_name
+    payloadValidity.value.business_name
     ? false
     : true;
 });
 
 const getSignupPayload = computed(() => {
-  const { email, password, full_name, country_id } = signupPayload.value;
-  return { email, password, full_name, country_id };
+  const { email, password, business_name, country_id } = signupPayload.value;
+  return { email, password, business_name, country_id };
 });
 
 // Handle fetching of country details

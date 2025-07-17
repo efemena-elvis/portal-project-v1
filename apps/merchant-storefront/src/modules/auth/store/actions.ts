@@ -11,6 +11,7 @@ export function useAuthActions() {
     API_BASE_URL: MOR_API_BASE_URL,
     API_VERSION: MOR_API_VERSION,
     TOKEN_KEY: MOR_AUTH_TOKEN,
+    
   });
 
   const { mutateUserData } = useAuthMutations();
