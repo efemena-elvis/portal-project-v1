@@ -15,6 +15,9 @@ export function useAuthActions() {
   });
 
   const { mutateUserData } = useAuthMutations();
+const loginUser = async (payload: any): Promise<IAPIType> => {
+  const response: any = await $api.push(authRoutes.login, payload);
+
 
   const loginUser = async (payload: any): Promise<IAPIType>  => {
     const response : any =  await $api.push(authRoutes.login, payload);
@@ -34,6 +37,7 @@ export function useAuthActions() {
   }
   return response;
   };
+
 
   const signupUser = async (payload: any) => {
     return await $api.push(authRoutes.signup, payload);
