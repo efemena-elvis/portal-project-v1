@@ -9,12 +9,14 @@ import settingsRoutes from "@/modules/settings";
 import storefrontRoutes from "@/modules/storefront";
 
 const routes = [
+  
   ...authRoutes,
   ...overviewRoutes,
   ...paymentRoutes,
   ...settingsRoutes,
   ...storefrontRoutes,
   // *********** ERROR ROUTES *********** //
+
   {
     path: "/*",
     name: "NotFoundError",

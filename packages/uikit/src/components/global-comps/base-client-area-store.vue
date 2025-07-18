@@ -2,11 +2,7 @@
   <div class="client-area-wrapper">
     <div class="client-area">
       <div class="client-area-brand">
-        {{
-          getBrandInitials(
-            getBusinessProfile?.businessName ?? "No business name"
-          )
-        }}
+        {{ getBrandInitials(activeStore?.name || "No Name") }}
       </div>
 
       <div
@@ -17,7 +13,7 @@
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
           <div class="brand-name">
-            {{ getBusinessProfile?.businessName ?? "No business name" }}
+            {{ activeStore?.name || "No Name" }}
           </div>
 
           <div class="brand-id-row">
@@ -46,33 +42,20 @@
       aria-modal="true"
     >
       <!-- STORE LIST -->
-      <div class="store-list">
-        <div class="store-item">
+      <div
+        class="store-list"
+        v-for="(store, index) in props.storeList"
+        :key="index"
+      >
+        <div class="store-item" @click="getSingleStore(store.id)">
           <div class="store-item--left">
             <div class="store-logo">
-              <div class="initial">BR</div>
+              <div class="initial">{{ getBrandInitials(store.name) }}</div>
             </div>
 
             <div>
-              <div class="store-name">BlackRock</div>
+              <div class="store-name">{{ store.name }}</div>
               <div class="store-meta">#2,420 sales</div>
-            </div>
-          </div>
-
-          <div class="store-item--right">
-            <div class="icon icon-caret-right"></div>
-          </div>
-        </div>
-
-        <div class="store-item">
-          <div class="store-item--left">
-            <div class="store-logo">
-              <div class="initial">JG</div>
-            </div>
-
-            <div>
-              <div class="store-name">Jenny's Glow</div>
-              <div class="store-meta">#1,200 sales</div>
             </div>
           </div>
 
@@ -82,7 +65,7 @@
         </div>
       </div>
 
-      <router-link to="/logout" class="dropdown-area select-none">
+      <router-link to="/storefront/create" class="dropdown-area select-none">
         <div class="dropdown-item">
           <div class="icon icon-add"></div>
           Create a new Store
@@ -93,18 +76,22 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useString, useClickOutside, useEvents } from "@packages/hooks";
 
 interface IClientAreaProps {
   businessProfile: any;
+  storeList: any[];
+  setActiveStore: (store: any) => void;
 }
 
 const props = withDefaults(defineProps<IClientAreaProps>(), {
   businessProfile: () => ({}),
+  storeList: () => [],
+  setActiveStore: () => {},
 });
 
-const { pushToastAlert } = useEvents();
+const { pushToastAlert, processAPIRequest } = useEvents();
 const { getStringInitials } = useString();
 
 const profileUtil = props.businessProfile;
@@ -112,6 +99,7 @@ const profileUtil = props.businessProfile;
 const showDropdown = ref(false);
 const dialogRef = ref<HTMLElement | null>(null);
 const togglerRef = ref<HTMLElement | null>(null);
+const activeStore = ref<any>(props.storeList[0]);
 
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
@@ -121,9 +109,16 @@ const copied = ref<boolean>(false);
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUser = computed(() => profileUtil.getUser());
 
+
 // GET BRAND INITIALS
 const getBrandInitials = (brandName: string): string =>
   getStringInitials(brandName);
+
+const getSingleStore = (storeId: string) => {
+  const store = props.storeList.find((store) => store.id === storeId);
+  props.setActiveStore(store);
+  activeStore.value = store;
+};
 
 // COPY MERCHANT BUSINESS ID
 const copyMerchantID = async () => {
@@ -139,6 +134,12 @@ const copyMerchantID = async () => {
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);
 };
+
+watch(() => props.storeList, (newStoreList) => {
+  if (newStoreList.length > 0) {
+    activeStore.value = newStoreList[0];
+  }
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>

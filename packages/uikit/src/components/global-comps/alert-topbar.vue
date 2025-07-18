@@ -36,7 +36,7 @@ const handleAlertAction = () => {
 
 <style lang="scss" scoped>
 .alert-top-bar {
-  @apply relative animate-slide-down transition duration-300 w-full h-full bg-yellow-100 px-8 xl:px-6 mdLg:px-4 py-3 flex justify-center items-center gap-x-3;
+  @apply relative animate-slide-down transition duration-300 w-full h-full bg-yellow-100  px-8 xl:px-6 mdLg:px-4 py-3 flex justify-center items-center gap-x-3;
 
   .alert--left {
     @apply flex justify-center items-center gap-x-2;

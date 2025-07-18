@@ -18,6 +18,11 @@ const activeMode = getBusinessProfile.value?.businessMode || "test";
 
 const publicKey = computed(() =>
   activeMode === "test"
+    ? profileUtil.getAPIKeys().test.secret
+    : profileUtil.getAPIKeys().live.secret
+);
+const secretKey = computed(() =>
+  activeMode === "test"
     ? profileUtil.getAPIKeys().test.public
     : profileUtil.getAPIKeys().live.public
 );
@@ -28,6 +33,7 @@ const $api = new useServiceAPI({
   TOKEN_KEY: MOR_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
+    "secret-key": secretKey.value
   },
 });
 
@@ -49,3 +55,7 @@ export const getWallets = async () => {
 export const createWallet = async (payload: any) => {
   return await $api.push(overviewRoutes.createWallet, payload);
 };
+export const getDashboardMetrics = async (payload: any) => {
+  return await $api.fetch(overviewRoutes.getDashboardMetrics.replace(":store_id", payload.store_id));
+};
+

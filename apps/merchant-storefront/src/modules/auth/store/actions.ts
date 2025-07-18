@@ -11,14 +11,20 @@ export function useAuthActions() {
     API_BASE_URL: MOR_API_BASE_URL,
     API_VERSION: MOR_API_VERSION,
     TOKEN_KEY: MOR_AUTH_TOKEN,
+    
   });
 
   const { mutateUserData } = useAuthMutations();
 const loginUser = async (payload: any): Promise<IAPIType> => {
   const response: any = await $api.push(authRoutes.login, payload);
 
+
+  const loginUser = async (payload: any): Promise<IAPIType>  => {
+    const response : any =  await $api.push(authRoutes.login, payload);
+
+
   if (response?.code === 200) {
-  
+   
     const normalizedPayload = {
       ...response.data,
       user: {
@@ -27,11 +33,11 @@ const loginUser = async (payload: any): Promise<IAPIType> => {
       },
     };
 
-    mutateUserData(normalizedPayload);
+    mutateUserData(normalizedPayload); 
   }
-
   return response;
-};
+  };
+
 
   const signupUser = async (payload: any) => {
     return await $api.push(authRoutes.signup, payload);

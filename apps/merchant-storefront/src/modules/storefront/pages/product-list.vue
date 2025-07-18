@@ -22,7 +22,7 @@
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
@@ -107,35 +107,35 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([
-  {
-    counter: "1",
-    product: h(TableDoubleColumn, {
-      entry: {
-        primaryText: "White Sneakers",
-        secondaryText: "Men Fashion",
-        displayImage:
-          "https://ng.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/98/0189973/1.jpg?3194",
-      },
-    }),
-    amount: getBoldTableText(`ZMW${formatNumber(420)}`),
-    quantity: 24,
-    status: `${getStatus(5 > 0 ? "success" : "danger", 5 > 0 ? "Available" : "Out of Stock")}`,
-    date_created: "22nd July, 2024",
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      primaryBtnText: "Manage",
-      showSecondaryBtn: true,
-      showSecondaryText: true,
-      onManageClick: () => {
-        // handleEditProduct(data);
-        toggleManageProductModal();
-      },
-      onDeleteClick: () => {
-        // handleDeleteProduct(data);
-        toggleProductDeleteModal();
-      },
-    }),
-  },
+  // {
+  //   counter: "1",
+  //   product: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: "White Sneakers",
+  //       secondaryText: "Men Fashion",
+  //       displayImage:
+  //         "https://ng.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/98/0189973/1.jpg?3194",
+  //     },
+  //   }),
+  //   amount: getBoldTableText(`ZMW${formatNumber(420)}`),
+  //   quantity: 24,
+  //   status: `${getStatus(5 > 0 ? "success" : "danger", 5 > 0 ? "Available" : "Out of Stock")}`,
+  //   date_created: "22nd July, 2024",
+  //   action: h(TableActionBtn, {
+  //     showPrimaryBtn: true,
+  //     primaryBtnText: "Manage",
+  //     showSecondaryBtn: true,
+  //     showSecondaryText: true,
+  //     onManageClick: () => {
+  //       // handleEditProduct(data);
+  //       toggleManageProductModal();
+  //     },
+  //     onDeleteClick: () => {
+  //       // handleDeleteProduct(data);
+  //       toggleProductDeleteModal();
+  //     },
+  //   }),
+  // },
 ]);
 const tablePaging = ref<any>({});
 
@@ -194,5 +194,5 @@ const handleDeleteProduct = (data: any) => {
   console.log("Delete Product:", data);
 };
 
-// onMounted(() => fetchProducts = async () => {());
+onMounted(() => fetchProducts() );
 </script>

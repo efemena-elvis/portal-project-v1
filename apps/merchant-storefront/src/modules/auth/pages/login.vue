@@ -73,6 +73,7 @@ import { useEvents } from "@packages/hooks";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
 
+
 type ILoginInputType = {
   email: string;
   password: string;

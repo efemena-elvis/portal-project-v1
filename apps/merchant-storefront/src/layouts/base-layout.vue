@@ -20,6 +20,9 @@
         <BaseSidebar
           :routes="sidebarRoutes"
           :businessProfile="profileUtil"
+          :storeList="storeList"
+          :setActiveStore="setActiveStore"
+          :activeStore="activeStore"
           isStoreLayout
         />
       </div>
@@ -64,6 +67,8 @@ import { BaseTopbarStore, BaseSidebar, AlertTopbar } from "@packages/uikit";
 import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
+import { useStoreStore } from "@/modules/storefront/store";
+import { useEvents } from "@packages/hooks";
 // import ContactSupportModal from "@/shared/modals/contact-support-modal.vue";
 
 // Define the type of the event bus
@@ -78,6 +83,7 @@ const { switchAppMode } = useGlobalStore();
 
 const { setPageBackgroundColor } = useColor();
 const profileUtil = new useProfile(authStore);
+const { getStoreList, setActiveStore, activeStore } = useStoreStore();
 
 const eventBus = inject<Emitter<Events>>("eventBus");
 const showMobileSidebar = ref<boolean>(false);
@@ -86,6 +92,7 @@ const showAlertTop = ref<boolean>(false);
 const alertTopText = ref<string>("");
 const alertTopActionText = ref<string>("");
 const alertTopActionRoute = ref<string>("");
+const storeList = ref<any[]>([]);
 
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
@@ -97,6 +104,20 @@ const toggleSupportModal = () => {
   showSupportModal.value = !showSupportModal.value;
 };
 
+const fetchStoreList = async () => {
+  const { processAPIRequest } = useEvents();
+  const response = await processAPIRequest({
+    action: getStoreList,
+    payload: {},
+  });
+
+  if (response.code === 200) {
+    storeList.value = response.data;
+  } else {
+    console.error("Failed to fetch store list:", response.error);
+  }
+};
+
 watch(route, () => {
   if (showMobileSidebar.value) {
     showMobileSidebar.value = false;
@@ -106,7 +127,9 @@ watch(route, () => {
 onMounted(() => {
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
   getActivationStatus();
+  fetchStoreList();
 });
+
 
 const getActivationStatus = () => {
   if (profileUtil.getBusinessActivatedStatus() !== "true") {
