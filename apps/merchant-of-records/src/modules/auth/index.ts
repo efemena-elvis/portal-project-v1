@@ -47,18 +47,6 @@ const authRoutes: IRouteType[] = [
           title: "Password Request",
         },
       },
-      {
-        path: "/confirm-forgot-password",
-        name: "VesicashConfirmPasswordRequest",
-        component: () =>
-          import(
-            /* webpackChunkName: "auth-module" */ "@/modules/auth/pages/confirm-password-request.vue"
-          ),
-        meta: {
-          guest: true,
-          title: "Confirm Password Request",
-        },
-      },
     ],
   },
 

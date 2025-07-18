@@ -7,41 +7,44 @@ export interface BulkUploadTableType {
   placeholder?: string;
   options?: { value: string; name: string }[];
   readonly?: boolean;
+  validator?: (input: string | number, message?: string) => string;
 }
 
 export interface IMerchantProfile {
   legal_name: string;
-  sector: string;
+  mcc: string;
   email: string;
   phone_number: string;
-  website?: string | null;
+  website_link?: string | null;
 }
 
 export interface IMerchantAddress {
-  country: string;
+  country_id: string;
   address: string;
   billing_descriptor1: string;
   billing_descriptor2?: string | null;
 }
 
+export interface IMerchantDocuments {
+  tin_number: string;
+  certificate_url: string;
+  form3_url: string;
+}
+
 export interface IMerchantDirector {
-  full_name: string;
-  country: string;
+  legal_full_name: string;
+  country_id: string;
   address: string;
-  director_id_url: string;
+  doc_type: string;
+  doc_url: string;
 }
 
 export interface IMerchantUBO {
-  full_name: string;
-  country: string;
+  legal_full_name: string;
+  country_id: string;
   address: string;
-  doc_id_url: string;
-}
-
-export interface IMerchantDocuments {
-  tax_number: string;
-  business_certificate_url: string;
-  form_3_url: string;
+  doc_type: string;
+  doc_url: string;
 }
 
 export interface IMerchantBaseType {
@@ -53,4 +56,36 @@ export interface IMerchantBaseType {
   ubo1: IMerchantUBO;
   ubo2: IMerchantUBO;
   documents: IMerchantDocuments;
+}
+
+export interface CleanedMerchantType {
+  business: {
+    legal_name: string;
+    trading_name: string;
+    mcc: string;
+    email: string;
+    phone_number: string;
+    website_link: string | null;
+    address: string;
+    country_id: string;
+    certificate_url: string;
+    form3_url: string;
+    tin_number: string;
+    billing_descriptor1: string;
+    billing_descriptor2: string | null;
+    optional_doc_url: string;
+  };
+  representative: Array<{
+    legal_full_name: string;
+    address: string;
+    country_id: string;
+    business_role: string[];
+    doc: {
+      type: string;
+      url: string;
+    };
+  }>;
+  terms: {
+    signed_agreement: boolean;
+  };
 }

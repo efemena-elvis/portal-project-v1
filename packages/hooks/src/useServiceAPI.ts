@@ -74,6 +74,8 @@ class APIService {
       ? `${this.API_BASE_URL}/${this.API_VERSION}`
       : this.API_BASE_URL;
 
+    console.log("API Base URL:", axios.defaults.baseURL);
+
     axios.defaults.timeout = this.DEFAULT_TIMEOUT;
   }
 

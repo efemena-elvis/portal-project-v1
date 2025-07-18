@@ -35,10 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, watch, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useEvents } from "@packages/hooks";
 import { FullPageSidebar, FullPageContent } from "@packages/uikit";
+import { useComplianceStore } from "@/modules/compliance/store";
 import { merchantOnboardingRouteList } from "@/modules/compliance/constants/route-list";
 
 type IPageRouteType = {
@@ -65,7 +66,8 @@ const props = withDefaults(defineProps<IOnboardingInfoType>(), {
   stopClickHandler: false,
 });
 
-const { clickHandler } = useEvents();
+const { clickHandler, processAPIRequest } = useEvents();
+const { getMerchantOnDraft } = useComplianceStore();
 
 const btnRef = ref(null);
 
@@ -96,6 +98,21 @@ const triggerPrimaryActionClick = () => {
   emits("onContinueClick");
 };
 
+const getAggregatorDraftedMerchants = async () => {
+  try {
+    const response = await processAPIRequest({
+      action: getMerchantOnDraft,
+      payload: {},
+    });
+
+    console.log("Drafted merchants response:", response);
+    // return response;
+  } catch (error) {
+    console.error("Error fetching drafted merchants:", error);
+    throw error;
+  }
+};
+
 /* Watch for props changes **/
 watch(
   props,
@@ -105,6 +122,8 @@ watch(
   },
   { deep: true }
 );
+
+onMounted(async () => await getAggregatorDraftedMerchants());
 </script>
 
 <style lang="scss" scoped>

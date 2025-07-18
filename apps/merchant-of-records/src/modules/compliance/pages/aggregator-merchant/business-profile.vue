@@ -11,7 +11,6 @@
       :tableBody="tableBody"
       showAddMerchantBtn
       showRemoveBtn
-      :uploadAction="uploadFile"
       :addRowAction="addMerchantData"
       :removeRowAction="removeMerchantData"
       :updateMerchantAction="updateMerchantData"
@@ -24,20 +23,28 @@ import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
+import { useValidators, useEvents } from "@packages/hooks";
 import { BulkUploadTable } from "@packages/uikit";
 import { MerchantWrapper } from "@/modules/compliance/components";
-import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
 import businessSectors from "@/modules/compliance/constants/business-sectors";
 
 const router = useRouter();
-const { uploadFile } = useGlobalStore();
 const complianceStore = useComplianceStore();
+const { validateRequired, validateEmail, validateTelephone, validateURL } =
+  useValidators();
 
 const { merchantDataComputed } = storeToRefs(complianceStore);
-const { addMerchantData, removeMerchantData, updateMerchantData } =
-  complianceStore;
+const {
+  addMerchantData,
+  removeMerchantData,
+  updateMerchantData,
+  transformMerchantData,
+  onboardBulkMerchant,
+} = complianceStore;
+
 const stopClickHandler = ref(false);
+const { processAPIRequest } = useEvents();
 
 const tableHeader = ref<BulkUploadTableType[]>([
   {
@@ -46,14 +53,16 @@ const tableHeader = ref<BulkUploadTableType[]>([
     type: "text",
     path: "profile.legal_name",
     placeholder: "Enter business name",
+    validator: validateRequired,
   },
   {
-    name: "sector",
-    label: "Business sector",
+    name: "mcc",
+    label: "Business category",
     type: "select",
-    path: "profile.sector",
-    placeholder: "Select business sector",
+    path: "profile.mcc",
+    placeholder: "Select business category",
     options: [...businessSectors],
+    validator: validateRequired,
   },
   {
     name: "email",
@@ -61,20 +70,23 @@ const tableHeader = ref<BulkUploadTableType[]>([
     type: "email",
     path: "profile.email",
     placeholder: "Enter business email",
+    validator: validateEmail,
   },
   {
     name: "phone_number",
     label: "Phone number",
-    type: "number",
+    type: "tel",
     path: "profile.phone_number",
     placeholder: "Enter phone number",
+    validator: validateTelephone,
   },
   {
-    name: "website",
+    name: "website_link",
     label: "Website",
     type: "url",
-    path: "profile.website",
+    path: "profile.website_link",
     placeholder: "Enter business website",
+    validator: validateURL,
   },
 ]);
 
@@ -82,14 +94,33 @@ const tableBody = ref<IMerchantBaseType[]>(merchantDataComputed.value || []);
 
 const isActionReady = computed(() => {
   return merchantDataComputed.value.every((item) => {
-    const { legal_name, sector, email, phone_number, website } = item.profile;
+    const profile = item.profile;
 
-    // Return true if all fields are truthy (i.e., not empty)
-    return !!(legal_name && sector && email && phone_number && website);
+    const validations = [
+      validateRequired(profile.legal_name),
+      validateRequired(profile.mcc),
+      validateEmail(profile.email),
+      validateTelephone(profile.phone_number),
+      validateURL(profile.website_link ?? ""),
+    ];
+
+    // If any validator returned a non-empty error string, form is not ready
+    return validations.every((result) => result === "");
   });
 });
 
 const handleBusinessProfileUpdate = () => {
-  router.push({ name: "AggregatorMerchantBusinessAddress" });
+  const transformedData = transformMerchantData(merchantDataComputed.value);
+
+  const response = processAPIRequest({
+    action: onboardBulkMerchant,
+    payload: {
+      data: transformedData,
+    },
+  });
+
+  console.log("Business profile updated:", response);
+
+  // router.push({ name: "AggregatorMerchantBusinessAddress" });
 };
 </script>

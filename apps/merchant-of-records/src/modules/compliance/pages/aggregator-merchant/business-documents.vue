@@ -1,173 +1,94 @@
 <template>
-  <OnboardingWrapper
-    :isPrimaryActionDisabled="!isActionReady"
+  <MerchantWrapper
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'UboDetails1' })"
-    @onContinueClick="handleBusinessDocumentsUpdate"
-    :showActionRow="true"
-    primaryActionText="Onboard Merchants"
+    :isPrimaryActionDisabled="!isActionReady"
+    showActionRow
+    @onBackClick="router.push({ name: 'AggregatorMerchantBusinessAddress' })"
+    @onContinueClick="handleBusinessDocumentUpdate"
   >
     <BulkUploadTable
-      :headers="tableHeaders"
-      :data="tableData"
-      :showAddButton="false"
-      :showDeleteButton="false"
-      @update-row="handleUpdateRow"
+      :tableHeader="tableHeader"
+      :tableBody="tableBody"
+      :showAddMerchantBtn="false"
+      :showRemoveBtn="false"
+      :uploadAction="uploadFile"
+      :updateMerchantAction="updateMerchantData"
     />
-  </OnboardingWrapper>
+  </MerchantWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
-import OnboardingWrapper from "./onboarding-wrapper.vue";
-import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
-import { onboardMerchant } from "@/modules/overview/store/actions";
-import { useEvents } from "@packages/hooks";
+import { storeToRefs } from "pinia";
+import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
+import { useValidators } from "@packages/hooks";
+import { BulkUploadTable } from "@packages/uikit";
+import { MerchantWrapper } from "@/modules/compliance/components";
+import { useGlobalStore } from "@/modules/global/store";
+import { useComplianceStore } from "@/modules/compliance/store";
 
 const router = useRouter();
-const merchantStore = useMerchantUtils();
 
-interface TableRow {
-  id: number;
-  business_name: string;
-  tin_number: string;
-  business_certificate: string;
-  form_3: string;
-  optional_document: string;
-}
+const { uploadFile } = useGlobalStore();
+const complianceStore = useComplianceStore();
+const { validateRequired } = useValidators();
 
-const { processAPIRequest, pushToastAlert } = useEvents();
+const { merchantDataComputed } = storeToRefs(complianceStore);
+const { updateMerchantData } = complianceStore;
+const stopClickHandler = ref(false);
 
-const tableHeaders = ref([
+const tableHeader = ref<BulkUploadTableType[]>([
   {
-    key: "business_name",
+    name: "legal_name",
     label: "Business name",
     type: "text",
+    path: "profile.legal_name",
+    placeholder: "Enter business name",
     readonly: true,
   },
-  { key: "tin_number", label: "TIN", type: "text" },
-  { key: "business_certificate", label: "Business Certificate", type: "file" },
-  { key: "form_3", label: "Form 3", type: "file" },
-  { key: "optional_document", label: "Optional Document", type: "file" },
+  {
+    name: "tin_number",
+    label: "Tax number",
+    type: "text",
+    path: "documents.tin_number",
+    placeholder: "Enter tax number",
+    validator: validateRequired,
+  },
+  {
+    name: "certificate_url",
+    label: "Business registration",
+    type: "file",
+    path: "documents.certificate_url",
+    placeholder: "Upload Registration",
+    validator: validateRequired,
+  },
+  {
+    name: "form3_url",
+    label: "Form 3",
+    type: "file",
+    path: "documents.form3_url",
+    placeholder: "Upload Form 3",
+  },
 ]);
 
-const tableData = ref<TableRow[]>([]);
+const tableBody = ref<IMerchantBaseType[]>(merchantDataComputed.value || []);
 
-const stopClickHandler = ref(false);
-const onboardMerchantBtnRef = ref<HTMLButtonElement | null>(null);
+const isActionReady = computed(() => {
+  return merchantDataComputed.value.every((item) => {
+    const documents = item.documents;
 
-const initializeTableData = () => {
-  if (merchantStore.businessProfile.length) {
-    tableData.value = merchantStore.businessProfile.map((merchant, idx) => ({
-      id: idx + 1,
-      business_name: merchant.business_name || "",
-      tin_number: "",
-      business_certificate: "",
-      form_3: "",
-      optional_document: "",
-    }));
-  } else {
-    tableData.value = [
-      {
-        id: 1,
-        business_name: "",
-        tin_number: "",
-        business_certificate: "",
-        form_3: "",
-        optional_document: "",
-      },
+    const validations = [
+      validateRequired(documents.tin_number),
+      validateRequired(documents.certificate_url),
     ];
-  }
-};
 
-const handleUpdateRow = (rowId: number | string, field: string, value: any) => {
-  const id = typeof rowId === "string" ? Number(rowId) : rowId;
-
-  tableData.value = tableData.value.map((row) =>
-    row.id === id ? { ...row, [field]: value } : row
-  );
-};
-
-const isActionReady = computed(() =>
-  tableData.value.every((row) => row.business_name && row.tin_number)
-);
-
-const handleBusinessDocumentsUpdate = async () => {
-  const data = [...tableData.value];
-
-  const documentsPayload = data
-    .flatMap((row) => [
-      {
-        id: row.id,
-        type: "business_certificate",
-        url: row.business_certificate,
-        tin_number: row.tin_number,
-      },
-      {
-        id: row.id,
-        type: "form_3",
-        url: row.form_3,
-        tin_number: row.tin_number,
-      },
-      {
-        id: row.id,
-        type: "optional_document",
-        url: row.optional_document,
-        tin_number: row.tin_number,
-      },
-    ])
-    .filter((doc) => doc.url && typeof doc.url === "string");
-
-  const uniqueDocumentsPayload = documentsPayload.filter(
-    (doc, index, self) =>
-      index ===
-      self.findIndex(
-        (d) =>
-          d.id === doc.id &&
-          d.url === doc.url &&
-          d.type === doc.type &&
-          d.tin_number === doc.tin_number
-      )
-  );
-  merchantStore.setBusinessDocuments(uniqueDocumentsPayload);
-
-  merchantStore.setMerchantTable([...tableData.value]);
-
-  try {
-    try {
-      const response = await processAPIRequest({
-        action: onboardMerchant,
-        btnRef: onboardMerchantBtnRef,
-        btnText: "Next",
-        payload: merchantStore.getFullPayload(),
-        showAlert: true,
-      });
-
-      if (response.code === 201) {
-        pushToastAlert({
-          message: "Merchants onboarded successfully.",
-          type: "success",
-        });
-        router.push("/merchant/add-merchant-status");
-      } else {
-        pushToastAlert({
-          message: response.error.message,
-          type: "error",
-        });
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  } catch (error) {
-    console.error("Error during business documents update:", error);
-  }
-
-  // console.log("✅ Final merchant payload:", merchantStore.getFullPayload());
-};
-
-onMounted(() => {
-  initializeTableData();
+    // If any validator returned a non-empty error string, form is not ready
+    return validations.every((result) => result === "");
+  });
 });
+
+const handleBusinessDocumentUpdate = () => {
+  router.push({ name: "AggregatorDirectorDetails1" });
+};
 </script>

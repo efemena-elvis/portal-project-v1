@@ -154,14 +154,14 @@ export default function useString() {
   // ======================================================
   const getStatus = (status: string, suffixText?: string): string => {
     const statusData: Record<string, string> = {
-      success: "bg-green-50/75 text-green-700 border-green-100/40",
-      successful: "bg-green-50/75 text-green-700 border-green-100/40",
-      pending: "bg-yellow-50/75 text-yellow-400 border-yellow-100/40",
-      failed: "bg-red-100/75 text-red-700 border-red-300/40",
-      verified: "bg-green-50/75 text-green-400 border-green-100/40",
+      success: "bg-green-100/75 text-green-800 border-green-300",
+      successful: "bg-green-100/75 text-green-800 border-green-300",
+      pending: "bg-yellow-100/60 text-yellow-700 border-yellow-300",
+      failed: "bg-red-100/75 text-red-700 border-red-300",
+      verified: "bg-green-100/75 text-green-700 border-green-300",
     };
 
-    return `<div class='w-[80px] border font-medium text-[12px] rounded-full py-1 px-3 text-center ${statusData[status]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
+    return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${statusData[status]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
   };
 
   // MASK CARD NUMBER
@@ -213,6 +213,6 @@ export default function useString() {
     transactionFlowIcon,
     notAvailable,
     createPreviewLink,
-    maskCardNumber
+    maskCardNumber,
   };
 }

@@ -89,7 +89,7 @@ import BaseClientAreaStore from "./base-client-area-store.vue";
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
-  isStoreLayout: boolean;
+  isStoreLayout?: boolean;
 }
 
 interface GroupedByCategory {

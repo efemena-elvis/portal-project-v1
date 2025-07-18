@@ -23,51 +23,55 @@ export const merchantData = ref<IMerchantBaseType[]>([
 
     profile: {
       legal_name: "",
-      sector: "",
+      mcc: "",
       email: "",
       phone_number: "",
-      website: null,
+      website_link: null,
     },
 
     address: {
-      country: "",
+      country_id: "",
       address: "",
       billing_descriptor1: "",
       billing_descriptor2: null,
     },
 
+    documents: {
+      tin_number: "",
+      certificate_url: "",
+      form3_url: "",
+    },
+
     director1: {
-      full_name: "",
-      country: "",
+      legal_full_name: "",
+      country_id: "",
       address: "",
-      director_id_url: "",
+      doc_url: "",
+      doc_type: "",
     },
 
     director2: {
-      full_name: "",
-      country: "",
+      legal_full_name: "",
+      country_id: "",
       address: "",
-      director_id_url: "",
+      doc_url: "",
+      doc_type: "",
     },
 
     ubo1: {
-      full_name: "",
-      country: "",
+      legal_full_name: "",
+      country_id: "",
       address: "",
-      doc_id_url: "",
+      doc_url: "",
+      doc_type: "",
     },
 
     ubo2: {
-      full_name: "",
-      country: "",
+      legal_full_name: "",
+      country_id: "",
       address: "",
-      doc_id_url: "",
-    },
-
-    documents: {
-      tax_number: "",
-      business_certificate_url: "",
-      form_3_url: "",
+      doc_url: "",
+      doc_type: "",
     },
   },
 ]);

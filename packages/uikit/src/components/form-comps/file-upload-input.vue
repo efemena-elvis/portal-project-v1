@@ -103,10 +103,16 @@ const { processFileType, processFileSize } = useFile();
 const { pushToastAlert, processAPIRequest } = useEvents();
 
 const fileUploadRef = ref<HTMLInputElement | null>(null);
-const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png", "xls", "xlsx"]);
+const allowedFiles = ref<string[]>([
+  "pdf",
+  "jpeg",
+  "jpg",
+  "png",
+  "xls",
+  "xlsx",
+]);
 
 const isDocUploaded = ref<boolean>(props.hasDocumentUploaded || false);
-
 
 const isUploading = ref<boolean>(false);
 
@@ -185,12 +191,11 @@ const processDocumentUpload = async ($event: Event) => {
     isUploading.value = false;
     isDocUploaded.value = false;
   }
-
-  console.log(docPayload)
 };
 
-
-
+const removeUploadedFile = () => {
+  isDocUploaded.value = false;
+};
 </script>
 
 <style lang="scss" scoped>

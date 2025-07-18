@@ -10,3 +10,4 @@ export { default as useValidators } from "./src/useValidators";
 export { default as useRouteGuard } from "./src/useRouteGuard";
 export { default as useProfile } from "./src/useProfile";
 export { default as useComplianceUtil } from "./src/useComplianceUtil";
+export { useAppVariant } from "./src/useGlobal";

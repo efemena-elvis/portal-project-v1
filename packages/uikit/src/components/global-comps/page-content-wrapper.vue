@@ -63,7 +63,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
   @apply w-full h-full flex flex-col justify-between items-start gap-y-8 pb-9 relative bottom-[8px];
 
   .top-row {
-    @apply flex sm:flex-wrap justify-between items-center gap-4 sm:gap-3 w-full -mb-4;
+    @apply flex sm:flex-wrap justify-between items-center gap-4 sm:gap-3 w-full -mb-3;
 
     &--left {
       @apply flex justify-start items-center gap-3 sm:w-full;

@@ -19,32 +19,43 @@ import {
   IComplianceTerms,
 } from "./compliance-base";
 
-import { setDeepValue } from "./merchant-helpers";
-import { IMerchantBaseType } from "@packages/models";
-
+import { setDeepValue, cleanMerchantData } from "./merchant-helpers";
+import { IMerchantBaseType, CleanedMerchantType } from "@packages/models";
 import { merchantDataComputed } from "./getters";
 
 type MerchantUpdatePath =
   | "profile.legal_name"
-  | "profile.sector"
+  | "profile.mcc"
   | "profile.email"
   | "profile.phone_number"
-  | "profile.website"
-  | "address.country"
+  | "profile.website_link"
+  | "address.country_id"
   | "address.address"
   | "address.billing_descriptor1"
   | "address.billing_descriptor2"
-  | "documents.tax_number"
-  | "documents.business_certificate_url"
-  | "documents.form_3_url"
-  | "director1.full_name"
-  | "director1.country"
+  | "documents.tin_number"
+  | "documents.certificate_url"
+  | "documents.form3_url"
+  | "director1.legal_full_name"
+  | "director1.country_id"
   | "director1.address"
-  | "director1.director_id_url"
-  | "ubo1.full_name"
-  | "ubo1.country"
+  | "director1.doc_type"
+  | "director1.doc_url"
+  | "director2.legal_full_name"
+  | "director2.country_id"
+  | "director2.address"
+  | "director2.doc_type"
+  | "director2.doc_url"
+  | "ubo1.legal_full_name"
+  | "ubo1.country_id"
   | "ubo1.address"
-  | "ubo1.doc_id_url";
+  | "ubo1.doc_type"
+  | "ubo1.doc_url"
+  | "ubo2.legal_full_name"
+  | "ubo2.country_id"
+  | "ubo2.address"
+  | "ubo2.doc_type"
+  | "ubo2.doc_url";
 
 const generateMerchantId = (): string => {
   return `mid_${Math.random().toString(36).substr(2, 9)}`;
@@ -106,8 +117,6 @@ export function useComplianceMutations() {
   }) => {
     const merchant = merchantDataComputed.value.find((item) => item.id === id);
 
-    console.log(merchant, id, path, value);
-
     if (merchant) setDeepValue(merchant, path, value);
   };
 
@@ -118,45 +127,49 @@ export function useComplianceMutations() {
       id: newMerchantId,
       profile: {
         legal_name: "",
-        sector: "",
+        mcc: "",
         email: "",
         phone_number: "",
-        website: null,
+        website_link: null,
       },
       address: {
-        country: "",
+        country_id: "",
         address: "",
         billing_descriptor1: "",
         billing_descriptor2: null,
       },
       director1: {
-        full_name: "",
-        country: "",
+        legal_full_name: "",
+        country_id: "",
         address: "",
-        director_id_url: "",
+        doc_url: "",
+        doc_type: "",
       },
       director2: {
-        full_name: "",
-        country: "",
+        legal_full_name: "",
+        country_id: "",
         address: "",
-        director_id_url: "",
+        doc_url: "",
+        doc_type: "",
       },
       ubo1: {
-        full_name: "",
-        country: "",
+        legal_full_name: "",
+        country_id: "",
         address: "",
-        doc_id_url: "",
+        doc_url: "",
+        doc_type: "",
       },
       ubo2: {
-        full_name: "",
-        country: "",
+        legal_full_name: "",
+        country_id: "",
         address: "",
-        doc_id_url: "",
+        doc_url: "",
+        doc_type: "",
       },
       documents: {
-        tax_number: "",
-        business_certificate_url: "",
-        form_3_url: "",
+        tin_number: "",
+        certificate_url: "",
+        form3_url: "",
       },
     };
 
@@ -172,10 +185,17 @@ export function useComplianceMutations() {
     }
   };
 
+  const transformMerchantData = (
+    merchantData: IMerchantBaseType[]
+  ): CleanedMerchantType[] => {
+    return cleanMerchantData(merchantData);
+  };
+
   return {
     mutateCompliance,
     updateMerchantData,
     addMerchantData,
     removeMerchantData,
+    transformMerchantData,
   };
 }

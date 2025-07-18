@@ -1,33 +1,131 @@
-<script setup lang="ts">
-import HelloWorld from "./components/HelloWorld.vue";
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <MetaData
+    :baseTitle="`${getSEOProperties.baseTitle}`"
+    :pageDescription="`${getSEOProperties.pageDescription}`"
+    :keywords="`${getSEOProperties.keywords}`"
+    :companyName="`${getSEOProperties.companyName}`"
+    :companyCreator="`${getSEOProperties.companyCreator}`"
+    :companyBaseUrl="`${getSEOProperties.companyBaseUrl}`"
+  />
 
-    <h1 class="text-7xl font-extrabold text-red-500">Merchant Checkout</h1>
+  <div id="app">
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+    </router-view>
   </div>
 
-  <HelloWorld msg="Vite + Vue" />
+  <!-- TOAST ALERT CARD -->
+  <ToastCard
+    v-if="alertInfo.message"
+    :message="alertInfo.message"
+    :description="alertInfo.description"
+    :type="alertInfo.type"
+  />
 </template>
 
+<script setup lang="ts">
+import { computed, inject, onMounted, ref } from "vue";
+import { Emitter } from "mitt";
+import { MetaData, ToastCard } from "@packages/uikit";
+import { useAppVariant } from "@packages/hooks";
+
+type IAlertInfo = {
+  message: string;
+  description: string;
+  type: string;
+};
+
+// Define the type of the event bus
+type Events = {
+  triggerToastAlert: IAlertInfo;
+  closeToastAlert: void;
+};
+
+const appVariant = ref<string>(useAppVariant());
+const eventBus = inject<Emitter<Events>>("eventBus");
+
+const alertInfo = ref<IAlertInfo>({
+  message: "",
+  description: "",
+  type: "",
+});
+
+const appVariantSEO = ref<{
+  [key: string]: {
+    baseTitle: string;
+    pageDescription: string;
+    keywords: string;
+    companyName: string;
+    companyCreator: string;
+    companyBaseUrl: string;
+  };
+}>({
+  redstonepgs: {
+    baseTitle: "Redstone Payment Gateway",
+    pageDescription: "Redstone Payment Gateway Services",
+    keywords: "Redstone, Payment, Gateway, Services",
+    companyName: "Redstone Payment Gateway Services",
+    companyCreator: "Redstone Payment Gateway Tech Team",
+    companyBaseUrl: "https://www.redstonepgs.com",
+  },
+
+  alexpay: {
+    baseTitle: "AlexPay",
+    pageDescription: "AlexPay Services",
+    keywords: "AlexPay, Payments, Services",
+    companyName: "AlexPay Services",
+    companyCreator: "AlexPay Tech Team",
+    companyBaseUrl: "https://www.alexpay.com",
+  },
+});
+
+const getSEOProperties = computed(() => {
+  return {
+    baseTitle: appVariantSEO.value[appVariant.value].baseTitle,
+    pageDescription: appVariantSEO.value[appVariant.value].pageDescription,
+    keywords: appVariantSEO.value[appVariant.value].keywords,
+    companyName: appVariantSEO.value[appVariant.value].companyName,
+    companyCreator: appVariantSEO.value[appVariant.value].companyCreator,
+    companyBaseUrl: appVariantSEO.value[appVariant.value].companyBaseUrl,
+  };
+});
+
+const updateAlertPayload = (message = "", description = "", type = "") => {
+  alertInfo.value.message = message;
+  alertInfo.value.description = description;
+  alertInfo.value.type = type;
+};
+
+onMounted(() => {
+  eventBus?.on(
+    "triggerToastAlert",
+    ({ message, description, type }: IAlertInfo) => {
+      updateAlertPayload(message, description, type);
+    }
+  );
+
+  eventBus?.on("closeToastAlert", () => {
+    updateAlertPayload();
+  });
+});
+</script>
+
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+html,
+body {
+  scroll-behavior: smooth;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.fade-enter {
+  opacity: 0;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+.fade-enter-active {
+  transition: opacity 0.225s ease;
+}
+
+.fade-leave-active {
+  transition: opacity 0.225s ease;
+  opacity: 0;
 }
 </style>

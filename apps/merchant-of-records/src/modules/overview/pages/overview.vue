@@ -37,11 +37,11 @@
       </template>
 
       <!-- TAX ROW -->
-      <template v-if="morAccountType === 'aggregator'">
+      <!-- <template v-if="morAccountType === 'aggregator'">
         <AggregatorCharts />
-      </template>
+      </template> -->
 
-      <template v-else>
+      <template v-if="morAccountType !== 'aggregator'">
         <div class="tax-row">
           <div class="tax-row--left">
             <TaxBlock :taxList="taxBalance" />

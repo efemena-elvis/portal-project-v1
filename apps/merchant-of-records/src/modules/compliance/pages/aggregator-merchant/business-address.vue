@@ -1,62 +1,104 @@
 <template>
-  <OnboardingWrapper
-    :isPrimaryActionDisabled="!isActionReady"
+  <MerchantWrapper
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'MerchantBusinessProfile' })"
+    :isPrimaryActionDisabled="!isActionReady"
+    showActionRow
+    @onBackClick="router.push({ name: 'AggregatorBusinessProfile' })"
     @onContinueClick="handleBusinessAddressUpdate"
-    :showActionRow="true"
   >
     <BulkUploadTable
-      :headers="tableHeaders"
-      :data="tableData"
-      :showAddButton="false"
-      :showDeleteButton="false"
-      @update-row="handleUpdateRow"
+      :tableHeader="tableHeader"
+      :tableBody="tableBody"
+      :showAddMerchantBtn="false"
+      :showRemoveBtn="false"
+      :updateMerchantAction="updateMerchantData"
     />
-  </OnboardingWrapper>
+  </MerchantWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import BulkUploadTable from "@packages/uikit/src/components/table-comps/bulk-upload-table.vue";
-import OnboardingWrapper from "./onboarding-wrapper.vue";
-import { useEvents } from "@packages/hooks";
+import { storeToRefs } from "pinia";
+import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
+import { useValidators, useEvents } from "@packages/hooks";
+import { BulkUploadTable } from "@packages/uikit";
+import { MerchantWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
-import { useMerchantUtils } from "@packages/hooks/src/useMerchantUtils";
+import { useComplianceStore } from "@/modules/compliance/store";
 
 const router = useRouter();
+
 const { processAPIRequest } = useEvents();
 const { getBusinessCountries } = useGlobalStore();
-const merchantStore = useMerchantUtils();
+const complianceStore = useComplianceStore();
+const { validateRequired } = useValidators();
 
-interface TableRow {
-  id: number;
-  business_name: string;
-  country_id: string;
-  address: string;
-  billing_descriptor_1: string;
-  billing_descriptor_2: string;
-}
-
-const tableHeaders = ref([
-  {
-    key: "business_name",
-    label: "Business name",
-    type: "text",
-    readonly: true,
-  },
-  { key: "country_id", label: "Country", type: "select", options: [] },
-  { key: "address", label: "Address", type: "text" },
-  { key: "billing_descriptor_1", label: "Billing Descriptor 1", type: "text" },
-  { key: "billing_descriptor_2", label: "Billing Descriptor 2", type: "text" },
-]);
-
-const tableData = ref<TableRow[]>([]);
-
+const { merchantDataComputed } = storeToRefs(complianceStore);
+const { updateMerchantData } = complianceStore;
 const stopClickHandler = ref(false);
 
-const loadCountryList = async () => {
+const tableHeader = ref<BulkUploadTableType[]>([
+  {
+    name: "legal_name",
+    label: "Business name",
+    type: "text",
+    path: "profile.legal_name",
+    placeholder: "Enter business name",
+    readonly: true,
+  },
+  {
+    name: "country_id",
+    label: "Country of operation",
+    type: "select",
+    path: "address.country_id",
+    placeholder: "Select business country",
+    options: [],
+    validator: validateRequired,
+  },
+  {
+    name: "address",
+    label: "Business address",
+    type: "text",
+    path: "address.address",
+    placeholder: "Enter business address",
+    validator: validateRequired,
+  },
+  {
+    name: "billing_descriptor1",
+    label: "Billing descriptor 1",
+    type: "text",
+    path: "address.billing_descriptor1",
+    placeholder: "Enter billing descriptor 1",
+    validator: validateRequired,
+  },
+  {
+    name: "billing_descriptor2",
+    label: "Billing descriptor 2",
+    type: "text",
+    path: "address.billing_descriptor2",
+    placeholder: "Enter billing descriptor 2",
+  },
+]);
+
+const tableBody = ref<IMerchantBaseType[]>(merchantDataComputed.value || []);
+
+const isActionReady = computed(() => {
+  return merchantDataComputed.value.every((item) => {
+    const address = item.address;
+
+    const validations = [
+      validateRequired(address.country_id),
+      validateRequired(address.address),
+      validateRequired(address.billing_descriptor1),
+    ];
+
+    // If any validator returned a non-empty error string, form is not ready
+    return validations.every((result) => result === "");
+  });
+});
+
+const loadBusinessCountries = async () => {
   const response = await processAPIRequest({
     action: getBusinessCountries,
     payload: {},
@@ -66,79 +108,18 @@ const loadCountryList = async () => {
     const countries = response.data.map(
       (item: { id: string; name: string }) => ({
         value: item.id,
-        label: item.name,
+        name: item.name,
       })
     );
 
-    const countryHeader = tableHeaders.value.find(
-      (h) => h.key === "country_id"
-    );
-    if (countryHeader) countryHeader.options = countries;
+    tableHeader.value[1].options = countries;
   }
 };
 
-const initializeTableData = () => {
-  if (merchantStore.business.length) {
-    tableData.value = merchantStore.business.map((merchant, idx) => ({
-      id: idx + 1,
-      business_name: merchant.business_name || "",
-      country_id: "",
-      address: "",
-      billing_descriptor_1: "",
-      billing_descriptor_2: "",
-    }));
-  } else {
-    tableData.value = [
-      {
-        id: 1,
-        business_name: "",
-        country_id: "",
-        address: "",
-        billing_descriptor_1: "",
-        billing_descriptor_2: "",
-      },
-    ];
-  }
+const handleBusinessAddressUpdate = () => {
+  router.push({ name: "AggregatorBusinessDocuments" });
 };
 
-const handleUpdateRow = (rowId: number | string, field: string, value: any) => {
-  const id = typeof rowId === "string" ? Number(rowId) : rowId;
-
-  tableData.value = tableData.value.map((row) =>
-    row.id === id ? { ...row, [field]: value } : row
-  );
-};
-
-const isActionReady = computed(() =>
-  tableData.value.every(
-    (row) =>
-      row.business_name &&
-      row.country_id &&
-      row.address &&
-      row.billing_descriptor_1 &&
-      row.billing_descriptor_2
-  )
-);
-
-const handleBusinessAddressUpdate = async () => {
-  const data = [...tableData.value];
-
-  const addressPayload = data.map((row) => ({
-    business_name: row.business_name,
-    country_id: row.country_id,
-    address: row.address,
-    billing_descriptor_1: row.billing_descriptor_1,
-    billing_descriptor_2: row.billing_descriptor_2,
-  }));
-
-  merchantStore.setMerchantTable([...tableData.value]);
-  merchantStore.setBusinessAddress(addressPayload);
-  router.push({name :  "DirectorDetails1"})
-  // console.log("✅ Final merchant payload:", merchantStore.getFullPayload());
-};
-
-onMounted(() => {
-  loadCountryList();
-  initializeTableData();
-});
+// LOAD BUSINESS COUNTRIES
+onMounted(() => loadBusinessCountries());
 </script>

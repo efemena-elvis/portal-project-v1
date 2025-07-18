@@ -1,4 +1,5 @@
 import { ref } from "vue";
+import { VALID_TLDS, COMPOUND_TLDS } from "@packages/constants";
 
 export default function useValidator() {
   const emailRegex =
@@ -24,7 +25,7 @@ export default function useValidator() {
   };
 
   const validateEmail = (
-    input: string,
+    input: string | number,
     message: string = "Please provide a valid email address"
   ) => {
     const trimmedInput = trimInput(input);
@@ -66,6 +67,18 @@ export default function useValidator() {
           : message;
       }
     } else return "No country code has been selected";
+  };
+
+  const validateTelephone = (
+    input: string | number,
+    message: string = "Please provide a valid phone number"
+  ) => {
+    const trimmedInput = trimInput(input);
+
+    // Accepts formats like: 08012345678, +2348012345678, 2348012345678
+    const phoneRegex = /^(\+?\d{1,3})?\d{9,12}$/;
+
+    return phoneRegex.test(trimmedInput) ? "" : message;
   };
 
   const validatePasswordStrength = (input: string) => {
@@ -161,15 +174,82 @@ export default function useValidator() {
   };
 
   const validateURL = (
-    input: string,
-    message: string = "Please provide a valid url string"
+    input: string | number,
+    message = "Please provide a valid URL"
   ) => {
-    const trimmedInput = trimInput(input);
+    const trimmedInput =
+      typeof input === "number" ? input.toString().trim() : input.trim();
+
+    if (!trimmedInput) return message;
 
     try {
-      new URL(trimmedInput);
+      // Add http:// if missing to allow inputs like "vesicash.com"
+      const normalized = /^https?:\/\//.test(trimmedInput)
+        ? trimmedInput
+        : `http://${trimmedInput}`;
+
+      const url = new URL(normalized);
+      const hostname = url.hostname.toLowerCase();
+
+      // Basic hostname validation
+      if (hostname.length > 253 || hostname.length < 4) return message;
+
+      // Split into parts
+      const parts = hostname.split(".");
+
+      // Must have at least 2 parts (domain.tld)
+      if (parts.length < 2) return message;
+
+      // Check for compound TLD first (e.g., co.uk, com.ng)
+      let isValidTLD = false;
+      let mainDomainIndex = -1;
+
+      // Check for compound TLD (last 2 parts)
+      if (parts.length >= 2) {
+        const possibleCompoundTLD = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
+        if (COMPOUND_TLDS.has(possibleCompoundTLD)) {
+          isValidTLD = true;
+          mainDomainIndex = parts.length - 3; // The part before the compound TLD
+        }
+      }
+
+      // If not compound TLD, check for regular TLD
+      if (!isValidTLD) {
+        const tld = parts[parts.length - 1];
+        if (VALID_TLDS.has(tld)) {
+          isValidTLD = true;
+          mainDomainIndex = parts.length - 2; // The part before the TLD
+        }
+      }
+
+      if (!isValidTLD) return message;
+
+      // Ensure we have a main domain (not just TLD)
+      if (mainDomainIndex < 0) return message;
+
+      // Validate each part of the domain
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+
+        // Each part must be 1-63 characters
+        if (part.length === 0 || part.length > 63) return message;
+
+        // Must start and end with alphanumeric
+        if (!/^[a-zA-Z0-9]/.test(part) || !/[a-zA-Z0-9]$/.test(part))
+          return message;
+
+        // Can only contain alphanumeric and hyphens
+        if (!/^[a-zA-Z0-9-]+$/.test(part)) return message;
+      }
+
+      // Validate the main domain part exists and is valid
+      if (mainDomainIndex >= 0) {
+        const mainDomain = parts[mainDomainIndex];
+        if (mainDomain.length < 1) return message;
+      }
+
       return "";
-    } catch (_) {
+    } catch {
       return message;
     }
   };
@@ -180,6 +260,7 @@ export default function useValidator() {
     validateNumberEntry,
     validateOnlyNumbers,
     validatePhone,
+    validateTelephone,
     validatePasswordStrength,
     validateFullName,
     validateSingleName,

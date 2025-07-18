@@ -76,7 +76,7 @@ const handleUserPasswordRequest = async () => {
     btnText: "Request password reset",
     alertHandler: {
       200: {
-        message: "Password request was successful",
+        message: "Password request mail sent",
         description: "Access your mail to reset your password",
         type: "success",
       },
@@ -89,7 +89,7 @@ const handleUserPasswordRequest = async () => {
   });
 
   if (response.code === 200) {
-    setTimeout(() => (location.href = "/confirm-password-reset"), 1200);
+    setTimeout(() => (location.href = "/login"), 2000);
   }
 };
 </script>

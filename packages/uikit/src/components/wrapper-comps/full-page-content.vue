@@ -75,7 +75,7 @@ const getCurrentPage = computed(() => {
 
 <style lang="scss" scoped>
 .full-page-content {
-  @apply w-[74%] lg:w-[78%] mdLg:w-full ml-28 lg:ml-0 mdLg:ml-0;
+  @apply w-[74%] lg:w-[78%] mdLg:w-full ml-36 lg:ml-0 mdLg:ml-0;
 
   .form-wrapper {
     @apply w-[56%] xl:w-[62%] lg:w-[66%] flex flex-col justify-start items-start mx-auto;
@@ -90,7 +90,7 @@ const getCurrentPage = computed(() => {
       }
 
       .flow-row {
-        @apply w-fit bg-grey-50 border border-grey-100 rounded-full p-2 flex justify-start items-center gap-5 overflow-auto;
+        @apply w-fit bg-grey-50 border border-grey-100 rounded-full p-2 pr-4 mt-7 flex justify-start items-center gap-5 overflow-auto;
 
         .flow-item {
           @apply flex justify-start items-center gap-3 font-medium text-grey-600 text-sm md:text-[13.5px] transition-all duration-300 ease-in-out;
