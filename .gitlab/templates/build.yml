@@ -3,7 +3,7 @@
   image: node:18
   script:
     # - cd $APP_DIR
-    - npm ci --legacy-peer-deps
+    - npm install --legacy-peer-deps
     - npm run ${BUILD_SCRIPT}
   artifacts:
     paths:
