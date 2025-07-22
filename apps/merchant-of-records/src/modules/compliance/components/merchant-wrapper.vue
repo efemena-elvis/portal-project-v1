@@ -67,7 +67,11 @@ const props = withDefaults(defineProps<IOnboardingInfoType>(), {
 });
 
 const { clickHandler, processAPIRequest } = useEvents();
-const { getMerchantOnDraft } = useComplianceStore();
+const {
+  getMerchantOnDraft,
+  transformCleanedMerchantData,
+  bulkUpdateMerchantData,
+} = useComplianceStore();
 
 const btnRef = ref(null);
 
@@ -105,7 +109,11 @@ const getAggregatorDraftedMerchants = async () => {
       payload: {},
     });
 
-    console.log("Drafted merchants response:", response);
+    if (response.code === 200) {
+      const transformedData = transformCleanedMerchantData(response.data.data);
+      bulkUpdateMerchantData(transformedData);
+    }
+
     // return response;
   } catch (error) {
     console.error("Error fetching drafted merchants:", error);

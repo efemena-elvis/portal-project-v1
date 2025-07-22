@@ -73,6 +73,7 @@ import { useEvents } from "@packages/hooks";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
 
+
 type ILoginInputType = {
   email: string;
   password: string;
@@ -103,7 +104,7 @@ const getLoginPayload = computed(() => {
 });
 
 const handleUserLogin = async () => {
-  const response = await processAPIRequest({
+  const response =  await processAPIRequest({
     action: loginUser,
     payload: getLoginPayload.value,
     btnRef: loginBtnRef,
@@ -121,6 +122,7 @@ const handleUserLogin = async () => {
       },
     },
   });
+
 
   if (response.code === 200) {
     // Check if user email is verified

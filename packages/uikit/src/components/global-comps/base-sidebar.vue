@@ -5,6 +5,8 @@
     <BaseClientAreaStore
       v-if="isStoreLayout"
       :businessProfile="businessProfile"
+      :storeList="storeList"
+      :setActiveStore="setActiveStore"
     />
     <BaseClientArea v-else :businessProfile="businessProfile" />
 
@@ -89,7 +91,10 @@ import BaseClientAreaStore from "./base-client-area-store.vue";
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
-  isStoreLayout?: boolean;
+  storeList: any[];
+  setActiveStore: (store: any) => void;
+  activeStore?: any;
+  isStoreLayout: boolean;
 }
 
 interface GroupedByCategory {
@@ -103,10 +108,12 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
     bottomLevel: [],
   }),
   businessProfile: () => ({}),
-
+  setActiveStore: () => {},
+  activeStore: () => ({}),
+  storeList: () => [],
   isStoreLayout: false,
 });
-
+// console.log(props.activeStore)
 const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 

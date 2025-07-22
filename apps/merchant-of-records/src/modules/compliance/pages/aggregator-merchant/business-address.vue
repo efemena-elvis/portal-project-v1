@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
@@ -29,13 +29,14 @@ import { useComplianceStore } from "@/modules/compliance/store";
 
 const router = useRouter();
 
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { getBusinessCountries } = useGlobalStore();
 const complianceStore = useComplianceStore();
 const { validateRequired } = useValidators();
 
 const { merchantDataComputed } = storeToRefs(complianceStore);
-const { updateMerchantData } = complianceStore;
+const { updateMerchantData, transformMerchantData, onboardBulkMerchant } =
+  complianceStore;
 const stopClickHandler = ref(false);
 
 const tableHeader = ref<BulkUploadTableType[]>([
@@ -78,6 +79,7 @@ const tableHeader = ref<BulkUploadTableType[]>([
     type: "text",
     path: "address.billing_descriptor2",
     placeholder: "Enter billing descriptor 2",
+    validator: validateRequired,
   },
 ]);
 
@@ -91,6 +93,7 @@ const isActionReady = computed(() => {
       validateRequired(address.country_id),
       validateRequired(address.address),
       validateRequired(address.billing_descriptor1),
+      validateRequired(address.billing_descriptor2),
     ];
 
     // If any validator returned a non-empty error string, form is not ready
@@ -116,9 +119,37 @@ const loadBusinessCountries = async () => {
   }
 };
 
-const handleBusinessAddressUpdate = () => {
-  router.push({ name: "AggregatorBusinessDocuments" });
+const handleBusinessAddressUpdate = async () => {
+  const transformedData = transformMerchantData(merchantDataComputed.value);
+
+  const response = await processAPIRequest({
+    action: onboardBulkMerchant,
+    payload: {
+      data: transformedData,
+    },
+  });
+
+  stopClickHandler.value = true;
+
+  if (response.code === 201) {
+    router.push({ name: "AggregatorBusinessDocuments" });
+  } else {
+    pushToastAlert({
+      message: "Failed to update business address. Please try again.",
+      type: "error",
+    });
+  }
 };
+
+watch(
+  merchantDataComputed,
+  (newValue) => {
+    if (newValue) {
+      tableBody.value = newValue;
+    }
+  },
+  { immediate: true }
+);
 
 // LOAD BUSINESS COUNTRIES
 onMounted(() => loadBusinessCountries());

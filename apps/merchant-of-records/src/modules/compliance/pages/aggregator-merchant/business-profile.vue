@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
@@ -44,7 +44,7 @@ const {
 } = complianceStore;
 
 const stopClickHandler = ref(false);
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const tableHeader = ref<BulkUploadTableType[]>([
   {
@@ -109,18 +109,35 @@ const isActionReady = computed(() => {
   });
 });
 
-const handleBusinessProfileUpdate = () => {
+const handleBusinessProfileUpdate = async () => {
   const transformedData = transformMerchantData(merchantDataComputed.value);
 
-  const response = processAPIRequest({
+  const response = await processAPIRequest({
     action: onboardBulkMerchant,
     payload: {
       data: transformedData,
     },
   });
 
-  console.log("Business profile updated:", response);
+  stopClickHandler.value = true;
 
-  // router.push({ name: "AggregatorMerchantBusinessAddress" });
+  if (response.code === 201) {
+    router.push({ name: "AggregatorMerchantBusinessAddress" });
+  } else {
+    pushToastAlert({
+      message: "Failed to update business profile. Please try again.",
+      type: "error",
+    });
+  }
 };
+
+watch(
+  merchantDataComputed,
+  (newValue) => {
+    if (newValue) {
+      tableBody.value = newValue;
+    }
+  },
+  { immediate: true }
+);
 </script>

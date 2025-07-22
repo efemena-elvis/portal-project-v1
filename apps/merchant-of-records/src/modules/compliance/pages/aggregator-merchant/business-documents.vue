@@ -18,11 +18,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
-import { useValidators } from "@packages/hooks";
+import { useValidators, useEvents } from "@packages/hooks";
 import { BulkUploadTable } from "@packages/uikit";
 import { MerchantWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
@@ -35,8 +35,11 @@ const complianceStore = useComplianceStore();
 const { validateRequired } = useValidators();
 
 const { merchantDataComputed } = storeToRefs(complianceStore);
-const { updateMerchantData } = complianceStore;
+const { updateMerchantData, transformMerchantData, onboardBulkMerchant } =
+  complianceStore;
+
 const stopClickHandler = ref(false);
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const tableHeader = ref<BulkUploadTableType[]>([
   {
@@ -88,7 +91,35 @@ const isActionReady = computed(() => {
   });
 });
 
-const handleBusinessDocumentUpdate = () => {
-  router.push({ name: "AggregatorDirectorDetails1" });
+const handleBusinessDocumentUpdate = async () => {
+  const transformedData = transformMerchantData(merchantDataComputed.value);
+
+  const response = await processAPIRequest({
+    action: onboardBulkMerchant,
+    payload: {
+      data: transformedData,
+    },
+  });
+
+  stopClickHandler.value = true;
+
+  if (response.code === 201) {
+    router.push({ name: "AggregatorDirectorDetails1" });
+  } else {
+    pushToastAlert({
+      message: "Failed to update business documents. Please try again.",
+      type: "error",
+    });
+  }
 };
+
+watch(
+  merchantDataComputed,
+  (newValue) => {
+    if (newValue) {
+      tableBody.value = newValue;
+    }
+  },
+  { immediate: true }
+);
 </script>

@@ -19,7 +19,11 @@ import {
   IComplianceTerms,
 } from "./compliance-base";
 
-import { setDeepValue, cleanMerchantData } from "./merchant-helpers";
+import {
+  setDeepValue,
+  cleanMerchantData,
+  transformCleanedToMerchantData,
+} from "./merchant-helpers";
 import { IMerchantBaseType, CleanedMerchantType } from "@packages/models";
 import { merchantDataComputed } from "./getters";
 
@@ -130,13 +134,13 @@ export function useComplianceMutations() {
         mcc: "",
         email: "",
         phone_number: "",
-        website_link: null,
+        website_link: "",
       },
       address: {
         country_id: "",
         address: "",
         billing_descriptor1: "",
-        billing_descriptor2: null,
+        billing_descriptor2: "",
       },
       director1: {
         legal_full_name: "",
@@ -176,6 +180,10 @@ export function useComplianceMutations() {
     merchantData.value.push(newMerchant);
   };
 
+  const bulkUpdateMerchantData = (payload: IMerchantBaseType[]) => {
+    merchantData.value = payload;
+  };
+
   const removeMerchantData = (merchantId: string) => {
     const index = merchantDataComputed.value.findIndex(
       (m) => m.id === merchantId
@@ -191,11 +199,19 @@ export function useComplianceMutations() {
     return cleanMerchantData(merchantData);
   };
 
+  const transformCleanedMerchantData = (
+    cleanedData: CleanedMerchantType[]
+  ): IMerchantBaseType[] => {
+    return transformCleanedToMerchantData(cleanedData);
+  };
+
   return {
     mutateCompliance,
     updateMerchantData,
     addMerchantData,
+    bulkUpdateMerchantData,
     removeMerchantData,
     transformMerchantData,
+    transformCleanedMerchantData,
   };
 }

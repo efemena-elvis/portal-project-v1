@@ -1,0 +1,69 @@
+# === Combined Anchors ===
+.alexpay_staging_vars: &alexpay_staging_vars
+  APP_NAME: alexpay
+  APP_DIR: apps/alexpay
+  BUILD_DIR: apps/alexpay/dist
+  BUILD_SCRIPT: build:staging:merchant-alexpay
+  CI_ENVIRONMENT_NAME: staging
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $ALEXPAY_STAGING_AWS_REGION
+  S3_BUCKET: $ALEXPAY_STAGING_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $ALEXPAY_STAGING_CLOUDFRONT_DISTRIBUTION
+
+.alexpay_prod_vars: &alexpay_prod_vars
+  APP_NAME: alexpay
+  APP_DIR: apps/alexpay
+  BUILD_DIR: apps/alexpay/dist
+  BUILD_SCRIPT: build:prod:merchant-alexpay
+  CI_ENVIRONMENT_NAME: main
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $ALEXPAY_PROD_AWS_REGION
+  S3_BUCKET: $ALEXPAY_PROD_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $ALEXPAY_PROD_CLOUDFRONT_DISTRIBUTION
+
+# === ALEXPAY ===
+install_alexpay:
+  extends: .install_template
+  variables:
+    <<: *alexpay_staging_vars
+  only:
+    - staging
+    - main
+
+build_staging_alexpay:
+  extends: .build_template
+  variables:
+    <<: *alexpay_staging_vars
+  only:
+    - staging
+  needs:
+    - install_alexpay
+
+build_production_alexpay:
+  extends: .build_template
+  variables:
+    <<: *alexpay_prod_vars
+  only:
+    - main
+  needs:
+    - install_alexpay
+
+deploy_staging_alexpay:
+  extends: .deploy_template
+  variables:
+    <<: *alexpay_staging_vars
+  only:
+    - staging
+  needs:
+    - build_staging_alexpay
+
+deploy_production_alexpay:
+  extends: .deploy_template
+  variables:
+    <<: *alexpay_prod_vars
+  only:
+    - main
+  needs:
+    - build_production_alexpay

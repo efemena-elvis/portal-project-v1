@@ -56,7 +56,12 @@ import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
-import { useString, useComplianceUtil, useProfile } from "@packages/hooks";
+import {
+  useString,
+  useComplianceUtil,
+  useProfile,
+  useAppVariant,
+} from "@packages/hooks";
 import { TextFieldInput, PhoneFieldInput } from "@packages/uikit";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useComplianceStore } from "@/modules/compliance/store";
@@ -75,6 +80,7 @@ type IInputValidity = {
 
 const router = useRouter();
 const { formatPhoneNumber } = useString();
+const appVariant = ref<string>(useAppVariant());
 
 const authStore = useAuthStore();
 const complianceStore = useComplianceStore();
@@ -86,6 +92,10 @@ const { getComplianceBusiness } = storeToRefs(complianceStore);
 const getUserProfile = computed(() => profileUtil.getUser());
 
 const stopClickHandler = ref<boolean>(false);
+
+const defaultCountryCode = ref<string>(
+  appVariant.value === "alexpay" ? "233" : "260"
+);
 
 const businessPayload = ref<IBusinessType>({
   email: getUserProfile?.value?.email || "",
@@ -99,7 +109,8 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const phoneCountryCode = ref<string>(
-  getComplianceBusiness.value?.phone_number?.split("-")[0] || "234"
+  getComplianceBusiness.value?.phone_number?.split("-")[0] ||
+    defaultCountryCode.value
 );
 
 const isActionReady = computed(() => {
@@ -142,7 +153,8 @@ watch(
         website: newValue.website || "",
       };
 
-      phoneCountryCode.value = newValue.phone_number?.split("-")[0] || "260";
+      phoneCountryCode.value =
+        newValue.phone_number?.split("-")[0] || defaultCountryCode.value;
     }
   },
   { immediate: true }

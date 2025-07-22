@@ -20,7 +20,7 @@
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
@@ -97,7 +97,7 @@ import {
 const router = useRouter();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
-const { getStoreProducts } = useStoreStore();
+const { getStoreOrders } = useStoreStore();
 const { processAPIRequest } = useEvents();
 
 const renderOrderQuantity = (order: any) => {
@@ -121,51 +121,51 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([
-  {
-    counter: "1",
-    date_created: "22nd July, 2024",
-    customer: h(TableDoubleColumn, {
-      entry: {
-        primaryText: `Efemena Elvis`,
-        secondaryText: `efemena.elvis@example.com`,
-      },
-    }),
-    order: h(TableDoubleColumn, {
-      entry: {
-        primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
-        secondaryText: renderOrderQuantity({
-          order_details: [
-            { quantity: 2, product_name: "White Sneakers" },
-            { quantity: 1, product_name: "Black Sneakers" },
-          ],
-        }),
-      },
-    }),
-    payment_status: h(TableDoubleColumn, {
-      entry: {
-        primaryText: `<span class='text-green-600'>Paid</span>`,
-        secondaryText: `Order no: ${"N/A"}`,
-      },
-    }),
-    order_status: `${getStatus("success", "Completed")}`,
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: true,
-      primaryBtnText: "Manage",
-      showSecondaryText: true,
-      secondaryBtnIcon: "",
-      secondaryBtnText: "View",
-      isSecondaryActionDelete: false,
-      onManageClick: () => {
-        // productOrderDetails.value = data;
-        toggleManageOrdersModal();
-      },
-      onDeleteClick: () => {
-        // productOrderDetails.value = data;
-        toggleViewOrdersModal();
-      },
-    }),
-  },
+  // {
+  //   counter: "1",
+  //   date_created: "22nd July, 2024",
+  //   customer: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: `Efemena Elvis`,
+  //       secondaryText: `efemena.elvis@example.com`,
+  //     },
+  //   }),
+  //   order: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
+  //       secondaryText: renderOrderQuantity({
+  //         order_details: [
+  //           { quantity: 2, product_name: "White Sneakers" },
+  //           { quantity: 1, product_name: "Black Sneakers" },
+  //         ],
+  //       }),
+  //     },
+  //   }),
+  //   payment_status: h(TableDoubleColumn, {
+  //     entry: {
+  //       primaryText: `<span class='text-green-600'>Paid</span>`,
+  //       secondaryText: `Order no: ${"N/A"}`,
+  //     },
+  //   }),
+  //   order_status: `${getStatus("success", "Completed")}`,
+  //   action: h(TableActionBtn, {
+  //     showPrimaryBtn: true,
+  //     showSecondaryBtn: true,
+  //     primaryBtnText: "Manage",
+  //     showSecondaryText: true,
+  //     secondaryBtnIcon: "",
+  //     secondaryBtnText: "View",
+  //     isSecondaryActionDelete: false,
+  //     onManageClick: () => {
+  //       // productOrderDetails.value = data;
+  //       toggleManageOrdersModal();
+  //     },
+  //     onDeleteClick: () => {
+  //       // productOrderDetails.value = data;
+  //       toggleViewOrdersModal();
+  //     },
+  //   }),
+  // },
 ]);
 const tablePaging = ref<any>({});
 
@@ -185,9 +185,9 @@ const toggleViewOrdersModal = () => {
   showViewOrdersModal.value = !showViewOrdersModal.value;
 };
 
-const fetchProducts = async () => {
+const fetchOrders = async () => {
   const response = await processAPIRequest({
-    action: getStoreProducts,
+    action: getStoreOrders,
     payload: {},
     showAlert: false,
   });
@@ -214,15 +214,15 @@ const fetchProducts = async () => {
   }
 };
 
-const handleEditProduct = (data: any) => {
+const handleEditOrder = (data: any) => {
   // Logic to edit product
   console.log("Edit Product:", data);
 };
 
-const handleDeleteProduct = (data: any) => {
+const handleDeleteOrder = (data: any) => {
   // Logic to delete product
   console.log("Delete Product:", data);
 };
 
-// onMounted(() => fetchProducts = async () => {());
+// onMounted(() => fetchOrders());
 </script>

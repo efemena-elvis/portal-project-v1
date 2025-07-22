@@ -3,6 +3,7 @@
     :stopClickHandler="stopClickHandler"
     :isPrimaryActionDisabled="!isActionReady"
     showActionRow
+    primaryActionText="Submit for Review"
     @onBackClick="router.push({ name: 'AggregatorDirectorDetails1' })"
     @onContinueClick="handleBusinessUBOUpdate"
   >
@@ -18,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { BulkUploadTableType, IMerchantBaseType } from "@packages/models";
@@ -33,10 +34,11 @@ const router = useRouter();
 const { uploadFile, getBusinessCountries } = useGlobalStore();
 const complianceStore = useComplianceStore();
 const { validateRequired } = useValidators();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const { merchantDataComputed } = storeToRefs(complianceStore);
-const { updateMerchantData } = complianceStore;
+const { updateMerchantData, transformMerchantData, onboardBulkMerchant } =
+  complianceStore;
 const stopClickHandler = ref(false);
 
 const tableHeader = ref<BulkUploadTableType[]>([
@@ -146,9 +148,37 @@ const loadBusinessCountries = async () => {
   }
 };
 
-const handleBusinessUBOUpdate = () => {
-  // router.push({ name: "AggregatorUboDetails2" });
+const handleBusinessUBOUpdate = async () => {
+  const transformedData = transformMerchantData(merchantDataComputed.value);
+
+  const response = await processAPIRequest({
+    action: onboardBulkMerchant,
+    payload: {
+      data: transformedData,
+    },
+  });
+
+  stopClickHandler.value = true;
+
+  if (response.code === 201) {
+    router.push({ name: "AggregatorMerchantOnboardingCompleted" });
+  } else {
+    pushToastAlert({
+      message: "Failed to update UBO profile. Please try again.",
+      type: "error",
+    });
+  }
 };
+
+watch(
+  merchantDataComputed,
+  (newValue) => {
+    if (newValue) {
+      tableBody.value = newValue;
+    }
+  },
+  { immediate: true }
+);
 
 // LOAD BUSINESS COUNTRIES
 onMounted(() => loadBusinessCountries());

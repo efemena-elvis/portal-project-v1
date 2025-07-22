@@ -14,7 +14,7 @@
           </thead>
 
           <tbody>
-            <tr v-for="(row, rowIndex) in tableBody" :key="rowIndex">
+            <tr v-for="row in tableBody" :key="row.id">
               <td
                 v-for="(header, index) in tableHeader"
                 :key="index"
@@ -42,10 +42,12 @@
                 <!-- FILE INPUT FORM TYPE -->
                 <template v-else-if="header.type === 'file'">
                   <BulkUploadFileInput
+                    :key="`${header.path}-${row.id}`"
                     :header="header"
                     :body="row"
                     :updateMerchantAction="updateMerchantAction"
                     :uploadAction="uploadAction"
+                    :keyIdentifier="`${header.path}-${row.id}`"
                   />
                 </template>
               </td>

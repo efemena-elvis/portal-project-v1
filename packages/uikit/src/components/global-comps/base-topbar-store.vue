@@ -108,7 +108,7 @@
           </div>
 
           <div>
-            <div class="profile-name">Efemena Elvis</div>
+            <div class="profile-name">{{ getBusinessProfile?.businessName}}</div>
             <div class="profile-role">Store Owner</div>
           </div>
 
@@ -242,7 +242,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:py-2 flex justify-between items-center h-auto bg-neutral-10;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:py-2 flex justify-between items-center h-auto bg-neutral-10 mt-8;
 
   &--left {
     @apply flex justify-start items-center gap-x-2.5 w-1/2;

@@ -36,7 +36,22 @@
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { useEvents } from "@packages/hooks";
+import { useComplianceStore } from "@/modules/compliance/store";
+
+const complianceStore = useComplianceStore();
+const { processAPIRequest } = useEvents();
+
+const { activateBulkMerchants } = complianceStore;
+
+(async () => {
+  await processAPIRequest({
+    action: activateBulkMerchants,
+    payload: {},
+  });
+})();
+</script>
 
 <style lang="scss" scoped>
 .layout-wrapper {

@@ -26,11 +26,17 @@
         <div class="title-text">Merchant Agreement</div>
 
         <div class="decription-text">
-          <span>The Vesicash Merchant Agreement</span> is a contract between you
-          and Vesicash, outlining the responsibilities of both parties. It also
-          emphasizes specific risks and conditions associated with using our
-          Services, which you should review thoroughly. By using this website or
-          any of our Services, you agree to the terms of this Agreement.
+          <span
+            >The
+            {{ appVariant === "alexpay" ? "AlexPay" : "RedstonePGS" }} Merchant
+            Agreement</span
+          >
+          is a contract between you and
+          {{ appVariant === "alexpay" ? "AlexPay" : "RedstonePGS" }}, outlining
+          the responsibilities of both parties. It also emphasizes specific
+          risks and conditions associated with using our Services, which you
+          should review thoroughly. By using this website or any of our
+          Services, you agree to the terms of this Agreement.
         </div>
       </div>
 
@@ -81,7 +87,7 @@
 import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
-import { useProfile, useComplianceUtil } from "@packages/hooks";
+import { useProfile, useComplianceUtil, useAppVariant } from "@packages/hooks";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { useAuthStore } from "@/modules/auth/store";
@@ -91,6 +97,7 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const appVariant = ref<string>(useAppVariant());
 
 const authStore = useAuthStore();
 const complianceStore = useComplianceStore();

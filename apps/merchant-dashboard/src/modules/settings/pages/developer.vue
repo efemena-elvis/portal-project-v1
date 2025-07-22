@@ -79,7 +79,12 @@
           Need help integrating our APIs on your platform?
         </div>
 
-        <button class="btn btn-sm btn-tertiary">Explore our APIs</button>
+        <button
+          class="btn btn-sm btn-tertiary"
+          @click="accessMerchantDeveloperAPI"
+        >
+          Explore our APIs
+        </button>
       </div>
     </div>
   </div>
@@ -91,7 +96,12 @@ import { IInputType } from "@packages/models";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
-import { useEvents, useProfile } from "@packages/hooks";
+import {
+  useEvents,
+  useProfile,
+  useAppVariant,
+  useString,
+} from "@packages/hooks";
 import { TextFieldInput } from "@packages/uikit";
 
 type IURLType = {
@@ -103,6 +113,9 @@ type IInputValidity = {
   callback_url: boolean;
   webhook_url: boolean;
 };
+
+const appVariant = ref<string>(useAppVariant());
+const { createAndClickAnchor } = useString();
 
 const authStore = useAuthStore();
 const { fetchUserProfile, updateUserProfile } = useSettingsStore();
@@ -133,7 +146,7 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const getKeys = computed(() => {
-  if (getBusinessProfile.value.businessMode === "test") {
+  if (getBusinessProfile?.value?.businessMode === "test") {
     return getAPIKeys.value.test;
   } else return getAPIKeys.value?.live;
 });
@@ -155,8 +168,17 @@ const getPayload = computed(() => {
   };
 });
 
+const accessMerchantDeveloperAPI = () => {
+  const developerAPI: { [key: string]: string } = {
+    redstonepgs: "https://developer.redstonepgs.com",
+    alexpay: "https://developer.alexpay.com",
+  };
+
+  return createAndClickAnchor(developerAPI[appVariant.value], "_blank");
+};
+
 const updateProfileAPIKeys = async () => {
-  const response = await processAPIRequest({
+  await processAPIRequest({
     action: updateUserProfile,
     btnRef: updateKeysBtnRef,
     btnText: "Update API Keys",
@@ -177,7 +199,7 @@ const updateProfileAPIKeys = async () => {
 
 // Fetch all profile data
 const fetchProfileData = async () => {
-  const response = await processAPIRequest({
+  await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,
   });

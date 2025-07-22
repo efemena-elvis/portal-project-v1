@@ -26,19 +26,21 @@
         </template>
 
         <template v-else>
-          <label :for="header.name" class="file-label">
+          <label :for="keyIdentifier" class="file-label">
             <div class="icon icon-file"></div>
-            <div class="select-none">{{ header.placeholder }}</div>
+            <div class="select-none">
+              {{ header.placeholder }}
+            </div>
           </label>
         </template>
       </template>
     </div>
 
     <input
-      :id="header.name"
+      :id="keyIdentifier"
       type="file"
-      :ref="header.path"
       class="hidden w-full h-12"
+      :class="`merchant-id-${body.id}`"
       accept=".jpg, .jpeg, .png, .pdf"
       @change="processDocumentUpload($event, header.path, body.id)"
     />
@@ -55,6 +57,7 @@ const props = defineProps<{
   body: IMerchantBaseType;
   updateMerchantAction: (payload: any) => void;
   uploadAction: (payload: any) => Promise<any>;
+  keyIdentifier?: string;
 }>();
 
 const { capitalizeFirstLetter } = useString();
@@ -141,6 +144,9 @@ const processDocumentUpload = async (
   if (response.code == 201) {
     inputElement.value = "";
     updateUploadingStatus(merchantId, path);
+
+    console.log("merchantId", merchantId);
+    console.log("path", path);
 
     inputValue.value = response.data[0].file_url;
     updateFieldInput(merchantId, path, inputValue.value);

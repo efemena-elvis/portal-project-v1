@@ -30,7 +30,7 @@
       <div class="helper-row justify-center mt-5">
         <div class="text">
           Remember your password?
-          <router-link :to="{ name: 'VesicashLogin' }">Login</router-link>
+          <router-link :to="{ name: 'StoroLogin' }">Login</router-link>
         </div>
       </div>
     </form>

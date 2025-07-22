@@ -8,3 +8,4 @@ include:
   - local: ".gitlab/templates/build.yml"
   - local: ".gitlab/templates/deploy.yml"
   - local: ".gitlab/apps/merchant-of-records.yml"
+  - local: ".gitlab/apps/alexpay.yml"

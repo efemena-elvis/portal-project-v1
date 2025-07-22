@@ -15,14 +15,14 @@ export interface IMerchantProfile {
   mcc: string;
   email: string;
   phone_number: string;
-  website_link?: string | null;
+  website_link: string;
 }
 
 export interface IMerchantAddress {
   country_id: string;
   address: string;
   billing_descriptor1: string;
-  billing_descriptor2?: string | null;
+  billing_descriptor2: string;
 }
 
 export interface IMerchantDocuments {
@@ -65,14 +65,14 @@ export interface CleanedMerchantType {
     mcc: string;
     email: string;
     phone_number: string;
-    website_link: string | null;
+    website_link: string;
     address: string;
     country_id: string;
     certificate_url: string;
     form3_url: string;
     tin_number: string;
     billing_descriptor1: string;
-    billing_descriptor2: string | null;
+    billing_descriptor2: string;
     optional_doc_url: string;
   };
   representative: Array<{

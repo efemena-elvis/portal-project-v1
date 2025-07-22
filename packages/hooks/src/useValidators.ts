@@ -182,13 +182,13 @@ export default function useValidator() {
 
     if (!trimmedInput) return message;
 
-    try {
-      // Add http:// if missing to allow inputs like "vesicash.com"
-      const normalized = /^https?:\/\//.test(trimmedInput)
-        ? trimmedInput
-        : `http://${trimmedInput}`;
+    // Check if the input starts with https:// or http://
+    if (!/^https?:\/\//.test(trimmedInput)) {
+      return message;
+    }
 
-      const url = new URL(normalized);
+    try {
+      const url = new URL(trimmedInput);
       const hostname = url.hostname.toLowerCase();
 
       // Basic hostname validation

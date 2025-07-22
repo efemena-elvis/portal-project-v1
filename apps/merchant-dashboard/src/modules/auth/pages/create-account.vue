@@ -129,9 +129,19 @@ const appVariant = ref<string>(useAppVariant());
 
 const signupBtnRef = ref(null);
 
+const defaultCountries = ref<{
+  [key: string]: { value: string; name: string };
+}>({
+  alexpay: { value: "54cf288c-a5b9-4234-8e58-b88ae3457db6", name: "Ghana" },
+  redstonepgs: {
+    value: "4613642d-4af3-41de-a863-6b8ae84915b9",
+    name: "Zambia",
+  },
+});
+
 const signupPayload = ref<ISignupInputType>({
   business_name: "",
-  country_id: "98e7ad5b-d718-41d1-ab38-10a245ff4279",
+  country_id: defaultCountries.value[appVariant.value].value,
   email: "",
   password: "",
 });
@@ -143,10 +153,7 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const validCountries = ref<{ value: string; name: string }[]>([
-  {
-    value: "98e7ad5b-d718-41d1-ab38-10a245ff4279",
-    name: "Nigeria",
-  },
+  defaultCountries.value[appVariant.value],
 ]);
 
 const isSignupReady = computed(() => {
@@ -190,12 +197,13 @@ const fetchCountries = async () => {
       }))
       .sort((a: any, b: any) => a.name.localeCompare(b.name));
 
-    const getNigeria = filteredCountries.find(
-      (country: any) => country.name === "Nigeria"
+    const getCountry = filteredCountries.find(
+      (country: any) =>
+        country.name === defaultCountries.value[appVariant.value].name
     );
 
     validCountries.value = filteredCountries;
-    signupPayload.value.country_id = getNigeria.value;
+    signupPayload.value.country_id = getCountry.value;
   }
 };
 

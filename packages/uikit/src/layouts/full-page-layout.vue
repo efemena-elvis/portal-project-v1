@@ -38,7 +38,7 @@ const getBackRoute = computed(() => {
   if (
     typeof routeName === "string" &&
     backRouteHistory.value.hasOwnProperty(routeName)
-  ) {
+  ) { 
     return backRouteHistory.value[routeName];
   }
   return backRouteHistory.value["all"];

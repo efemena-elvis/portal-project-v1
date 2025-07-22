@@ -26,14 +26,14 @@ export const merchantData = ref<IMerchantBaseType[]>([
       mcc: "",
       email: "",
       phone_number: "",
-      website_link: null,
+      website_link: "",
     },
 
     address: {
       country_id: "",
       address: "",
       billing_descriptor1: "",
-      billing_descriptor2: null,
+      billing_descriptor2: "",
     },
 
     documents: {
