@@ -3,34 +3,42 @@
     <div class="metric-title">{{ props.metricTitle }}</div>
 
     <div class="metric-value">
-      {{ props.metricValue }}
+      <span v-if="metricTitle === 'Total Sales'">ZMW</span>
+      {{ Number(metricValue).toLocaleString() }}
     </div>
 
-    <div class="metric-stat">
-      {{ props.metricPercentageChange }} (Past 30 days)
+    <div
+      class="metric-stat"
+     
+    >
+      <span  :class="{
+        'text-red-500': metricValue < 50,
+        'text-green-600': metricValue >= 50,
+      }">{{ props.metricPercentageChange }}</span> (Past 30 days)
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 interface IMetricProps {
   metricStyle: string;
   metricTitle: string;
-  metricValue: string;
+  metricValue: number;
   metricPercentageChange: string;
 }
 
 const props = withDefaults(defineProps<IMetricProps>(), {
   metricStyle: "bg-white",
   metricTitle: "Metric Title",
-  metricValue: "0",
+  metricValue: 0,
   metricPercentageChange: "0%",
 });
 </script>
 
 <style lang="scss" scoped>
 .metric-item {
-  @apply border overflow-hidden rounded-[10px] px-5 py-6 flex flex-col justify-center items-start gap-y-0.5;
+  @apply border overflow-hidden rounded-[10px] px-5 py-6 flex flex-col justify-center items-start gap-y-0.5 h-[128Ppx];
 
   .metric-title {
     @apply text-grey-600 font-medium text-sm mb-2.5;
@@ -41,7 +49,7 @@ const props = withDefaults(defineProps<IMetricProps>(), {
   }
 
   .metric-stat {
-    @apply text-[12.5px] text-green-600 font-medium;
+    @apply text-[12.5px]  font-medium;
   }
 }
 </style>

@@ -18,13 +18,13 @@ const activeMode = getBusinessProfile.value?.businessMode || "test";
 
 const publicKey = computed(() =>
   activeMode === "test"
-    ? profileUtil.getAPIKeys().test.secret
-    : profileUtil.getAPIKeys().live.secret
+    ? profileUtil.getAPIKeys().test.public
+    : profileUtil.getAPIKeys().live.public
 );
 const secretKey = computed(() =>
   activeMode === "test"
-    ? profileUtil.getAPIKeys().test.public
-    : profileUtil.getAPIKeys().live.public
+    ? profileUtil.getAPIKeys().test.secret
+    : profileUtil.getAPIKeys().live.secret
 );
 
 const $api = new useServiceAPI({

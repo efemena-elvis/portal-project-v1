@@ -7,6 +7,7 @@
       :businessProfile="businessProfile"
       :storeList="storeList"
       :setActiveStore="setActiveStore"
+      :activeStore="activeStore"
     />
     <BaseClientArea v-else :businessProfile="businessProfile" />
 

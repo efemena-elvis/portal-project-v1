@@ -2,7 +2,7 @@
   <div class="client-area-wrapper">
     <div class="client-area">
       <div class="client-area-brand">
-        {{ getBrandInitials(activeStore?.name || "No Name") }}
+        {{ getBrandInitials(localActiveStore?.name || "No Name") }}
       </div>
 
       <div
@@ -13,7 +13,7 @@
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
           <div class="brand-name">
-            {{ activeStore?.name || "No Name" }}
+            {{ localActiveStore?.name || "No Name" }}
           </div>
 
           <div class="brand-id-row">
@@ -55,7 +55,7 @@
 
             <div>
               <div class="store-name">{{ store.name }}</div>
-              <div class="store-meta">#2,420 sales</div>
+              <!-- <div class="store-meta">ZMW {{ store.total_sales }} sales</div> -->
             </div>
           </div>
 
@@ -76,19 +76,21 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useString, useClickOutside, useEvents } from "@packages/hooks";
 
 interface IClientAreaProps {
   businessProfile: any;
   storeList: any[];
   setActiveStore: (store: any) => void;
+  activeStore?: any;
 }
 
 const props = withDefaults(defineProps<IClientAreaProps>(), {
   businessProfile: () => ({}),
   storeList: () => [],
   setActiveStore: () => {},
+  activeStore: () => null,
 });
 
 const { pushToastAlert, processAPIRequest } = useEvents();
@@ -99,7 +101,9 @@ const profileUtil = props.businessProfile;
 const showDropdown = ref(false);
 const dialogRef = ref<HTMLElement | null>(null);
 const togglerRef = ref<HTMLElement | null>(null);
-const activeStore = ref<any>(props.storeList[0]);
+
+const localActiveStore = ref(props.activeStore ?? null);
+const hasSetInitialStore = ref(false);
 
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
@@ -109,15 +113,17 @@ const copied = ref<boolean>(false);
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUser = computed(() => profileUtil.getUser());
 
-
 // GET BRAND INITIALS
 const getBrandInitials = (brandName: string): string =>
   getStringInitials(brandName);
 
 const getSingleStore = (storeId: string) => {
   const store = props.storeList.find((store) => store.id === storeId);
-  props.setActiveStore(store);
-  activeStore.value = store;
+  if (store) {
+    props.setActiveStore(store);
+    localActiveStore.value = store;
+  }
+
 };
 
 // COPY MERCHANT BUSINESS ID
@@ -135,11 +141,22 @@ const copyMerchantID = async () => {
   setTimeout(() => (copied.value = false), 2000);
 };
 
-watch(() => props.storeList, (newStoreList) => {
-  if (newStoreList.length > 0) {
-    activeStore.value = newStoreList[0];
-  }
-}, { immediate: true });
+watch(
+  () => props.storeList,
+  (newStoreList) => {
+    if (
+      newStoreList.length > 0 &&
+      !localActiveStore.value &&
+      !hasSetInitialStore.value
+    ) {
+      const firstStore = newStoreList[0];
+      props.setActiveStore(firstStore);
+      localActiveStore.value = firstStore;
+      hasSetInitialStore.value = true;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

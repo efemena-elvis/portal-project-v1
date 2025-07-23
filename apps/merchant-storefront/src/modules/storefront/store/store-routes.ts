@@ -2,7 +2,9 @@ export const storeRoutes = {
   createStorefront: `store/create`,
   getStoreList: `store/list`,
   getStoreDetails: `store/details`,
-  getStoreCustomers: `store/customers`,
+  getStoreCustomers: `store/customers/:store_id`,
   getStoreProducts: `store/products`,
-  getStoreOrders: `store/orders`,
+  addProduct: `store/product/create`,
+  getProductsSummary: `store/product/summary/:store_id`,
+  getStoreOrders: `store/orders/store/:store_id`,
 };

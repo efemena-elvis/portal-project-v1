@@ -15,9 +15,9 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Product Value', valueText: 'ZMW 0.00' },
-            { titleText: 'Total Products', valueText: '0' },
-            { titleText: 'Out of Stock', valueText: '0' },
+            { titleText: 'Product Value',  valueText: `ZMW ${productsSummary?.total_product_value || 0}`},
+            { titleText: 'Total Products',   valueText: productsSummary?.total_products || 0, },
+            { titleText: 'Out of Stock',  valueText: productsSummary?.total_out_of_stock || 0, },
           ]"
         />
       </div>
@@ -76,6 +76,7 @@ import { useDate, useString, useEvents } from "@packages/hooks";
 
 import DeleteProductModal from "@/modules/storefront/modals/delete-product-modal.vue";
 import ManageProductModal from "@/modules/storefront/modals/manage-product-modal.vue";
+import { getProductsSummary } from "../store/actions";
 
 import {
   TableContainer,
@@ -88,10 +89,19 @@ import {
   DateFilterCard,
 } from "@packages/uikit";
 
+type Store = { id: string; [key: string]: any };
+type ProductsSummary = { total_orders?: number; [key: string]: any };
+
 const router = useRouter();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
-const { getStoreProducts } = useStoreStore();
+
+const { activeStore, getStoreProducts, getProductsSummary } =
+  useStoreStore() as {
+    activeStore: Store | null;
+    getStoreProducts: any;
+    getProductsSummary: any;
+  };
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(false);
@@ -141,6 +151,7 @@ const tablePaging = ref<any>({});
 
 const showManageProductModal = ref<boolean>(false);
 const showProductDeleteModal = ref<boolean>(false);
+const productsSummary = ref<ProductsSummary>({});
 
 const toggleManageProductModal = () => {
   showManageProductModal.value = !showManageProductModal.value;
@@ -157,7 +168,7 @@ const getDateAdded = (date: string) => {
 
 const fetchProducts = async () => {
   const response = await processAPIRequest({
-    action: getStoreProducts,
+    action: getStoreProducts(activeStore?.slug || ""),
     payload: {},
     showAlert: false,
   });
@@ -183,6 +194,17 @@ const fetchProducts = async () => {
     tablePaging.value = response.pagination[0];
   }
 };
+const fetchProductsSummary = async () => {
+  const response = await processAPIRequest({
+    action: getProductsSummary(activeStore?.id || ""),
+    payload: {},
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  productsSummary.value = response?.data;
+};
 
 const handleEditProduct = (data: any) => {
   // Logic to edit product
@@ -194,5 +216,8 @@ const handleDeleteProduct = (data: any) => {
   console.log("Delete Product:", data);
 };
 
-onMounted(() => fetchProducts() );
+onMounted(() => {
+  fetchProducts();
+  fetchProductsSummary();
+});
 </script>

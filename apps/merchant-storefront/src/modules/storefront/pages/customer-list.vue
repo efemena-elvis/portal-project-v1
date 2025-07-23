@@ -12,14 +12,14 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Total Customers', valueText: '0' },
-            { titleText: 'Active Customers', valueText: '0' },
-            { titleText: 'Blacklisted Customers', valueText: '0' },
+            { titleText: 'Total Customers',     valueText: customersSummary?.total_customers || 0,},
+            { titleText: 'Active Customers',     valueText: customersSummary?.active_customers|| 0, },
+            { titleText: 'Blacklisted Customers',     valueText: customersSummary?.blacklisted_customers || 0},
           ]"
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
@@ -82,13 +82,20 @@ import {
   DateFilterCard,
 } from "@packages/uikit";
 
+
+type Store = { id: string; [key: string]: any };
+type CustomersSummary = { total_orders?: number; [key: string]: any };
+
 const router = useRouter();
 
 const { formatNumber, getStatus, notAvailable } = useString();
-const { getStoreCustomers } = useStoreStore();
+
+const { activeStore, getStoreCustomers } = useStoreStore() as { activeStore: Store | null; getStoreCustomers: any };  
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(false);
+const customersSummary = ref<CustomersSummary>({});
+
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Created On", slug: "date_created" },
@@ -130,9 +137,9 @@ const toggleManageCustomerModal = () => {
   showManageCustomerModal.value = !showManageCustomerModal.value;
 };
 
-const fetchCustomers = async () => {
+const fetchStoreCustomers = async () => {
   const response = await processAPIRequest({
-    action: getStoreCustomers,
+    action: getStoreCustomers(activeStore?.id),
     payload: {},
     showAlert: false,
   });
@@ -154,7 +161,7 @@ const fetchCustomers = async () => {
         ),
       });
     });
-
+  customersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }
 };
@@ -169,5 +176,5 @@ const handleBlacklistCustomer = (data: any) => {
   console.log("Blacklist Customer:", data);
 };
 
-// onMounted(() => fetchCustomers());
+onMounted(() => fetchStoreCustomers());
 </script>

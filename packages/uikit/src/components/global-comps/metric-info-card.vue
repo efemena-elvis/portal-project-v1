@@ -1,5 +1,5 @@
 <template>
-  <div class="card-info-row mt-4 mb-8">
+  <div class="mt-4 mb-8 card-info-row">
     <div class="card-info" v-for="(item, index) in metricItems" :key="index">
       <div class="card-info-title">{{ item.titleText }}</div>
       <div class="card-info-value">{{ item.valueText }}</div>
@@ -10,7 +10,7 @@
 <script setup lang="ts">
 interface IMetricInfoItem {
   titleText: string;
-  valueText: string;
+  valueText: string | number;
 }
 
 interface IMetricInfoCardProps {

@@ -5,7 +5,6 @@ import { useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
 import { activeStore } from "./state";
 
-
 const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
 
 const authStore = useAuthStore();
@@ -55,27 +54,40 @@ export const getStoreDetails = async () => {
   });
 };
 
-export const getStoreProducts = async () => {
-  return await $api.fetch(storeRoutes.getStoreProducts, {
+export const addProduct = async (payload: any) => {
+  return await $api.push(storeRoutes.addProduct, payload, {
+    headers: authHeaders(),
+  });
+};
+export const getStoreProducts = async (slug: string) => {
+  return await $api.fetch(`${storeRoutes.getStoreProducts}?slug=${slug}`, {
+    headers: authHeaders(),
+  });
+};
+export const getProductsSummary = async (slug: string) => {
+  return await $api.fetch(
+    `${storeRoutes.getProductsSummary.replace(":store_id", slug)}`,
+    {
+      headers: authHeaders(),
+    }
+  );
+};
+
+export const getStoreOrders = async (id: string) => {
+  return await $api.fetch(storeRoutes.getStoreOrders.replace(":store_id", id), {
     headers: authHeaders(),
   });
 };
 
-export const getStoreOrders = async () => {
-  return await $api.fetch(storeRoutes.getStoreOrders, {
-    headers: authHeaders(),
-  });
-};
-
-export const getStoreCustomers = async () => {
-  return await $api.fetch(storeRoutes.getStoreCustomers, {
-    headers: authHeaders(),
-  });
+export const getStoreCustomers = async (id: string) => {
+  return await $api.fetch(
+    storeRoutes.getStoreCustomers.replace(":store_id", id),
+    {
+      headers: authHeaders(),
+    }
+  );
 };
 
 export const setActiveStore = (store: any) => {
-   
   activeStore.value = store;
-  
 };
-

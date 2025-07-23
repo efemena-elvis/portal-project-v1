@@ -12,10 +12,30 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Order Value', valueText: 'ZMW 750.00' },
-            { titleText: 'Total Orders', valueText: '200' },
-            { titleText: 'Completed Orders', valueText: '180' },
-            { titleText: 'Pending Orders', valueText: '20' },
+            {
+              titleText: 'Order Value',
+              valueText: `ZMW ${ordersSummary?.total_amount || 0}`,
+            },
+            {
+              titleText: 'Total Orders',
+              valueText: ordersSummary?.total_orders || 0,
+            },
+            {
+              titleText: 'Total Customers',
+              valueText: ordersSummary?.total_customers || 0,
+            },
+            {
+              titleText: 'Total Products',
+              valueText: ordersSummary?.total_products || 0,
+            },
+            {
+              titleText: 'Completed Orders',
+              valueText: ordersSummary?.completed_orders || 0,
+            },
+            {
+              titleText: 'Pending Orders',
+              valueText: ordersSummary?.pending_orders || 0,
+            },
           ]"
         />
       </div>
@@ -94,10 +114,16 @@ import {
   DateFilterCard,
 } from "@packages/uikit";
 
+type Store = { id: string; [key: string]: any };
+type OrdersSummary = { total_orders?: number; [key: string]: any };
 const router = useRouter();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
-const { getStoreOrders } = useStoreStore();
+
+const { activeStore, getStoreOrders } = useStoreStore() as {
+  activeStore: Store | null;
+  getStoreOrders: any;
+};
 const { processAPIRequest } = useEvents();
 
 const renderOrderQuantity = (order: any) => {
@@ -109,6 +135,8 @@ const renderOrderQuantity = (order: any) => {
 };
 
 const isLoading = ref(false);
+
+const ordersSummary = ref<OrdersSummary>({});
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "#", slug: "counter" },
@@ -185,9 +213,9 @@ const toggleViewOrdersModal = () => {
   showViewOrdersModal.value = !showViewOrdersModal.value;
 };
 
-const fetchOrders = async () => {
+const fetchStoreOrders = async () => {
   const response = await processAPIRequest({
-    action: getStoreOrders,
+    action: getStoreOrders(activeStore?.id),
     payload: {},
     showAlert: false,
   });
@@ -200,16 +228,21 @@ const fetchOrders = async () => {
         date_created: getDateAdded(data.created_at),
         full_name: `${data.firstname} ${data.lastname}`,
         customer_email: data.email,
+        order_details: data.order,
         phone_number: data.phone_number
           ? "+" + data.phone_number
           : notAvailable("No phone number"),
-        status: getStatus(
+        payment_status: getStatus(
+          data.blacklisted ? "danger" : "success",
+          data.blacklisted ? "Blacklisted" : "Active"
+        ),
+        order_status: getStatus(
           data.blacklisted ? "danger" : "success",
           data.blacklisted ? "Blacklisted" : "Active"
         ),
       });
     });
-
+    ordersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }
 };
@@ -224,5 +257,5 @@ const handleDeleteOrder = (data: any) => {
   console.log("Delete Product:", data);
 };
 
-// onMounted(() => fetchOrders());
+onMounted(() => fetchStoreOrders());
 </script>

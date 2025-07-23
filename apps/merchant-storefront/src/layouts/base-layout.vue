@@ -22,7 +22,7 @@
           :businessProfile="profileUtil"
           :storeList="storeList"
           :setActiveStore="setActiveStore"
-          :activeStore="activeStore"
+          :activeStore="activeStore ?? null"
           isStoreLayout
         />
       </div>
@@ -83,7 +83,8 @@ const { switchAppMode } = useGlobalStore();
 
 const { setPageBackgroundColor } = useColor();
 const profileUtil = new useProfile(authStore);
-const { getStoreList, setActiveStore, activeStore } = useStoreStore();
+const { getStoreList, setActiveStore } = useStoreStore();
+const activeStore = useStoreStore().activeStore;
 
 const eventBus = inject<Emitter<Events>>("eventBus");
 const showMobileSidebar = ref<boolean>(false);
@@ -128,6 +129,8 @@ onMounted(() => {
   eventBus?.on("triggerSidebar", () => toggleMobileSidebar());
   getActivationStatus();
   fetchStoreList();
+  setActiveStore(storeList.value[0] || null);
+
 });
 
 

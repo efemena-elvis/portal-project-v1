@@ -9,11 +9,11 @@
         </div>
 
         <div class="balance-amount">
-          <span class="mr-0.5">ZMW</span><span>5,280.00</span>
+          <span class="mr-0.5">ZMW</span><span>{{ Number(metrics?.total_balance).toLocaleString() }}</span>
         </div>
 
         <div class="metric-stat-row">
-          <div class="stat-value">ZMW540 (10.2%)</div>
+          <div class="stat-value">ZMW0 (0%)</div>
           <div class="stat-ref">Past 30 days</div>
         </div>
       </div>
@@ -31,6 +31,19 @@
 
 <script setup lang="ts">
 import { BarChart } from "@packages/uikit";
+import { watch } from "vue";
+
+const props = defineProps<{
+  metrics: Record<string, any>;
+}>();
+
+watch(
+  () => props.metrics,
+  (newMetrics) => {
+    console.log("Received in child:", newMetrics);
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>
