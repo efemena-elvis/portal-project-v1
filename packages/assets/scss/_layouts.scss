@@ -8,7 +8,7 @@
   }
 
   @include breakpoints.breakpoint-up(sm) {
-    @apply w-[calc(100%-3em)];
+    @apply w-[calc(100%-2em)];
   }
 
   @include breakpoints.breakpoint-up(lg) {

@@ -32,6 +32,7 @@ export interface IMerchantDocuments {
 }
 
 export interface IMerchantDirector {
+  client_id?: string | null;
   legal_full_name: string;
   country_id: string;
   address: string;
@@ -40,6 +41,7 @@ export interface IMerchantDirector {
 }
 
 export interface IMerchantUBO {
+  client_id?: string | null;
   legal_full_name: string;
   country_id: string;
   address: string;
@@ -76,6 +78,7 @@ export interface CleanedMerchantType {
     optional_doc_url: string;
   };
   representative: Array<{
+    client_id?: string | null;
     legal_full_name: string;
     address: string;
     country_id: string;

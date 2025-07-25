@@ -23,7 +23,7 @@ const $api = new useServiceAPI({
   API_VERSION: MOR_API_VERSION,
   TOKEN_KEY: MOR_AUTH_TOKEN,
   HEADERS: {
-    "public-key": publicKey.value,
+    // "public-key": publicKey.value,
   },
 });
 
@@ -33,4 +33,8 @@ export const getTransactions = async () => {
 
 export const getCustomers = async () => {
   return await $api.fetch(paymentRoutes.getCustomers);
+};
+
+export const getMerchants = async () => {
+  return await $api.fetch(paymentRoutes.getMerchants);
 };

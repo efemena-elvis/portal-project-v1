@@ -38,7 +38,7 @@ const getBackRoute = computed(() => {
   if (
     typeof routeName === "string" &&
     backRouteHistory.value.hasOwnProperty(routeName)
-  ) { 
+  ) {
     return backRouteHistory.value[routeName];
   }
   return backRouteHistory.value["all"];
@@ -55,7 +55,7 @@ watch(route, () => updatePageTitle(), { immediate: true });
 <style lang="scss" scoped>
 .full-page-layout {
   .top-area {
-    @apply fixed z-20 top-0 bg-neutral-10/40 md:bg-neutral-10 w-full p-6 flex justify-start items-center gap-5 mb-12;
+    @apply fixed z-20 top-0 bg-neutral-10/40 md:bg-neutral-10 w-full p-6 sm:px-4 xs:px-2 flex justify-start items-center gap-5 mb-12;
 
     .icon {
       @apply text-lg cursor-pointer text-grey-700;

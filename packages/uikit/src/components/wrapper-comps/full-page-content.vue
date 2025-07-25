@@ -56,18 +56,6 @@ const props = withDefaults(defineProps<IFullPageContentProps>(), {
 
 const route = useRoute();
 
-const fullFormWrapperClass = computed(() => {
-  return typeof window !== "undefined" && route.path.includes("/merchant")
-    ? "w-full mx-auto lg:ml-28 xl:ml-36 mdLg:ml-0 "
-    : "w-[74%] lg:w-[78%] mdLg:w-full ml-28 lg:ml-0 mdLg:ml-0";
-});
-
-const fullPageContentClass = computed(() => {
-  return typeof window !== "undefined" && route.path.includes("/merchant")
-    ? "w-[68%] xl:w-[68%] lg:w-[70%] mdLg:w-full flex justify-center items-start mx-auto"
-    : "@apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-full flex justify-center items-start mx-auto";
-});
-
 const getCurrentPage = computed(() => {
   return props.pageRouteData.find((pageItem) => pageItem.route === route.name);
 });
@@ -75,12 +63,14 @@ const getCurrentPage = computed(() => {
 
 <style lang="scss" scoped>
 .full-page-content {
-  @apply w-[74%] lg:w-[78%] mdLg:w-full ml-36 lg:ml-0 mdLg:ml-0;
+  @apply w-[74%] lg:w-[78%] mdLg:w-full ml-36 lg:ml-[16%] mdLg:ml-0;
 
   .form-wrapper {
-    @apply w-[56%] xl:w-[62%] lg:w-[66%] flex flex-col justify-start items-start mx-auto;
+    @apply w-[56%] xl:w-[62%] lg:w-[66%] md:w-[96%] sm:w-[98.5%] flex flex-col justify-start items-start mx-auto;
 
     .form-top {
+      @apply relative overflow-auto;
+
       .title-text {
         @apply text-grey-900 font-semibold text-[28px] md:text-2xl leading-[32px] mb-2.5;
       }
@@ -90,7 +80,7 @@ const getCurrentPage = computed(() => {
       }
 
       .flow-row {
-        @apply w-fit bg-grey-50 border border-grey-100 rounded-full p-2 pr-4 mt-7 flex justify-start items-center gap-5 overflow-auto;
+        @apply relative w-fit sm:w-auto bg-grey-50 border border-grey-100 rounded-full p-2 pr-4 mt-7 flex justify-start items-center gap-5 overflow-auto;
 
         .flow-item {
           @apply flex justify-start items-center gap-3 font-medium text-grey-600 text-sm md:text-[13.5px] transition-all duration-300 ease-in-out;
@@ -119,7 +109,7 @@ const getCurrentPage = computed(() => {
 }
 
 .full-page-content-lg {
-  @apply w-[76%] ml-[22%];
+  @apply w-[78%] lg:w-[78%] mdLg:w-full ml-[22%] lg:ml-[23%] mdLg:ml-0;
 
   .form-wrapper {
     @apply w-full mx-0;

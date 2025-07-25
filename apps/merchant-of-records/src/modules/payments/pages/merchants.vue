@@ -23,7 +23,7 @@
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
-            :onTableClicked="() => handleTableClicked(payload.id)"
+          :onTableClicked="() => handleTableClicked(payload.id)"
         />
       </TableContainer>
     </template>
@@ -37,30 +37,24 @@ import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 
 import {
-  TableContainer, 
+  TableContainer,
   TableContainerBody,
-  TableDoubleColumn,
   PageContentWrapper,
 } from "@packages/uikit";
 import { useRouter } from "vue-router";
 
-const {
-  formatNumber,
-  getStatus,
-  getBoldTableText,
-  notAvailable,
-  capitalizeFirstLetter,
-} = useString();
+const { getStatus, getBoldTableText, notAvailable, capitalizeFirstLetter } =
+  useString();
 const { processAPIRequest } = useEvents();
-const { getTransactions } = usePaymentStore();
+const { getMerchants } = usePaymentStore();
 const router = useRouter();
 
 const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Business name", slug: "business" },
-  { title: "Date added", slug: "date" },
-  { title: "Account ID", slug: "id" },
+  { title: "Date added", slug: "date_created" },
+  { title: "Business ID", slug: "id" },
   { title: "Email", slug: "email" },
   { title: "Status", slug: "status" },
 ]);
@@ -73,76 +67,40 @@ const dummyTableBody = [
     email: "contact@acmecorp.com",
     status: getStatus("verified", "verified"),
   },
-  {
-    business: "Beta Traders",
-    date: "Tue, 13 May, 2025",
-    id: "BTA-00456",
-    email: "support@betatraders.com",
-    status: getStatus("verified", "verified"),
-  },
-  {
-    business: "Zeno Electronics",
-    date: "Wed, 14 May, 2025",
-    id: "ZEN-00789",
-    email: "sales@zenoelectronics.com",
-    status: getStatus("pending", "pending"),
-  },
 ];
 
 const tableBody = reactive<any[]>([]);
 const tablePaging = ref<any>({});
 
-const getTransactionDate = (date: string) => {
+const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchPaymentTransactions = async () => {
-  tableBody.push(...dummyTableBody);
+const fetchMerchants = async () => {
+  // tableBody.push(...dummyTableBody);
+
+  const response = await processAPIRequest({
+    action: getMerchants,
+    payload: {},
+    showAlert: false,
+  });
+
   isLoading.value = false;
 
-  // const response = await processAPIRequest({
-  //   action: getTransactions,
-  //   payload: {},
-  //   showAlert: false,
-  // });
+  if (response?.code === 200) {
+    response.data.map((data: any) => {
+      tableBody.push({
+        business: getBoldTableText(data.business_name),
+        date_created: getDateAdded(data.date_added),
+        id: data.business_id,
+        email: data.email,
+        status: getStatus(data.status, data.status),
+      });
+    });
 
-  // isLoading.value = false;
-  // // console.log(response);
-  // if (response?.code === 200) {
-  //   response.data.map((data: any) => {
-  //     tableBody.push({
-  //       date_created: getTransactionDate(data.created_at),
-  //       customer_details: data.customer
-  //         ? h(TableDoubleColumn, {
-  //             entry: {
-  //               primaryText: `${data.customer.firstname} ${data.customer.lastname}`,
-  //               secondaryText: data.customer.email,
-  //             },
-  //           })
-  //         : notAvailable("No customer info"),
-  //       amount: h(TableDoubleColumn, {
-  //         entry: {
-  //           primaryText: `${data.currency} ${formatNumber(data.amount)}`,
-  //           secondaryText: `Charge: ${data.currency} ${formatNumber(data.charge)}`,
-  //         },
-  //       }),
-  //       payment_details: h(TableDoubleColumn, {
-  //         entry: {
-  //           primaryText: capitalizeFirstLetter(data.method),
-  //           secondaryText: `Type: ${
-  //             data.redirect_url.startsWith("https://store.redstonepgs.com/")
-  //               ? "Storefront"
-  //               : "Third party"
-  //           }`,
-  //         },
-  //       }),
-  //       status: getStatus(data.status, data.status),
-  //     });
-  //   });
-
-  //   tablePaging.value = response.pagination[0];
-  // }
+    tablePaging.value = response.pagination[0];
+  }
 };
 
 const handleTableClicked = (id: string) => {
@@ -150,7 +108,7 @@ const handleTableClicked = (id: string) => {
 };
 
 onMounted(() => {
-  fetchPaymentTransactions();
+  fetchMerchants();
 });
 </script>
 

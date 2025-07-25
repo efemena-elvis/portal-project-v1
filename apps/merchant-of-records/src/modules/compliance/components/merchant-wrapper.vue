@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8">
+  <div class="p-8 sm:px-4 xs:px-2">
     <FullPageSidebar
       :routeList="merchantOnboardingRouteList"
       :activeRouteCategory="getActiveRouteCategory"
@@ -71,6 +71,7 @@ const {
   getMerchantOnDraft,
   transformCleanedMerchantData,
   bulkUpdateMerchantData,
+  addMerchantData,
 } = useComplianceStore();
 
 const btnRef = ref(null);
@@ -110,8 +111,12 @@ const getAggregatorDraftedMerchants = async () => {
     });
 
     if (response.code === 200) {
-      const transformedData = transformCleanedMerchantData(response.data.data);
-      bulkUpdateMerchantData(transformedData);
+      if (!response.data && response.data.data.length) {
+        const transformedData = transformCleanedMerchantData(
+          response.data.data
+        );
+        bulkUpdateMerchantData(transformedData);
+      } else addMerchantData(true);
     }
 
     // return response;

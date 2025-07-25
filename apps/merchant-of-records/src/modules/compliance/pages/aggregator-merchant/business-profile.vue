@@ -66,7 +66,7 @@ const tableHeader = ref<BulkUploadTableType[]>([
   },
   {
     name: "email",
-    label: "Email",
+    label: "Email address",
     type: "email",
     path: "profile.email",
     placeholder: "Enter business email",

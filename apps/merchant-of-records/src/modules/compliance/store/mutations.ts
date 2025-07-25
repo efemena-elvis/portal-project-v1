@@ -124,7 +124,7 @@ export function useComplianceMutations() {
     if (merchant) setDeepValue(merchant, path, value);
   };
 
-  const addMerchantData = () => {
+  const addMerchantData = (isBlank: boolean = false) => {
     const newMerchantId = generateMerchantId();
 
     const newMerchant: IMerchantBaseType = {
@@ -177,7 +177,8 @@ export function useComplianceMutations() {
       },
     };
 
-    merchantData.value.push(newMerchant);
+    if (isBlank) merchantData.value = [newMerchant];
+    else merchantData.value = [...merchantDataComputed.value, newMerchant];
   };
 
   const bulkUpdateMerchantData = (payload: IMerchantBaseType[]) => {
