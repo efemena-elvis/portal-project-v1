@@ -65,7 +65,7 @@ watch(
       });
 
       dashboardMetrics.value = response.data;
-      console.log("Dashboard metrics:", dashboardMetrics.value);
+ 
     }
   },
   { immediate: true }

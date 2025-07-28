@@ -43,16 +43,20 @@
         />
 
         <!-- PRODUCT CATEGORY -->
-        <SelectFieldInput
-          labelId="productCategory"
-          labelTitle="Category"
-          :labelCompact="false"
-          inputPlaceholder="Select product category"
-          :inputValue="productPayload.category"
-          :selectData="getProductCategories"
-          isRequired
-          @onSelectionChange="productPayload.category = $event"
-        />
+          <TextFieldInput
+      labelId="productCategory"
+      labelTitle="Category"
+      :labelCompact="false"
+      :inputType="IInputType.Text"
+      :inputValue="productPayload.category"
+      inputPlaceholder="Provide the product category"
+      isRequired
+      @inputChanged="productPayload.category = $event"
+      :errorHandler="{
+        validator: 'validateRequired',
+        message: 'Product category is required',
+      }"
+    />
 
         <!-- PRODUCT QUANTITY -->
         <TextFieldInput
@@ -145,6 +149,8 @@ import {
   FileUploadInput,
 } from "@packages/uikit";
 import { useGlobalStore } from "@/modules/global/store";
+import { useStoreStore } from "../store";
+import { updateStoreProduct } from '../store/actions';
 
 type IStorefrontType = {
   name: string;
@@ -153,6 +159,8 @@ type IStorefrontType = {
   stock: number;
   amount: number;
 };
+
+type Store = { id: string; [key: string]: any };
 
 const emits = defineEmits(["closeTriggered", "reloadStoreProducts"]);
 
@@ -181,7 +189,10 @@ const route = useRoute();
 const { uploadFile } = useGlobalStore();
 
 const { processAPIRequest } = useEvents();
-// const { createStoreProduct, updateStoreProduct } = useStorefrontStore();
+const { updateStoreProduct, activeStore } = useStoreStore()  as {
+    activeStore: Store | null;
+    updateStoreProduct: any
+  };;
 
 const isProductEdit = computed(() => {
   return props.productData.id ? true : false;
@@ -227,6 +238,7 @@ const getProductPayload = computed(() => {
   const { name, description, category, stock, amount } = productPayload.value;
 
   return {
+    store_id: activeStore?.id,
     name,
     description,
     category,
@@ -238,28 +250,28 @@ const getProductPayload = computed(() => {
 });
 
 const handleManageProduct = async () => {
-  //   const response = await processAPIRequest({
-  //     action: isProductEdit.value ? updateStoreProduct : createStoreProduct,
-  //     payload: getProductPayload.value,
-  //     btnRef: manageProductBtnRef,
-  //     btnText: isProductEdit.value ? "Update Product" : "Add Product",
-  //     alertHandler: {
-  //       200: {
-  //         message: "Successful",
-  //         description: `Product details have been ${isProductEdit.value ? "updated" : "added"} successfully`,
-  //         type: "success",
-  //       },
-  //       400: {
-  //         message: `Product ${isProductEdit.value ? "update" : "addition"} failed`,
-  //         description: "Please provide a valid product details",
-  //         type: "error",
-  //       },
-  //     },
-  //   });
-  //   if (response.code === 200) {
-  //     emits("reloadStoreProducts");
-  //     emits("closeTriggered");
-  //   }
+    const response = await processAPIRequest({
+      action:  updateStoreProduct,
+      payload: getProductPayload.value,
+      btnRef: manageProductBtnRef,
+      btnText: isProductEdit.value ? "Update Product" : "Add Product",
+      alertHandler: {
+        200: {
+          message: "Successful",
+          description: `Product details have been ${isProductEdit.value ? "updated" : "added"} successfully`,
+          type: "success",
+        },
+        400: {
+          message: `Product ${isProductEdit.value ? "update" : "addition"} failed`,
+          description: "Please provide a valid product details",
+          type: "error",
+        },
+      },
+    });
+    if (response.code === 200) {
+      emits("reloadStoreProducts");
+      emits("closeTriggered");
+    }
 };
 </script>
 

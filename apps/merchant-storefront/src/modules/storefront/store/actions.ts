@@ -59,29 +59,46 @@ export const addProduct = async (payload: any) => {
     headers: authHeaders(),
   });
 };
-export const getStoreProducts = async (slug: string) => {
-  return await $api.fetch(`${storeRoutes.getStoreProducts}?slug=${slug}`, {
+export const updateStoreProduct = async (payload: any) => {
+  return await $api.update(storeRoutes.updateStoreProduct, payload, {
     headers: authHeaders(),
   });
 };
-export const getProductsSummary = async (slug: string) => {
+export const deleteProduct = async (payload: any) => {
+  return await $api.delete(
+    storeRoutes.deleteProduct.replace(":id", payload.id),
+    {
+      headers: authHeaders(),
+    }
+  );
+};
+export const getStoreProducts = async (payload: any) => {
   return await $api.fetch(
-    `${storeRoutes.getProductsSummary.replace(":store_id", slug)}`,
+    `${storeRoutes.getStoreProducts}?slug=${payload.slug}`,
     {
       headers: authHeaders(),
     }
   );
 };
 
-export const getStoreOrders = async (id: string) => {
-  return await $api.fetch(storeRoutes.getStoreOrders.replace(":store_id", id), {
+export const getProductsSummary = async (payload: any) => {
+  return await $api.fetch(
+    `${storeRoutes.getProductsSummary.replace(":store_id", payload.store_id)}`,
+    {
+      headers: authHeaders(),
+    }
+  );
+};
+
+export const getStoreOrders = async (payload: any) => {
+  return await $api.fetch(storeRoutes.getStoreOrders.replace(":store_id", payload.store_id), {
     headers: authHeaders(),
   });
 };
 
-export const getStoreCustomers = async (id: string) => {
+export const getStoreCustomers = async (payload: any) => {
   return await $api.fetch(
-    storeRoutes.getStoreCustomers.replace(":store_id", id),
+    storeRoutes.getStoreCustomers.replace(":store_id", payload.store_id),
     {
       headers: authHeaders(),
     }

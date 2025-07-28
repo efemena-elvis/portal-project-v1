@@ -15,9 +15,18 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Product Value',  valueText: `ZMW ${productsSummary?.total_product_value || 0}`},
-            { titleText: 'Total Products',   valueText: productsSummary?.total_products || 0, },
-            { titleText: 'Out of Stock',  valueText: productsSummary?.total_out_of_stock || 0, },
+            {
+              titleText: 'Product Value',
+              valueText: `ZMW ${productsSummary?.total_product_value}`,
+            },
+            {
+              titleText: 'Total Products',
+              valueText: productsSummary?.total_products,
+            },
+            {
+              titleText: 'Out of Stock',
+              valueText: productsSummary?.total_out_of_stock,
+            },
           ]"
         />
       </div>
@@ -59,7 +68,11 @@
   </PageContentWrapper>
 
   <teleport to="body" v-if="showManageProductModal">
-    <ManageProductModal @closeTriggered="toggleManageProductModal" />
+    <ManageProductModal
+      @closeTriggered="toggleManageProductModal"
+      :productData="currentProductData"
+      @reloadStoreProducts="fetchProducts"
+    />
   </teleport>
 
   <teleport to="body" v-if="showProductDeleteModal">
@@ -73,10 +86,8 @@ import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
-
 import DeleteProductModal from "@/modules/storefront/modals/delete-product-modal.vue";
 import ManageProductModal from "@/modules/storefront/modals/manage-product-modal.vue";
-import { getProductsSummary } from "../store/actions";
 
 import {
   TableContainer,
@@ -88,6 +99,8 @@ import {
   StatusFilterCard,
   DateFilterCard,
 } from "@packages/uikit";
+import { Console } from "console";
+import { watch } from "vue";
 
 type Store = { id: string; [key: string]: any };
 type ProductsSummary = { total_orders?: number; [key: string]: any };
@@ -96,15 +109,17 @@ const router = useRouter();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
 
-const { activeStore, getStoreProducts, getProductsSummary } =
+const { activeStore, getStoreProducts, getProductsSummary, deleteProduct } =
   useStoreStore() as {
     activeStore: Store | null;
     getStoreProducts: any;
     getProductsSummary: any;
+    deleteProduct: any;
   };
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(false);
+const currentProductData = ref<any>(null);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "#", slug: "counter" },
@@ -116,42 +131,44 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Action", slug: "action" },
 ]);
 
-const tableBody = reactive<any[]>([
-  // {
-  //   counter: "1",
-  //   product: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: "White Sneakers",
-  //       secondaryText: "Men Fashion",
-  //       displayImage:
-  //         "https://ng.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/98/0189973/1.jpg?3194",
-  //     },
-  //   }),
-  //   amount: getBoldTableText(`ZMW${formatNumber(420)}`),
-  //   quantity: 24,
-  //   status: `${getStatus(5 > 0 ? "success" : "danger", 5 > 0 ? "Available" : "Out of Stock")}`,
-  //   date_created: "22nd July, 2024",
-  //   action: h(TableActionBtn, {
-  //     showPrimaryBtn: true,
-  //     primaryBtnText: "Manage",
-  //     showSecondaryBtn: true,
-  //     showSecondaryText: true,
-  //     onManageClick: () => {
-  //       // handleEditProduct(data);
-  //       toggleManageProductModal();
-  //     },
-  //     onDeleteClick: () => {
-  //       // handleDeleteProduct(data);
-  //       toggleProductDeleteModal();
-  //     },
-  //   }),
-  // },
-]);
+const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
-
 const showManageProductModal = ref<boolean>(false);
 const showProductDeleteModal = ref<boolean>(false);
 const productsSummary = ref<ProductsSummary>({});
+
+// const tableBody = reactive<any[]>([
+//   {
+//     counter: "1",
+//     product: h(TableDoubleColumn, {
+//       entry: {
+//         primaryText: "White Sneakers",
+//         secondaryText: "Men Fashion",
+//         displayImage:
+//           "https://ng.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/98/0189973/1.jpg?3194",
+//       },
+//     }),
+//     amount: getBoldTableText(`ZMW${formatNumber(420)}`),
+//     quantity: 24,
+//     status: `${getStatus(5 > 0 ? "success" : "danger", 5 > 0 ? "Available" : "Out of Stock")}`,
+//     date_created: "22nd July, 2024",
+//     action: h(TableActionBtn, {
+//       showPrimaryBtn: true,
+//       primaryBtnText: "Manage",
+//       showSecondaryBtn: true,
+//       showSecondaryText: true,
+//       onManageClick: () => {
+//         // handleEditProduct(data);
+//         toggleManageProductModal();
+//       },
+//       onDeleteClick: () => {
+//         // handleDeleteProduct(1);
+//         toggleProductDeleteModal();
+//       },
+
+//     }),
+//   },
+// ]);
 
 const toggleManageProductModal = () => {
   showManageProductModal.value = !showManageProductModal.value;
@@ -168,56 +185,102 @@ const getDateAdded = (date: string) => {
 
 const fetchProducts = async () => {
   const response = await processAPIRequest({
-    action: getStoreProducts(activeStore?.slug || ""),
-    payload: {},
+    action: getStoreProducts,
+    payload: { slug: activeStore?.slug || "" },
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  if (response) {
+    tableBody.value = response.data.map((data: any, index: number) => ({
+      counter: index + 1,
+      amount: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+      quantity: data.stock || 1,
+      product: h(TableDoubleColumn, {
+        entry: {
+          primaryText: data.name,
+          secondaryText: data.description,
+          displayImage: data.image || "https://via.placeholder.com/150",
+        },
+      }),
+      date_created: getDateAdded(data.created_at),
+      status: getStatus(
+        data.blacklisted ? "danger" : "success",
+        data.blacklisted ? "Blacklisted" : "Active"
+      ),
+      action: h(TableActionBtn, {
+        showPrimaryBtn: true,
+        primaryBtnText: "Manage",
+        showSecondaryBtn: true,
+        showSecondaryText: true,
+        onManageClick: () => {
+          currentProductData.value = data;
+          toggleManageProductModal();
+        },
+        onDeleteClick: () => {
+          handleDeleteProduct(data);
+          toggleProductDeleteModal();
+        },
+      }),
+    }));
+
+    tablePaging.value = response?.pagination?.[0];
+  }
+};
+const fetchProductsSummary = async () => {
+  const response = await processAPIRequest({
+    action: getProductsSummary,
+    payload: { store_id: activeStore?.id || "" },
     showAlert: false,
   });
 
   isLoading.value = false;
 
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
-        date_created: getDateAdded(data.created_at),
-        full_name: `${data.firstname} ${data.lastname}`,
-        customer_email: data.email,
-        phone_number: data.phone_number
-          ? "+" + data.phone_number
-          : notAvailable("No phone number"),
-        status: getStatus(
-          data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
-        ),
-      });
-    });
-
-    tablePaging.value = response.pagination[0];
+    productsSummary.value = response?.data;
   }
 };
-const fetchProductsSummary = async () => {
+
+// const handleEditProduct = (data: any) => {
+ 
+//   console.log("Edit Product:", data);
+// };
+
+const handleDeleteProduct = async (data: any) => {
   const response = await processAPIRequest({
-    action: getProductsSummary(activeStore?.id || ""),
-    payload: {},
-    showAlert: false,
+    action: deleteProduct,
+    payload: { id: data?.id },
+    btnText: "Create Store",
+
+    alertHandler: {
+      200: {
+        message: "Product deleted successfully",
+        description: "You have successfully deleted this product",
+        type: "success",
+      },
+      400: {
+        message: "Product deletion failed",
+        description: "Something went wrong",
+        type: "error",
+      },
+    },
   });
-
-  isLoading.value = false;
-
-  productsSummary.value = response?.data;
+  if (response.code === 200) {
+    setTimeout(() => {
+      location.replace("/overview");
+    }, 1200);
+  }
 };
 
-const handleEditProduct = (data: any) => {
-  // Logic to edit product
-  console.log("Edit Product:", data);
-};
-
-const handleDeleteProduct = (data: any) => {
-  // Logic to delete product
-  console.log("Delete Product:", data);
-};
-
-onMounted(() => {
-  fetchProducts();
-  fetchProductsSummary();
-});
+watch(
+  () => activeStore?.id,
+  (id) => {
+    if (id) {
+      fetchProducts();
+      fetchProductsSummary();
+    }
+  },
+  { immediate: true }
+);
 </script>

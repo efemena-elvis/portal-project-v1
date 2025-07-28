@@ -50,7 +50,7 @@ const props = defineProps<{
 watch(
   () => props.metrics,
   (newMetrics) => {
-    console.log("Received in child:", newMetrics);
+    
   },
   { immediate: true }
 );

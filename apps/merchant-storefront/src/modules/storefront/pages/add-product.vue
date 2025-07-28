@@ -118,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
@@ -190,7 +190,7 @@ const getProductPayload = computed(() => {
 });
 
 const handleAddProduct = async () => {
-  if (activeStore?.id) {
+  if (!activeStore?.id) {
     alert("No active store selected.");
     return;
   }
@@ -215,10 +215,11 @@ const handleAddProduct = async () => {
 
   if (response?.code === 200) {
     setTimeout(() => {
-      router.push("/overview");
+      router.push("/products");
     }, 1200);
   }
 };
+
 </script>
 
 <style scoped lang="scss"></style>

@@ -78,6 +78,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useString, useClickOutside, useEvents } from "@packages/hooks";
+import { useRouter } from "vue-router";
 
 interface IClientAreaProps {
   businessProfile: any;
@@ -93,6 +94,7 @@ const props = withDefaults(defineProps<IClientAreaProps>(), {
   activeStore: () => null,
 });
 
+const router = useRouter();
 const { pushToastAlert, processAPIRequest } = useEvents();
 const { getStringInitials } = useString();
 
@@ -122,6 +124,8 @@ const getSingleStore = (storeId: string) => {
   if (store) {
     props.setActiveStore(store);
     localActiveStore.value = store;
+      router.push("/overview");
+      toggleDropdown(false);
   }
 
 };

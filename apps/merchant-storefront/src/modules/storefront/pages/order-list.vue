@@ -14,27 +14,20 @@
           :metric-items="[
             {
               titleText: 'Order Value',
-              valueText: `ZMW ${ordersSummary?.total_amount || 0}`,
+              valueText: `ZMW ${ordersSummary?.total_amount}`,
             },
             {
               titleText: 'Total Orders',
-              valueText: ordersSummary?.total_orders || 0,
+              valueText: ordersSummary?.total_orders,
             },
-            {
-              titleText: 'Total Customers',
-              valueText: ordersSummary?.total_customers || 0,
-            },
-            {
-              titleText: 'Total Products',
-              valueText: ordersSummary?.total_products || 0,
-            },
+          
             {
               titleText: 'Completed Orders',
-              valueText: ordersSummary?.completed_orders || 0,
+              valueText: ordersSummary?.completed_orders,
             },
             {
               titleText: 'Pending Orders',
-              valueText: ordersSummary?.pending_orders || 0,
+              valueText: ordersSummary?.pending_orders,
             },
           ]"
         />
@@ -95,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, reactive, onMounted } from "vue";
+import { ref, h, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
@@ -148,53 +141,54 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Action", slug: "action" },
 ]);
 
-const tableBody = reactive<any[]>([
-  // {
-  //   counter: "1",
-  //   date_created: "22nd July, 2024",
-  //   customer: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: `Efemena Elvis`,
-  //       secondaryText: `efemena.elvis@example.com`,
-  //     },
-  //   }),
-  //   order: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
-  //       secondaryText: renderOrderQuantity({
-  //         order_details: [
-  //           { quantity: 2, product_name: "White Sneakers" },
-  //           { quantity: 1, product_name: "Black Sneakers" },
-  //         ],
-  //       }),
-  //     },
-  //   }),
-  //   payment_status: h(TableDoubleColumn, {
-  //     entry: {
-  //       primaryText: `<span class='text-green-600'>Paid</span>`,
-  //       secondaryText: `Order no: ${"N/A"}`,
-  //     },
-  //   }),
-  //   order_status: `${getStatus("success", "Completed")}`,
-  //   action: h(TableActionBtn, {
-  //     showPrimaryBtn: true,
-  //     showSecondaryBtn: true,
-  //     primaryBtnText: "Manage",
-  //     showSecondaryText: true,
-  //     secondaryBtnIcon: "",
-  //     secondaryBtnText: "View",
-  //     isSecondaryActionDelete: false,
-  //     onManageClick: () => {
-  //       // productOrderDetails.value = data;
-  //       toggleManageOrdersModal();
-  //     },
-  //     onDeleteClick: () => {
-  //       // productOrderDetails.value = data;
-  //       toggleViewOrdersModal();
-  //     },
-  //   }),
-  // },
-]);
+const tableBody = ref<any[]>([]);
+// const tableBody = reactive<any[]>([
+//   {
+//     counter: "1",
+//     date_created: "22nd July, 2024",
+//     customer: h(TableDoubleColumn, {
+//       entry: {
+//         primaryText: `Efemena Elvis`,
+//         secondaryText: `efemena.elvis@example.com`,
+//       },
+//     }),
+//     order: h(TableDoubleColumn, {
+//       entry: {
+//         primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
+//         secondaryText: renderOrderQuantity({
+//           order_details: [
+//             { quantity: 2, product_name: "White Sneakers" },
+//             { quantity: 1, product_name: "Black Sneakers" },
+//           ],
+//         }),
+//       },
+//     }),
+//     payment_status: h(TableDoubleColumn, {
+//       entry: {
+//         primaryText: `<span class='text-green-600'>Paid</span>`,
+//         secondaryText: `Order no: ${"N/A"}`,
+//       },
+//     }),
+//     order_status: `${getStatus("success", "Completed")}`,
+//     action: h(TableActionBtn, {
+//       showPrimaryBtn: true,
+//       showSecondaryBtn: true,
+//       primaryBtnText: "Manage",
+//       showSecondaryText: true,
+//       secondaryBtnIcon: "",
+//       secondaryBtnText: "View",
+//       isSecondaryActionDelete: false,
+//       onManageClick: () => {
+//         // productOrderDetails.value = data;
+//         toggleManageOrdersModal();
+//       },
+//       onDeleteClick: () => {
+//         // productOrderDetails.value = data;
+//         toggleViewOrdersModal();
+//       },
+//     }),
+//   },
+// ]);
 const tablePaging = ref<any>({});
 
 const getDateAdded = (date: string) => {
@@ -215,35 +209,34 @@ const toggleViewOrdersModal = () => {
 
 const fetchStoreOrders = async () => {
   const response = await processAPIRequest({
-    action: getStoreOrders(activeStore?.id),
-    payload: {},
+    action: getStoreOrders,
+    payload: { store_id: activeStore?.id },
     showAlert: false,
   });
 
   isLoading.value = false;
-
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
-        date_created: getDateAdded(data.created_at),
-        full_name: `${data.firstname} ${data.lastname}`,
-        customer_email: data.email,
-        order_details: data.order,
-        phone_number: data.phone_number
-          ? "+" + data.phone_number
-          : notAvailable("No phone number"),
-        payment_status: getStatus(
-          data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
-        ),
-        order_status: getStatus(
-          data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
-        ),
-      });
-    });
-    ordersSummary.value = response?.data;
-    tablePaging.value = response.pagination[0];
+    tableBody.value = response?.data.orders.map((data: any) => ({
+      date_created: getDateAdded(data.created_at),
+      full_name: `${data.firstname} ${data.lastname}`,
+      customer_email: data.email,
+      order_details: data.order,
+      phone_number: data.phone_number
+        ? "+" + data.phone_number
+        : notAvailable("No phone number"),
+      payment_status: getStatus(
+        data.blacklisted ? "danger" : "success",
+        data.blacklisted ? "Blacklisted" : "Active"
+      ),
+      order_status: getStatus(
+        data.blacklisted ? "danger" : "success",
+        data.blacklisted ? "Blacklisted" : "Active"
+      ),
+    }));
+
+    ordersSummary.value = response?.data || {};
+
+    tablePaging.value = response?.pagination?.[0] || {};
   }
 };
 
@@ -257,5 +250,13 @@ const handleDeleteOrder = (data: any) => {
   console.log("Delete Product:", data);
 };
 
-onMounted(() => fetchStoreOrders());
+watch(
+  () => activeStore?.id,
+  (id) => {
+    if (id) {
+      fetchStoreOrders();
+    }
+  },
+  { immediate: true }
+);
 </script>

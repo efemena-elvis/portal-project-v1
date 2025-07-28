@@ -12,9 +12,18 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Total Customers',     valueText: customersSummary?.total_customers || 0,},
-            { titleText: 'Active Customers',     valueText: customersSummary?.active_customers|| 0, },
-            { titleText: 'Blacklisted Customers',     valueText: customersSummary?.blacklisted_customers || 0},
+            {
+              titleText: 'Total Customers',
+              valueText: customersSummary?.total,
+            },
+            {
+              titleText: 'Active Customers',
+              valueText: customersSummary?.active_customers,
+            },
+            {
+              titleText: 'Blacklisted Customers',
+              valueText: customersSummary?.blacklisted_customers,
+            },
           ]"
         />
       </div>
@@ -65,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, reactive, onMounted } from "vue";
+import { ref, h, reactive, watch } from "vue";
 import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
@@ -82,7 +91,6 @@ import {
   DateFilterCard,
 } from "@packages/uikit";
 
-
 type Store = { id: string; [key: string]: any };
 type CustomersSummary = { total_orders?: number; [key: string]: any };
 
@@ -90,12 +98,14 @@ const router = useRouter();
 
 const { formatNumber, getStatus, notAvailable } = useString();
 
-const { activeStore, getStoreCustomers } = useStoreStore() as { activeStore: Store | null; getStoreCustomers: any };  
+const { activeStore, getStoreCustomers } = useStoreStore() as {
+  activeStore: Store | null;
+  getStoreCustomers: any;
+};
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(false);
 const customersSummary = ref<CustomersSummary>({});
-
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Created On", slug: "date_created" },
@@ -105,25 +115,25 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
   { title: "Action", slug: "action" },
 ]);
-
-const tableBody = reactive<any[]>([
-  {
-    date_created: "22nd July, 2024",
-    customer_email: "elvis@vesicash.com",
-    full_name: "Efemena Elvis",
-    phone_number: "+234 813 117 7703",
-    status: getStatus("success", "Whitelisted"),
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: false,
-      primaryBtnText: "Manage",
-      onManageClick: () => {
-        // handleManageCustomer(data);
-        toggleManageCustomerModal();
-      },
-    }),
-  },
-]);
+const tableBody = ref<any[]>([]);
+// const tableBody = reactive<any[]>([
+//   {
+//     date_created: "22nd July, 2024",
+//     customer_email: "elvis@vesicash.com",
+//     full_name: "Efemena Elvis",
+//     phone_number: "+234 813 117 7703",
+//     status: getStatus("success", "Whitelisted"),
+//     action: h(TableActionBtn, {
+//       showPrimaryBtn: true,
+//       showSecondaryBtn: false,
+//       primaryBtnText: "Manage",
+//       onManageClick: () => {
+//         // handleManageCustomer(data);
+//         toggleManageCustomerModal();
+//       },
+//     }),
+//   },
+// ]);
 const tablePaging = ref<any>({});
 
 const getDateAdded = (date: string) => {
@@ -139,29 +149,39 @@ const toggleManageCustomerModal = () => {
 
 const fetchStoreCustomers = async () => {
   const response = await processAPIRequest({
-    action: getStoreCustomers(activeStore?.id),
-    payload: {},
+    action: getStoreCustomers,
+    payload: { store_id: activeStore?.id || "" },
     showAlert: false,
   });
 
   isLoading.value = false;
 
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
-        date_created: getDateAdded(data.created_at),
-        full_name: `${data.firstname} ${data.lastname}`,
-        customer_email: data.email,
-        phone_number: data.phone_number
-          ? "+" + data.phone_number
-          : notAvailable("No phone number"),
-        status: getStatus(
-          data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
-        ),
-      });
-    });
-  customersSummary.value = response?.data;
+tableBody.value = response?.data.customers.map((data: any) => {
+  return {
+    date_created: getDateAdded(data.created_at),
+    full_name: `${data.firstname} ${data.lastname}`,
+    customer_email: data.email,
+    phone_number: data.phone_number
+      ? "+" + data.phone_number
+      : notAvailable("No phone number"),
+    status: getStatus(
+      data.blacklisted ? "danger" : "success",
+      data.blacklisted ? "Blacklisted" : "Active"
+    ),
+    action: h(TableActionBtn, {
+      showPrimaryBtn: true,
+      showSecondaryBtn: false,
+      primaryBtnText: "Manage",
+      onManageClick: () => {
+        toggleManageCustomerModal();
+      },
+    }),
+  };
+});
+
+
+    customersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }
 };
@@ -176,5 +196,13 @@ const handleBlacklistCustomer = (data: any) => {
   console.log("Blacklist Customer:", data);
 };
 
-onMounted(() => fetchStoreCustomers());
+watch(
+  () => activeStore?.id,
+  (id) => {
+    if (id) {
+      fetchStoreCustomers();
+    }
+  },
+  { immediate: true }
+);
 </script>
