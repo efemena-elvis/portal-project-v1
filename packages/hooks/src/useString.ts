@@ -166,6 +166,12 @@ export default function useString() {
     return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${statusData[status.toLowerCase()]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
   };
 
+  // MASK NUMBER
+  const maskNumbers = (numbers: string): string => {
+    const maskedSection = "*".repeat(numbers.length);
+    return maskedSection;
+  };
+
   // MASK CARD NUMBER
   const maskCardNumber = (cardNumber: string): string => {
     const visibleDigits = cardNumber.slice(-4);
@@ -215,6 +221,7 @@ export default function useString() {
     transactionFlowIcon,
     notAvailable,
     createPreviewLink,
+    maskNumbers,
     maskCardNumber,
   };
 }
