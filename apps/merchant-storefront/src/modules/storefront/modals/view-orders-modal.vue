@@ -60,20 +60,21 @@ import { useRoute } from "vue-router";
 import { useEvents } from "@packages/hooks";
 import { ModalDialog } from "@packages/uikit";
 import ProductOrderItem from "@/modules/storefront/components/product-order-item.vue";
+import { useStoreStore } from "../store";
 
 const emits = defineEmits(["closeTriggered"]);
 
 const props = defineProps({
-  orderId: {
-    type: String,
-    default: "1",
+  productOrderDetails: {
+    type: Object,
+    default: () => ({}),
   },
 });
 
 const route = useRoute();
 const { processAPIRequest } = useEvents();
 
-// const { viewOrderDetails } = useStorefrontStore();
+const { viewOrderDetails } = useStoreStore();
 
 const customerDetails = ref({
   fullname: "Efemena Elvis",
@@ -112,25 +113,25 @@ const productDetails = ref([
 ]);
 
 const fetchOrderDetails = async () => {
-  //   const response = await processAPIRequest({
-  //     action: viewOrderDetails,
-  //     payload: { orderId: props.orderId },
-  //     showAlert: false,
-  //   });
-  //   isLoading.value = false;
-  //   if (response.code === 200) {
-  //     const { address, customer_details, order_details } = response.data;
-  //     customerDetails.value.fullname = `${customer_details.firstname} ${customer_details.lastname}`;
-  //     customerDetails.value.email = customer_details.email;
-  //     customerDetails.value.phone = customer_details.phone_number;
-  //     customerDetails.value.address = address;
-  //     productDetails.value = order_details.map((item: any) => {
-  //       return {
-  //         ...item.product,
-  //         quantity: item.quantity,
-  //       };
-  //     });
-  //   }
+    const response = await processAPIRequest({
+      action: viewOrderDetails,
+      payload: { id: props.productOrderDetails.id },
+      showAlert: false,
+    });
+ 
+    if (response.code === 200) {
+      const { address, customer_details, order_details } = response.data;
+      customerDetails.value.fullname = `${customer_details.firstname} ${customer_details.lastname}`;
+      customerDetails.value.email = customer_details.email;
+      customerDetails.value.phone = customer_details.phone_number;
+      customerDetails.value.address = address;
+      productDetails.value = order_details.map((item: any) => {
+        return {
+          ...item.product,
+          quantity: item.quantity,
+        };
+      });
+    }
 };
 
 fetchOrderDetails();

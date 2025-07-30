@@ -59,6 +59,7 @@ export const addProduct = async (payload: any) => {
     headers: authHeaders(),
   });
 };
+
 export const updateStoreProduct = async (payload: any) => {
   return await $api.update(storeRoutes.updateStoreProduct, payload, {
     headers: authHeaders(),
@@ -95,6 +96,16 @@ export const getStoreOrders = async (payload: any) => {
     headers: authHeaders(),
   });
 };
+export const viewOrderDetails = async (payload: any) => {
+  return await $api.fetch(storeRoutes.viewOrderDetails.replace(":id", payload.id), {
+    headers: authHeaders(),
+  });
+};
+export const updateOrderStatus = async (payload: any) => {
+  return await $api.push(storeRoutes.updateOrderStatus, payload,{
+    headers: authHeaders(),
+  });
+};
 
 export const getStoreCustomers = async (payload: any) => {
   return await $api.fetch(
@@ -105,6 +116,14 @@ export const getStoreCustomers = async (payload: any) => {
   );
 };
 
+export const searchProductorOrder = async (payload: any) => {
+  return await $api.push(`${storeRoutes.searchProductorOrder}?slug=${payload.slug}?keywords=${payload.keyword}`, payload, {
+    headers: authHeaders(),
+  });
+};
+
 export const setActiveStore = (store: any) => {
   activeStore.value = store;
 };
+
+

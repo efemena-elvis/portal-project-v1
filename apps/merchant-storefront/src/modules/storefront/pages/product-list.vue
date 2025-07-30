@@ -76,13 +76,18 @@
   </teleport>
 
   <teleport to="body" v-if="showProductDeleteModal">
-    <DeleteProductModal @closeTriggered="toggleProductDeleteModal" />
+    <DeleteProductModal
+      @closeTriggered="toggleProductDeleteModal"
+      :handleProductDelete="() => handleProductDelete(currentProductData)"
+      @reloadStoreProducts="fetchProducts"
+      :productData="currentProductData"
+    />
   </teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, h, reactive, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
@@ -99,13 +104,14 @@ import {
   StatusFilterCard,
   DateFilterCard,
 } from "@packages/uikit";
-import { Console } from "console";
+import { Console, table } from "console";
 import { watch } from "vue";
 
 type Store = { id: string; [key: string]: any };
 type ProductsSummary = { total_orders?: number; [key: string]: any };
 
 const router = useRouter();
+const route = useRoute();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
 
@@ -192,41 +198,48 @@ const fetchProducts = async () => {
 
   isLoading.value = false;
 
-  if (response) {
-    tableBody.value = response.data.map((data: any, index: number) => ({
-      counter: index + 1,
-      amount: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
-      quantity: data.stock || 1,
-      product: h(TableDoubleColumn, {
-        entry: {
-          primaryText: data.name,
-          secondaryText: data.description,
-          displayImage: data.image || "https://via.placeholder.com/150",
-        },
-      }),
-      date_created: getDateAdded(data.created_at),
-      status: getStatus(
-        data.blacklisted ? "danger" : "success",
-        data.blacklisted ? "Blacklisted" : "Active"
-      ),
-      action: h(TableActionBtn, {
-        showPrimaryBtn: true,
-        primaryBtnText: "Manage",
-        showSecondaryBtn: true,
-        showSecondaryText: true,
-        onManageClick: () => {
-          currentProductData.value = data;
-          toggleManageProductModal();
-        },
-        onDeleteClick: () => {
-          handleDeleteProduct(data);
-          toggleProductDeleteModal();
-        },
-      }),
-    }));
+if (response) {
+  let filteredData = response.data;
 
-    tablePaging.value = response?.pagination?.[0];
+  if (route.query.filter === "out-of-stock") {
+    filteredData = filteredData.filter((item: any) => item.stock <= 0);
   }
+
+  tableBody.value = filteredData.map((data: any, index: number) => ({
+    counter: index + 1,
+    amount: getBoldTableText(`ZMW ${formatNumber(data.amount)}`),
+    quantity: data.stock || 1,
+    product: h(TableDoubleColumn, {
+      entry: {
+        primaryText: data.name,
+        secondaryText: data.description,
+        displayImage: data.image || "https://via.placeholder.com/150",
+      },
+    }),
+    date_created: getDateAdded(data.created_at),
+    status: getStatus(
+      data.stock > 0 ? "in stock" : "out of stock",
+      data.stock > 0 ? "In Stock" : "Out of Stock"
+    ),
+    action: h(TableActionBtn, {
+      showPrimaryBtn: true,
+      primaryBtnText: "Manage",
+      showSecondaryBtn: true,
+      showSecondaryText: true,
+      onManageClick: () => {
+        currentProductData.value = data;
+        toggleManageProductModal();
+      },
+      onDeleteClick: () => {
+        currentProductData.value = data;
+        toggleProductDeleteModal();
+      },
+    }),
+  }));
+
+  tablePaging.value = response?.pagination?.[0];
+}
+
 };
 const fetchProductsSummary = async () => {
   const response = await processAPIRequest({
@@ -242,12 +255,7 @@ const fetchProductsSummary = async () => {
   }
 };
 
-// const handleEditProduct = (data: any) => {
- 
-//   console.log("Edit Product:", data);
-// };
-
-const handleDeleteProduct = async (data: any) => {
+const handleProductDelete = async (data: any) => {
   const response = await processAPIRequest({
     action: deleteProduct,
     payload: { id: data?.id },
@@ -283,4 +291,24 @@ watch(
   },
   { immediate: true }
 );
+
+watch(
+  () => route.query.filter,
+  () => {
+   
+      fetchProducts();
+      fetchProductsSummary();
+    },
+  
+  { immediate: true }
+);
+
+onMounted(() => {
+  if (route.query.filter) {
+    const filter = route.query.filter as string;
+    if (filter === "out-of-stock") {
+      tableBody.value = tableBody.value.filter((item) => item.quantity <= 0);
+    }
+  }
+});
 </script>

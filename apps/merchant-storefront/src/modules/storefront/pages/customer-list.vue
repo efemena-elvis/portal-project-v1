@@ -96,7 +96,7 @@ type CustomersSummary = { total_orders?: number; [key: string]: any };
 
 const router = useRouter();
 
-const { formatNumber, getStatus, notAvailable } = useString();
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } = useString();
 
 const { activeStore, getStoreCustomers } = useStoreStore() as {
   activeStore: Store | null;
@@ -166,8 +166,7 @@ tableBody.value = response?.data.customers.map((data: any) => {
       ? "+" + data.phone_number
       : notAvailable("No phone number"),
     status: getStatus(
-      data.blacklisted ? "danger" : "success",
-      data.blacklisted ? "Blacklisted" : "Active"
+       data.status === "active" ? "success" : "blacklisted", capitalizeFirstLetter(data.status)
     ),
     action: h(TableActionBtn, {
       showPrimaryBtn: true,

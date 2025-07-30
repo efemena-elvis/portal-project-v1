@@ -20,7 +20,7 @@
               titleText: 'Total Orders',
               valueText: ordersSummary?.total_orders,
             },
-          
+
             {
               titleText: 'Completed Orders',
               valueText: ordersSummary?.completed_orders,
@@ -74,8 +74,9 @@
 
   <teleport to="body" v-if="showManageOrdersModal">
     <ManageOrdersModal
-      :orderDetails="{}"
+      :productOrderDetails="productOrderDetails"
       @closeTriggered="toggleManageOrdersModal"
+      @reloadStoreOrders="fetchStoreOrders"
     />
   </teleport>
 
@@ -83,6 +84,7 @@
     <ViewOrdersModal
       :orderDetails="{}"
       @closeTriggered="toggleViewOrdersModal"
+      :productOrderDetails="productOrderDetails"
     />
   </teleport>
 </template>
@@ -136,7 +138,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Order Date", slug: "date_created" },
   { title: "Customer Details", slug: "customer" },
   { title: "Order Details", slug: "order" },
-  { title: "Payment", slug: "payment_status" },
+  { title: "Payment", slug: "payment_method" },
   { title: "Order Status", slug: "order_status" },
   { title: "Action", slug: "action" },
 ]);
@@ -170,26 +172,27 @@ const tableBody = ref<any[]>([]);
 //       },
 //     }),
 //     order_status: `${getStatus("success", "Completed")}`,
-//     action: h(TableActionBtn, {
-//       showPrimaryBtn: true,
-//       showSecondaryBtn: true,
-//       primaryBtnText: "Manage",
-//       showSecondaryText: true,
-//       secondaryBtnIcon: "",
-//       secondaryBtnText: "View",
-//       isSecondaryActionDelete: false,
-//       onManageClick: () => {
-//         // productOrderDetails.value = data;
-//         toggleManageOrdersModal();
-//       },
-//       onDeleteClick: () => {
-//         // productOrderDetails.value = data;
-//         toggleViewOrdersModal();
-//       },
-//     }),
+// action: h(TableActionBtn, {
+//   showPrimaryBtn: true,
+//   showSecondaryBtn: true,
+//   primaryBtnText: "Manage",
+//   showSecondaryText: true,
+//   secondaryBtnIcon: "",
+//   secondaryBtnText: "View",
+//   isSecondaryActionDelete: false,
+//   onManageClick: () => {
+//     // productOrderDetails.value = data;
+//     toggleManageOrdersModal();
+//   },
+//   onDeleteClick: () => {
+//     // productOrderDetails.value = data;
+//     toggleViewOrdersModal();
+//   },
+// }),
 //   },
 // ]);
 const tablePaging = ref<any>({});
+const productOrderDetails = ref<any>({});
 
 const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -218,20 +221,47 @@ const fetchStoreOrders = async () => {
   if (response.code === 200) {
     tableBody.value = response?.data.orders.map((data: any) => ({
       date_created: getDateAdded(data.created_at),
-      full_name: `${data.firstname} ${data.lastname}`,
-      customer_email: data.email,
-      order_details: data.order,
+      customer: h(TableDoubleColumn, {
+        entry: {
+          primaryText: `${data.customer_details.firstname} ${data.customer_details.lastname}`,
+          secondaryText: `${data.customer_details.email}`,
+        },
+      }),
+      order: h(TableDoubleColumn, {
+        entry: {
+          primaryText: getBoldTableText(
+            `${data.currency} ${formatNumber(data.amount)}`
+          ),
+          secondaryText: renderOrderQuantity({
+            order_details: data.order_details.map((item: any) => ({
+              quantity: item.quantity,
+            })),
+          }),
+        },
+      }),
       phone_number: data.phone_number
         ? "+" + data.phone_number
         : notAvailable("No phone number"),
-      payment_status: getStatus(
-        data.blacklisted ? "danger" : "success",
-        data.blacklisted ? "Blacklisted" : "Active"
-      ),
-      order_status: getStatus(
-        data.blacklisted ? "danger" : "success",
-        data.blacklisted ? "Blacklisted" : "Active"
-      ),
+      payment_method: data.payment_method,
+      order_status: getStatus(data.status.toLowerCase(), data.status),
+      action: h(TableActionBtn, {
+        showPrimaryBtn: true,
+        showSecondaryBtn: true,
+        primaryBtnText: "Manage",
+        showSecondaryText: true,
+        secondaryBtnIcon: "",
+        secondaryBtnText: "View",
+        isSecondaryActionDelete: false,
+        onManageClick: () => {
+          productOrderDetails.value = data;
+
+          toggleManageOrdersModal();
+        },
+        onDeleteClick: () => {
+          productOrderDetails.value = data;
+          toggleViewOrdersModal();
+        },
+      }),
     }));
 
     ordersSummary.value = response?.data || {};
@@ -240,10 +270,7 @@ const fetchStoreOrders = async () => {
   }
 };
 
-const handleEditOrder = (data: any) => {
-  // Logic to edit product
-  console.log("Edit Product:", data);
-};
+const handleEditOrder = (data: any) => {};
 
 const handleDeleteOrder = (data: any) => {
   // Logic to delete product
