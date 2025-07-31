@@ -10,7 +10,7 @@ export const storeRoutes = {
   deleteProduct: `store/product/:id`,
   getProductsSummary: `store/product/summary/:store_id`,
   getStoreOrders: `store/orders/store/:store_id`,
-  updateOrderStatus: `orders/status`,
+  updateOrderStatus: `store/orders/status`,
   viewOrderDetails: `orders/view/:id`,
   searchProductorOrder: `store/product/search`,
 };

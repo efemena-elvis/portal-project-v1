@@ -102,7 +102,7 @@ export const viewOrderDetails = async (payload: any) => {
   });
 };
 export const updateOrderStatus = async (payload: any) => {
-  return await $api.push(storeRoutes.updateOrderStatus, payload,{
+  return await $api.update(storeRoutes.updateOrderStatus, payload,{
     headers: authHeaders(),
   });
 };
