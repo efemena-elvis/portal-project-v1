@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, toRef } from "vue";
 import { IPhoneInputField, IInputValidator } from "@packages/models";
 import { useValidators, useClickOutside } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
@@ -136,6 +136,8 @@ const props = withDefaults(defineProps<IPhoneInputField>(), {
 const errorHandler = props.errorHandler || { validator: "", message: "" };
 
 const { validateRequired, validatePhone } = useValidators();
+
+const activeCountryCode = toRef(props, "activeCountryCode");
 
 const formValue = ref<string | number>(props.inputValue);
 const formErrorMsg = ref<string>("");
@@ -218,6 +220,21 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       break;
   }
 };
+
+watch(
+  activeCountryCode,
+  (activeCode) => {
+    const countryData = countryListRepo.value.find(
+      (countryData) => countryData.dialing_code === activeCode
+    );
+
+    countryFlag.value =
+      countryData?.flag || "https://flagsapi.com/NG/flat/64.png";
+    countryName.value = countryData?.country || "";
+    countryCode.value = countryData?.dialing_code || "234";
+  },
+  { immediate: true }
+);
 
 watch(
   [countryCode, countryName],

@@ -174,15 +174,19 @@ const updateCompletionStatus = () => {
         break;
 
       case "registration_document":
-        section.completed = complianceRegistration.value?.doc_url
-          ? true
-          : false;
+        section.completed =
+          complianceRegistration.value?.number ||
+          complianceRegistration.value?.doc_url
+            ? true
+            : false;
         break;
 
       case "registration_tax":
-        section.completed = complianceRegistration.value?.tax_doc_url
-          ? true
-          : false;
+        section.completed =
+          complianceRegistration.value?.tax_number ||
+          complianceRegistration.value?.tax_doc_url
+            ? true
+            : false;
         break;
 
       case "representative_profile":
@@ -204,15 +208,14 @@ const updateCompletionStatus = () => {
             : false;
         break;
 
-      //   case "bank_account":
-      //     section.completed =
-      //       complianceBankAccount.value?.name &&
-      //       complianceBankAccount.value?.account_number &&
-      //       complianceBankAccount.value?.code &&
-      //       complianceBankAccount.value?.account_holder_name
-      //         ? true
-      //         : false;
-      //     break;
+      case "bank_account":
+        section.completed =
+          complianceBankAccount.value?.account_number &&
+          complianceBankAccount.value?.code &&
+          complianceBankAccount.value?.account_holder_name
+            ? true
+            : false;
+        break;
 
       case "merchant_agreement":
         section.completed = complianceAgreement.value?.signed_agreement
@@ -223,9 +226,9 @@ const updateCompletionStatus = () => {
   });
 };
 
-const completedSections = computed(() =>
-  complianceSectionList.filter((section) => section.completed)
-);
+const completedSections = computed(() => {
+  return complianceSectionList.filter((section) => section.completed);
+});
 
 const incompleteSections = computed(() =>
   complianceSectionList.filter((section) => !section.completed)

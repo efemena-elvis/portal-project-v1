@@ -33,7 +33,12 @@
         :hasDocumentUploaded="!!uploadedDocument"
         :uploadedDocumentContent="getUploadedDocumentContent"
         :uploadAction="uploadFile"
-        @onDocumentUploaded="uploadedDocument = $event"
+        @onDocumentUploaded="
+          ($event) => {
+            uploadedDocument = $event;
+            businessPayload.url = $event;
+          }
+        "
       />
     </div>
   </ComplianceWrapper>
@@ -48,7 +53,7 @@ import {
   FileUploadInput,
   SelectFieldInput,
 } from "@packages/uikit";
-import { useComplianceUtil } from "@packages/hooks";
+import { useComplianceUtil, useAppVariant } from "@packages/hooks";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
@@ -60,6 +65,8 @@ type IBusinessType = {
 };
 
 const router = useRouter();
+const appVariant = ref<string>(useAppVariant());
+
 const stopClickHandler = ref<boolean>(false);
 
 const { uploadFile } = useGlobalStore();
@@ -89,8 +96,11 @@ const getUploadedDocumentContent = computed(() => {
 const documentList = ref<{ value: string; name: string }[]>([
   { value: "drivers_license", name: "Driver's License" },
   {
-    value: "national_identification_number",
-    name: "National Identification Number",
+    value: appVariant.value === "alexpay" ? "ghana_card" : "national_id_card",
+    name:
+      appVariant.value === "alexpay"
+        ? "Ghana Card"
+        : "National Identification Number",
   },
   { value: "voters_card", name: "Voter's Card" },
   { value: "passport", name: "International Passport" },
@@ -108,6 +118,7 @@ const handleSelectChange = (value: string): void => {
 };
 
 const isActionReady = computed(() => {
+  console.log("businessPayload.value", businessPayload.value);
   return businessPayload.value.type && businessPayload.value.url ? false : true;
 });
 

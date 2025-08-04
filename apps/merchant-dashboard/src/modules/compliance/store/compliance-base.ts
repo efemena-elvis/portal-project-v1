@@ -13,8 +13,10 @@ export interface IComplianceBusiness {
 }
 
 export interface IComplianceRegistration {
-  doc_url: string;
-  tax_doc_url: string;
+  doc_url?: string;
+  number: string;
+  tax_doc_url?: string;
+  tax_number: string;
 }
 
 export interface IComplianceRepresentative {
@@ -40,6 +42,7 @@ export interface IComplianceBankAccount {
   // Common optional fields
   bank_name?: string;
   bank_code?: string;
+  bank_branch?: string;
   bank_address?: string;
 
   // Region-specific optional fields
@@ -107,7 +110,9 @@ export const complianceBase: IComplianceBaseType = {
 
   registration: {
     doc_url: "",
+    number: "",
     tax_doc_url: "",
+    tax_number: "",
   },
 
   representatives: [
@@ -130,9 +135,9 @@ export const complianceBase: IComplianceBaseType = {
     currency: "",
     account_holder_name: "",
     account_number: "",
-    code: "",
     bank_name: "",
     bank_code: "",
+    bank_branch: "",
     bank_address: "",
     iban: "",
     swift_bic: "",

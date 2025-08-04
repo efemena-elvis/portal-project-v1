@@ -98,7 +98,6 @@ const selectedItemList = ref<string[]>(props.inputValueList);
 
 const handleSelectChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
-  console.log("VALUE", target.value);
 
   if (selectedItemList.value.includes(target.value)) {
     // FIND THE INDEX AND REMOVE THE ITEM
