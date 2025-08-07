@@ -116,6 +116,16 @@ export const getStoreCustomers = async (payload: any) => {
   );
 };
 
+export const updateCustomerStatus = async (payload: any) => {
+  return await $api.push(
+    storeRoutes.updateCustomerStatus,
+    payload,
+    {
+      headers: authHeaders(),
+    }
+  );
+};
+
 export const searchProductorOrder = async (payload: any) => {
   return await $api.push(`${storeRoutes.searchProductorOrder}?slug=${payload.slug}?keywords=${payload.keyword}`, payload, {
     headers: authHeaders(),

@@ -198,7 +198,7 @@ const fetchProducts = async () => {
 
   isLoading.value = false;
 
-if (response) {
+if (response.code === 200) {
   let filteredData = response.data;
 
   if (route.query.filter === "out-of-stock") {
@@ -303,12 +303,5 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {
-  if (route.query.filter) {
-    const filter = route.query.filter as string;
-    if (filter === "out-of-stock") {
-      tableBody.value = tableBody.value.filter((item) => item.quantity <= 0);
-    }
-  }
-});
+
 </script>

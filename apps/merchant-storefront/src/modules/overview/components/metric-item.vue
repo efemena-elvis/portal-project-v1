@@ -39,7 +39,7 @@ const props = withDefaults(defineProps<IMetricProps>(), {
 
 <style lang="scss" scoped>
 .metric-item {
-  @apply border overflow-hidden rounded-[10px] px-5 py-6 flex flex-col justify-center items-start gap-y-0.5 h-[128px];
+  @apply border overflow-hidden rounded-[10px] h-[150px] md:h-[128px] px-5 py-6 flex flex-col justify-center items-start gap-y-0.5;
 
   .metric-title {
     @apply text-grey-600 font-medium text-sm mb-2.5;

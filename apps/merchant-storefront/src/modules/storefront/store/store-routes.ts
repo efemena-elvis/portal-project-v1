@@ -4,6 +4,7 @@ export const storeRoutes = {
   getStoreList: `store/list`,
   getStoreDetails: `store/details`,
   getStoreCustomers: `store/customers/:store_id`,
+  updateCustomerStatus: `store/customers/status`,
   getStoreProducts: `store/products`,
   addProduct: `store/product/create`,
   updateStoreProduct: `store/product/edit`,

@@ -32,7 +32,7 @@
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
-            { title: 'All Customers', slug: 'all-orders', active: false },
+            { title: 'All Customers', slug: 'all-customers', active: false },
             {
               title: 'Blacklisted Customers',
               slug: 'blacklisted-customers',
@@ -69,13 +69,19 @@
   </PageContentWrapper>
 
   <teleport to="body" v-if="showManageCustomerModal">
-    <ManageCustomerModal @closeTriggered="toggleManageCustomerModal" />
+    <ManageCustomerModal
+      @closeTriggered="toggleManageCustomerModal"
+      @reloadStoreCustomers="fetchStoreCustomers"
+      :currentCustomerData="currentCustomerData"
+
+
+    />
   </teleport>
 </template>
 
 <script setup lang="ts">
 import { ref, h, reactive, watch } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
@@ -96,13 +102,15 @@ type CustomersSummary = { total_orders?: number; [key: string]: any };
 
 const router = useRouter();
 
-const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } = useString();
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
+  useString();
 
 const { activeStore, getStoreCustomers } = useStoreStore() as {
   activeStore: Store | null;
   getStoreCustomers: any;
 };
 const { processAPIRequest } = useEvents();
+const route = useRoute();
 
 const isLoading = ref(false);
 const customersSummary = ref<CustomersSummary>({});
@@ -143,6 +151,8 @@ const getDateAdded = (date: string) => {
 
 const showManageCustomerModal = ref<boolean>(false);
 
+const currentCustomerData = ref<any>(null);
+
 const toggleManageCustomerModal = () => {
   showManageCustomerModal.value = !showManageCustomerModal.value;
 };
@@ -157,43 +167,45 @@ const fetchStoreCustomers = async () => {
   isLoading.value = false;
 
   if (response.code === 200) {
-tableBody.value = response?.data.customers.map((data: any) => {
-  return {
-    date_created: getDateAdded(data.created_at),
-    full_name: `${data.firstname} ${data.lastname}`,
-    customer_email: data.email,
-    phone_number: data.phone_number
-      ? "+" + data.phone_number
-      : notAvailable("No phone number"),
-    status: getStatus(
-       data.status === "active" ? "success" : "blacklisted", capitalizeFirstLetter(data.status)
-    ),
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: false,
-      primaryBtnText: "Manage",
-      onManageClick: () => {
-        toggleManageCustomerModal();
-      },
-    }),
-  };
-});
+    const allCustomers = response.data.customers;
 
+    let filteredCustomers = allCustomers;
+    if (route.query.filter === "blacklisted-customers") {
+      filteredCustomers = allCustomers.filter(
+        (item: any) => item.status === "blacklisted"
+      );
+    }
+
+    tableBody.value = filteredCustomers.map((data: any) => {
+      return {
+        date_created: getDateAdded(data.created_at),
+        full_name: `${data.firstname} ${data.lastname}`,
+        customer_email: data.email,
+        phone_number: data.phone_number
+          ? "+" + data.phone_number
+          : notAvailable("No phone number"),
+        status: getStatus(
+          data.status.toLowerCase() === "active" ? "success" : "failed",
+          capitalizeFirstLetter(data.status)
+        ),
+        action: h(TableActionBtn, {
+          showPrimaryBtn: true,
+          showSecondaryBtn: false,
+          primaryBtnText: "Manage",
+          onManageClick: () => {
+            currentCustomerData.value = data;
+            toggleManageCustomerModal();
+          },
+        }),
+      };
+    });
 
     customersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }
 };
 
-const handleManageCustomer = (data: any) => {
-  // Logic to manage customer
-  console.log("Manage Customer:", data);
-};
 
-const handleBlacklistCustomer = (data: any) => {
-  // Logic to blacklist customer
-  console.log("Blacklist Customer:", data);
-};
 
 watch(
   () => activeStore?.id,
@@ -203,5 +215,14 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => route.query.filter,
+  () => {
+    if (activeStore?.id) {
+      fetchStoreCustomers();
+    }
+  }
 );
 </script>

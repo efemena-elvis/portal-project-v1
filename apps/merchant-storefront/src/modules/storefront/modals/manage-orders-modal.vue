@@ -23,7 +23,7 @@
         </div>
 
         <!-- STOREFRONT ORDER STATUS -->
-        <div class="w-full">
+        <div class="w-full h-fit p-4 ">
           <SelectFieldInput
             labelId="productOrders"
             labelTitle=""
@@ -71,9 +71,7 @@ const props = defineProps({
 });
 
 const { processAPIRequest, pushToastAlert } = useEvents();
-const { updateOrderStatus } = useStoreStore() as {
-  updateOrderStatus: any;
-};
+const { updateOrderStatus } = useStoreStore() 
 
 const orderStatusOptions = computed(() => {
   return orderStatusList.map((status) => {
@@ -105,7 +103,7 @@ const handleUpdateOrderStatus = async () => {
       alertHandler: {
         200: {
           message: "Order status updated successfully",
-          description: "You are being redirected to your orders dashboard",
+          description: "Your order status has been updated",
           type: "success",
         },
         400: {

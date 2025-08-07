@@ -91,7 +91,7 @@
 
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute} from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
@@ -112,6 +112,7 @@ import {
 type Store = { id: string; [key: string]: any };
 type OrdersSummary = { total_orders?: number; [key: string]: any };
 const router = useRouter();
+const route = useRoute()
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
 
@@ -219,7 +220,23 @@ const fetchStoreOrders = async () => {
 
   isLoading.value = false;
   if (response.code === 200) {
-    tableBody.value = response?.data.orders.map((data: any) => ({
+      let allOrders = response?.data.orders;
+
+  const filter = route.query.filter;
+
+  if (filter === "completed-orders") {
+    allOrders = allOrders.filter((order: any) =>
+      order.status?.toLowerCase() === "completed"
+    );
+  } else if (filter === "pending-orders") {
+    allOrders = allOrders.filter((order: any) =>
+      order.status?.toLowerCase() === "pending"
+    );
+  }
+
+console.log(allOrders)
+
+    tableBody.value = allOrders.map((data: any) => ({
       date_created: getDateAdded(data.created_at),
       customer: h(TableDoubleColumn, {
         entry: {
@@ -235,6 +252,7 @@ const fetchStoreOrders = async () => {
           secondaryText: renderOrderQuantity({
             order_details: data.order_details.map((item: any) => ({
               quantity: item.quantity,
+             
             })),
           }),
         },
@@ -243,7 +261,7 @@ const fetchStoreOrders = async () => {
         ? "+" + data.phone_number
         : notAvailable("No phone number"),
       payment_method: data.payment_method,
-      order_status: getStatus(data.status.toLowerCase(), data.status),
+      order_status: getStatus( data.status.toLowerCase() === "completed" ? "success" : data.status.toLowerCase() === "pending" ? "pending"  : "failed", data.status),
       action: h(TableActionBtn, {
         showPrimaryBtn: true,
         showSecondaryBtn: true,
@@ -270,12 +288,6 @@ const fetchStoreOrders = async () => {
   }
 };
 
-const handleEditOrder = (data: any) => {};
-
-const handleDeleteOrder = (data: any) => {
-  // Logic to delete product
-  console.log("Delete Product:", data);
-};
 
 watch(
   () => activeStore?.id,
@@ -284,6 +296,16 @@ watch(
       fetchStoreOrders();
     }
   },
+  { immediate: true }
+);
+
+watch(
+  () => route.query.filter,
+  () => {
+   
+      fetchStoreOrders()
+    },
+  
   { immediate: true }
 );
 </script>

@@ -77,7 +77,7 @@ watch(
 
 <style lang="scss" scoped>
 .top-block {
-  @apply flex justify-between items-start gap-x-6 mt-2;
+  @apply flex justify-between items-start gap-x-6 mt-2 ;
 
   &--left {
     @apply w-[55%];

@@ -58,6 +58,6 @@ watch(
 
 <style lang="scss" scoped>
 .metric-content {
-  @apply grid grid-cols-2 gap-5;
+  @apply grid grid-cols-2 gap-5 ;
 }
 </style>
