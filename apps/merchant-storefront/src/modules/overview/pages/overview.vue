@@ -24,9 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { PageContentWrapper } from "@packages/uikit";
-import { useProfile, useEvents } from "@packages/hooks";
+import { useProfile, useEvents, useStorage } from "@packages/hooks";
 import { storeToRefs } from "pinia";
 import {
   OverviewBlock,
@@ -47,13 +47,15 @@ const { getAllWallets } = storeToRefs(overviewStore);
 
 const dashboardMetrics = ref<Record<string, any>>({});
 
-
 type Store = { id: string; [key: string]: any };
 
 const storeStore = useStoreStore();
+
 const { activeStore } = storeToRefs(storeStore);
 
+
 const { processAPIRequest } = useEvents();
+
 
 watch(
   activeStore,
@@ -72,12 +74,11 @@ watch(
 );
 
 
-
 </script>
 
 <style lang="scss" scoped>
 .top-block {
-  @apply flex justify-between items-start gap-x-6 mt-2 ;
+  @apply flex justify-between items-start gap-x-6 mt-2;
 
   &--left {
     @apply w-[55%];

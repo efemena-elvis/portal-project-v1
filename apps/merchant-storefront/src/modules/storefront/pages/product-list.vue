@@ -90,7 +90,7 @@ import { ref, h, reactive, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, useStorage } from "@packages/hooks";
 import DeleteProductModal from "@/modules/storefront/modals/delete-product-modal.vue";
 import ManageProductModal from "@/modules/storefront/modals/manage-product-modal.vue";
 
@@ -115,14 +115,20 @@ const route = useRoute();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
 
-const { activeStore, getStoreProducts, getProductsSummary, deleteProduct } =
+const { getStoreProducts, getProductsSummary, deleteProduct } =
   useStoreStore() as {
-    activeStore: Store | null;
+  
     getStoreProducts: any;
     getProductsSummary: any;
     deleteProduct: any;
   };
 const { processAPIRequest } = useEvents();
+const {getStorage} = useStorage();
+
+const activeStore = ref<any>(getStorage({
+  storage_name: "activeStore",
+  storage_type: "object",
+}));
 
 const isLoading = ref(false);
 const currentProductData = ref<any>(null);
@@ -143,38 +149,6 @@ const showManageProductModal = ref<boolean>(false);
 const showProductDeleteModal = ref<boolean>(false);
 const productsSummary = ref<ProductsSummary>({});
 
-// const tableBody = reactive<any[]>([
-//   {
-//     counter: "1",
-//     product: h(TableDoubleColumn, {
-//       entry: {
-//         primaryText: "White Sneakers",
-//         secondaryText: "Men Fashion",
-//         displayImage:
-//           "https://ng.jumia.is/unsafe/fit-in/500x500/filters:fill(white)/product/98/0189973/1.jpg?3194",
-//       },
-//     }),
-//     amount: getBoldTableText(`ZMW${formatNumber(420)}`),
-//     quantity: 24,
-//     status: `${getStatus(5 > 0 ? "success" : "danger", 5 > 0 ? "Available" : "Out of Stock")}`,
-//     date_created: "22nd July, 2024",
-//     action: h(TableActionBtn, {
-//       showPrimaryBtn: true,
-//       primaryBtnText: "Manage",
-//       showSecondaryBtn: true,
-//       showSecondaryText: true,
-//       onManageClick: () => {
-//         // handleEditProduct(data);
-//         toggleManageProductModal();
-//       },
-//       onDeleteClick: () => {
-//         // handleDeleteProduct(1);
-//         toggleProductDeleteModal();
-//       },
-
-//     }),
-//   },
-// ]);
 
 const toggleManageProductModal = () => {
   showManageProductModal.value = !showManageProductModal.value;
@@ -192,7 +166,7 @@ const getDateAdded = (date: string) => {
 const fetchProducts = async () => {
   const response = await processAPIRequest({
     action: getStoreProducts,
-    payload: { slug: activeStore?.slug || "" },
+    payload: { slug: activeStore.value?.slug || "" },
     showAlert: false,
   });
 
@@ -244,7 +218,7 @@ if (response.code === 200) {
 const fetchProductsSummary = async () => {
   const response = await processAPIRequest({
     action: getProductsSummary,
-    payload: { store_id: activeStore?.id || "" },
+    payload: { store_id: activeStore.value?.id || "" },
     showAlert: false,
   });
 
@@ -282,7 +256,7 @@ const handleProductDelete = async (data: any) => {
 };
 
 watch(
-  () => activeStore?.id,
+  () => activeStore.value?.id,
   (id) => {
     if (id) {
       fetchProducts();

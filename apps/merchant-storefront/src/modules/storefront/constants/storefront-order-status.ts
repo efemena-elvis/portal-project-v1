@@ -51,5 +51,11 @@ export const orderStatusList = [
     description:
       "Order not completed",
   },
+  {
+    id: 3,
+    name: "Returned",
+    description:
+      "The order has been returned.",
+  },
   
 ];

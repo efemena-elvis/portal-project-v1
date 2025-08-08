@@ -76,9 +76,16 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from "vue";
-import { useString, useClickOutside, useEvents } from "@packages/hooks";
+import { computed, ref, watch } from "vue";
+import {
+  useString,
+  useClickOutside,
+  useEvents,
+  useStorage,
+} from "@packages/hooks";
 import { useRouter } from "vue-router";
+
+type Store = { id: string; [key: string]: any };
 
 interface IClientAreaProps {
   businessProfile: any;
@@ -97,23 +104,28 @@ const props = withDefaults(defineProps<IClientAreaProps>(), {
 const router = useRouter();
 const { pushToastAlert, processAPIRequest } = useEvents();
 const { getStringInitials } = useString();
+const { setStorage, getStorage } = useStorage();
 
-const profileUtil = props.businessProfile;
 
 const showDropdown = ref(false);
 const dialogRef = ref<HTMLElement | null>(null);
 const togglerRef = ref<HTMLElement | null>(null);
 
-const localActiveStore = ref(props.activeStore ?? null);
-const hasSetInitialStore = ref(false);
+const activeStore = ref<any>(
+  getStorage({
+    storage_name: "activeStore",
+    storage_type: "object",
+  })
+);
 
+const localActiveStore = ref(activeStore.value || props.storeList[0]);
+const hasSetInitialStore = ref(false);
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
 
 const copied = ref<boolean>(false);
 
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
-const getUser = computed(() => profileUtil.getUser());
+
 
 // GET BRAND INITIALS
 const getBrandInitials = (brandName: string): string =>
@@ -122,12 +134,16 @@ const getBrandInitials = (brandName: string): string =>
 const getSingleStore = (storeId: string) => {
   const store = props.storeList.find((store) => store.id === storeId);
   if (store) {
-    props.setActiveStore(store);
+    router.push("/overview");
+    toggleDropdown(false);
+    setStorage({
+      storage_name: "activeStore",
+      storage_value: store,
+      storage_type: "object",
+    });
     localActiveStore.value = store;
-      router.push("/overview");
-      toggleDropdown(false);
+    props.setActiveStore(store)
   }
-
 };
 
 // COPY MERCHANT BUSINESS ID

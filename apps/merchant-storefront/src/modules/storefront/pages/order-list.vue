@@ -91,10 +91,10 @@
 
 <script setup lang="ts">
 import { ref, h, watch, onMounted } from "vue";
-import { useRouter, useRoute} from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, useStorage } from "@packages/hooks";
 import ManageOrdersModal from "@/modules/storefront/modals/manage-orders-modal.vue";
 import ViewOrdersModal from "@/modules/storefront/modals/view-orders-modal.vue";
 
@@ -112,25 +112,23 @@ import {
 type Store = { id: string; [key: string]: any };
 type OrdersSummary = { total_orders?: number; [key: string]: any };
 const router = useRouter();
-const route = useRoute()
+const route = useRoute();
+const { getStorage } = useStorage();
 
 const { formatNumber, getStatus, getBoldTableText, notAvailable } = useString();
 
-const { activeStore, getStoreOrders } = useStoreStore() as {
-  activeStore: Store | null;
+const { getStoreOrders } = useStoreStore() as {
   getStoreOrders: any;
 };
+
+const activeStore = ref<any>(
+  getStorage({
+    storage_name: "activeStore",
+    storage_type: "object",
+  })
+);
+
 const { processAPIRequest } = useEvents();
-
-const renderOrderQuantity = (order: any) => {
-  const quantity = order.order_details.reduce(
-    (acc: any, item: any) => acc + item.quantity,
-    0
-  );
-  return `Total Quantity: ${quantity < 1 ? 1 : quantity}`;
-};
-
-const isLoading = ref(false);
 
 const ordersSummary = ref<OrdersSummary>({});
 
@@ -145,64 +143,26 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = ref<any[]>([]);
-// const tableBody = reactive<any[]>([
-//   {
-//     counter: "1",
-//     date_created: "22nd July, 2024",
-//     customer: h(TableDoubleColumn, {
-//       entry: {
-//         primaryText: `Efemena Elvis`,
-//         secondaryText: `efemena.elvis@example.com`,
-//       },
-//     }),
-//     order: h(TableDoubleColumn, {
-//       entry: {
-//         primaryText: getBoldTableText(`ZMW ${formatNumber(750)}`),
-//         secondaryText: renderOrderQuantity({
-//           order_details: [
-//             { quantity: 2, product_name: "White Sneakers" },
-//             { quantity: 1, product_name: "Black Sneakers" },
-//           ],
-//         }),
-//       },
-//     }),
-//     payment_status: h(TableDoubleColumn, {
-//       entry: {
-//         primaryText: `<span class='text-green-600'>Paid</span>`,
-//         secondaryText: `Order no: ${"N/A"}`,
-//       },
-//     }),
-//     order_status: `${getStatus("success", "Completed")}`,
-// action: h(TableActionBtn, {
-//   showPrimaryBtn: true,
-//   showSecondaryBtn: true,
-//   primaryBtnText: "Manage",
-//   showSecondaryText: true,
-//   secondaryBtnIcon: "",
-//   secondaryBtnText: "View",
-//   isSecondaryActionDelete: false,
-//   onManageClick: () => {
-//     // productOrderDetails.value = data;
-//     toggleManageOrdersModal();
-//   },
-//   onDeleteClick: () => {
-//     // productOrderDetails.value = data;
-//     toggleViewOrdersModal();
-//   },
-// }),
-//   },
-// ]);
+
 const tablePaging = ref<any>({});
 const productOrderDetails = ref<any>({});
+const isLoading = ref<boolean>(false);
+
+const showManageOrdersModal = ref<boolean>(false);
+const showViewOrdersModal = ref<boolean>(false);
 
 const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const showManageOrdersModal = ref<boolean>(false);
-const showViewOrdersModal = ref<boolean>(false);
-
+const renderOrderQuantity = (order: any) => {
+  const quantity = order.order_details.reduce(
+    (acc: any, item: any) => acc + item.quantity,
+    0
+  );
+  return `Total Quantity: ${quantity < 1 ? 1 : quantity}`;
+};
 const toggleManageOrdersModal = () => {
   showManageOrdersModal.value = !showManageOrdersModal.value;
 };
@@ -214,27 +174,25 @@ const toggleViewOrdersModal = () => {
 const fetchStoreOrders = async () => {
   const response = await processAPIRequest({
     action: getStoreOrders,
-    payload: { store_id: activeStore?.id },
+    payload: { store_id: activeStore.value?.id },
     showAlert: false,
   });
 
-  isLoading.value = false;
+  isLoading.value = true;
   if (response.code === 200) {
-      let allOrders = response?.data.orders;
+    let allOrders = response?.data.orders;
 
-  const filter = route.query.filter;
+    const filter = route.query.filter;
 
-  if (filter === "completed-orders") {
-    allOrders = allOrders.filter((order: any) =>
-      order.status?.toLowerCase() === "completed"
-    );
-  } else if (filter === "pending-orders") {
-    allOrders = allOrders.filter((order: any) =>
-      order.status?.toLowerCase() === "pending"
-    );
-  }
-
-console.log(allOrders)
+    if (filter === "completed-orders") {
+      allOrders = allOrders.filter(
+        (order: any) => order.status?.toLowerCase() === "completed"
+      );
+    } else if (filter === "pending-orders") {
+      allOrders = allOrders.filter(
+        (order: any) => order.status?.toLowerCase() === "pending"
+      );
+    }
 
     tableBody.value = allOrders.map((data: any) => ({
       date_created: getDateAdded(data.created_at),
@@ -252,7 +210,6 @@ console.log(allOrders)
           secondaryText: renderOrderQuantity({
             order_details: data.order_details.map((item: any) => ({
               quantity: item.quantity,
-             
             })),
           }),
         },
@@ -261,7 +218,14 @@ console.log(allOrders)
         ? "+" + data.phone_number
         : notAvailable("No phone number"),
       payment_method: data.payment_method,
-      order_status: getStatus( data.status.toLowerCase() === "completed" ? "success" : data.status.toLowerCase() === "pending" ? "pending"  : "failed", data.status),
+      order_status: getStatus(
+        data.status.toLowerCase() === "completed"
+          ? "success"
+          : data.status.toLowerCase() === "pending"
+            ? "pending"
+            : "failed",
+        data.status
+      ),
       action: h(TableActionBtn, {
         showPrimaryBtn: true,
         showSecondaryBtn: true,
@@ -282,15 +246,16 @@ console.log(allOrders)
       }),
     }));
 
+    isLoading.value = false;
+
     ordersSummary.value = response?.data || {};
 
     tablePaging.value = response?.pagination?.[0] || {};
   }
 };
 
-
 watch(
-  () => activeStore?.id,
+  () => activeStore.value?.id,
   (id) => {
     if (id) {
       fetchStoreOrders();
@@ -302,10 +267,9 @@ watch(
 watch(
   () => route.query.filter,
   () => {
-   
-      fetchStoreOrders()
-    },
-  
+    fetchStoreOrders();
+  },
+
   { immediate: true }
 );
 </script>

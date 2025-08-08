@@ -73,8 +73,6 @@
       @closeTriggered="toggleManageCustomerModal"
       @reloadStoreCustomers="fetchStoreCustomers"
       :currentCustomerData="currentCustomerData"
-
-
     />
   </teleport>
 </template>
@@ -84,7 +82,7 @@ import { ref, h, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, useStorage } from "@packages/hooks";
 import ManageCustomerModal from "@/modules/storefront/modals/manage-customer-modal.vue";
 
 import {
@@ -101,14 +99,20 @@ type Store = { id: string; [key: string]: any };
 type CustomersSummary = { total_orders?: number; [key: string]: any };
 
 const router = useRouter();
+const { getStorage } = useStorage();
 
 const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
   useString();
 
-const { activeStore, getStoreCustomers } = useStoreStore() as {
-  activeStore: Store | null;
+const { getStoreCustomers } = useStoreStore() as {
   getStoreCustomers: any;
 };
+
+const activeStore = ref<any>(getStorage({
+  storage_name: "activeStore",
+  storage_type: "object",
+}));
+
 const { processAPIRequest } = useEvents();
 const route = useRoute();
 
@@ -124,24 +128,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Action", slug: "action" },
 ]);
 const tableBody = ref<any[]>([]);
-// const tableBody = reactive<any[]>([
-//   {
-//     date_created: "22nd July, 2024",
-//     customer_email: "elvis@vesicash.com",
-//     full_name: "Efemena Elvis",
-//     phone_number: "+234 813 117 7703",
-//     status: getStatus("success", "Whitelisted"),
-//     action: h(TableActionBtn, {
-//       showPrimaryBtn: true,
-//       showSecondaryBtn: false,
-//       primaryBtnText: "Manage",
-//       onManageClick: () => {
-//         // handleManageCustomer(data);
-//         toggleManageCustomerModal();
-//       },
-//     }),
-//   },
-// ]);
+
 const tablePaging = ref<any>({});
 
 const getDateAdded = (date: string) => {
@@ -160,7 +147,7 @@ const toggleManageCustomerModal = () => {
 const fetchStoreCustomers = async () => {
   const response = await processAPIRequest({
     action: getStoreCustomers,
-    payload: { store_id: activeStore?.id || "" },
+    payload: { store_id: activeStore.value?.id || "" },
     showAlert: false,
   });
 
@@ -205,10 +192,8 @@ const fetchStoreCustomers = async () => {
   }
 };
 
-
-
 watch(
-  () => activeStore?.id,
+  () => activeStore.value?.id,
   (id) => {
     if (id) {
       fetchStoreCustomers();
@@ -220,7 +205,7 @@ watch(
 watch(
   () => route.query.filter,
   () => {
-    if (activeStore?.id) {
+    if (activeStore.value?.id) {
       fetchStoreCustomers();
     }
   }

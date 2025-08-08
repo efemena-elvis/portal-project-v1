@@ -83,8 +83,8 @@ const customerStatus = ref<string>("");
 
 
 const customerStatusOptions = computed(() => {
-  return customerStatusList.map((status) => {
-    return { value: status.name.toLowerCase(), name: status.name };
+  return customerStatusList.map((status: { name: string }) => {
+    return { value: status?.name.toLowerCase(), name: status?.name };
   });
 });
 
