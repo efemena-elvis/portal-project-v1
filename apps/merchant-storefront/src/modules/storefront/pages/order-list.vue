@@ -58,7 +58,7 @@
           title: 'No Orders yet',
           description:
             'You haven\'t received any orders on this store yet. Add a product to get started',
-          actionText: 'Add a product',
+       
         }"
         @onActionClicked="() => router.push('/products/create?redirect=orders')"
       >

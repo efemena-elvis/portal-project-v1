@@ -36,44 +36,58 @@ import {
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
 import { useStoreStore } from "@/modules/storefront/store";
+import { Ref } from "vue";
 
-
+type Store = { id: string; [key: string]: any };
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
+const { getStoreList } = useStoreStore();
 const profileUtil = new useProfile(authStore);
+const { processAPIRequest } = useEvents();
 
 const { getWallets, updateWalletState, getDashboardMetrics } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
-
 const dashboardMetrics = ref<Record<string, any>>({});
+const storeList = ref<any[]>([]);
+const { getStorage } = useStorage();
 
-type Store = { id: string; [key: string]: any };
+const activeStore = ref(getStorage({ storage_name: "activeStore", storage_type: "object" }) || storeList.value[0] );
 
-const storeStore = useStoreStore();
+const fetchStoreList = async () => {
 
-const { activeStore } = storeToRefs(storeStore);
+  const response = await processAPIRequest({
+    action: getStoreList,
+    payload: {},
+  });
 
-
-const { processAPIRequest } = useEvents();
-
+  if (response.code === 200) {
+    storeList.value = response.data;
+  }
+}
 
 watch(
-  activeStore,
-  async (newStore: Store | null | undefined) => {
+  () => activeStore.value,
+  async (newStore: Store | null) => {
     if (newStore?.id) {
       const response = await processAPIRequest({
         action: getDashboardMetrics,
         payload: { store_id: newStore.id },
       });
-
       dashboardMetrics.value = response.data;
- 
     }
   },
   { immediate: true }
 );
 
 
+onMounted(async() => {
+ await fetchStoreList(); 
+    if (!activeStore.value?.id && storeList.value.length > 0) {
+    activeStore.value = storeList.value[0];
+    localStorage.setItem("activeStore", JSON.stringify(activeStore.value));
+  }
+  
+});
 </script>
 
 <style lang="scss" scoped>

@@ -29,7 +29,7 @@
               'text-green-600': metrics?.total_balance_change >= 50,
             }"
           >
-            ZMW ({{ metrics?.total_balance_change }}%)
+            ZMW ({{ metrics?.total_balance_change || 0 }}%)
           </div>
           <div class="stat-ref">Past 30 days</div>
         </div>

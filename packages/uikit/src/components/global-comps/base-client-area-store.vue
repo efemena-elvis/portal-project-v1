@@ -134,7 +134,7 @@ const getBrandInitials = (brandName: string): string =>
 const getSingleStore = (storeId: string) => {
   const store = props.storeList.find((store) => store.id === storeId);
   if (store) {
-    router.push("/overview");
+ 
     toggleDropdown(false);
     setStorage({
       storage_name: "activeStore",
@@ -143,6 +143,13 @@ const getSingleStore = (storeId: string) => {
     });
     localActiveStore.value = store;
     props.setActiveStore(store)
+
+    if(router.currentRoute.value.path === "/overview") {
+      router.go(0);
+    }
+    else{
+         router.push("/overview");
+    }
   }
 };
 

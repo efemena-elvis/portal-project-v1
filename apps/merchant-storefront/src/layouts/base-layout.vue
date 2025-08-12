@@ -80,7 +80,7 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 const { switchAppMode } = useGlobalStore();
-
+  const { processAPIRequest } = useEvents();
 const { setPageBackgroundColor } = useColor();
 const profileUtil = new useProfile(authStore);
 const { getStoreList, setActiveStore } = useStoreStore();
@@ -106,7 +106,7 @@ const toggleSupportModal = () => {
 };
 
 const fetchStoreList = async () => {
-  const { processAPIRequest } = useEvents();
+
   const response = await processAPIRequest({
     action: getStoreList,
     payload: {},

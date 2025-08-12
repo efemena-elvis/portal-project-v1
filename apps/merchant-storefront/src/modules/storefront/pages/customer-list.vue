@@ -49,10 +49,10 @@
         :tableBody="tableBody"
         :isLoading="isLoading"
         :emptyData="{
-          title: 'Add a new customer',
+          title: 'No customers yet',
           description:
             'We haven\'t collected payment from any customer on this account yet. Add a customer to get started',
-          actionText: 'Add a Product',
+        
         }"
         @onActionClicked="
           () => router.push('/products/create?redirect=customers')
