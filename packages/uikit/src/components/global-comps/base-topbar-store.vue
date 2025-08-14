@@ -24,7 +24,7 @@
     </div>
 
     <div class="topbar--right">
-      <button class="btn btn-sm btn-primary-outline !h-[40px] text-[11.5px]">
+      <button class="btn btn-sm btn-primary-outline !h-[40px] text-[11.5px]"  @click ="handleViewStore">
         View Store
       </button>
 
@@ -238,6 +238,19 @@ useClickOutside(
 );
 useClickOutside(dialogProfileRef, togglerProfileRef, toggleProfileDropdown);
 useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
+
+
+const handleViewStore = () => {
+  console.log(isBusinessActivated.value);
+  if (isBusinessActivated.value === true) {
+    router.push("");
+  } else {
+    pushToastAlert({
+      type: "warning",
+      message: "Please activate your business to view the storefront.",
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped>
