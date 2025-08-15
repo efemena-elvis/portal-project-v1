@@ -165,7 +165,7 @@ const payoutConfigData: PayoutConfigData = {
       "account_number",
       "bank_code",
       "bank_branch",
-      "mobile_money_number",
+      // "mobile_money_number",
     ],
   },
   europe_bank_only: {
