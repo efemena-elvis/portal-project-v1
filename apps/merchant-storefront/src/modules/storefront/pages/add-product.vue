@@ -5,6 +5,7 @@
     :isPrimaryActionDisabled="isActionReady"
     primaryActionText="Add Product"
     @onBackClick="router.push('/products')"
+    @onContinueClick="handleAddProduct"
   >
     <!-- PRODUCT NAME -->
     <TextFieldInput
@@ -40,17 +41,21 @@
     />
 
     <!-- PRODUCT CATEGORY -->
-    <SelectFieldInput
+  
+     <TextFieldInput
       labelId="productCategory"
       labelTitle="Category"
       :labelCompact="false"
-      inputPlaceholder="Select product category"
+      :inputType="IInputType.Text"
       :inputValue="productPayload.category"
-      :selectData="[]"
+      inputPlaceholder="Provide the product category"
       isRequired
-      @onSelectionChange="productPayload.category = $event"
+      @inputChanged="productPayload.category = $event"
+      :errorHandler="{
+        validator: 'validateRequired',
+        message: 'Product category is required',
+      }"
     />
-
     <!-- PRODUCT QUANTITY -->
     <TextFieldInput
       labelId="productQuantity"
@@ -103,7 +108,7 @@
         >
           <img
             :src="uploadedProductImage"
-            alt="display-img"
+            alt="Product Image"
             class="w-1/2 h-auto mx-auto"
           />
         </div>
@@ -113,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
@@ -124,20 +129,18 @@ import {
 } from "@packages/uikit";
 import StorefrontEntryWrapper from "@/modules/storefront/components/storefront-entry-wrapper.vue";
 import { useGlobalStore } from "@/modules/global/store";
+import { useStoreStore } from "../store";
 
-type IStorefrontType = {
-  name: string;
-  description: string;
-  category: string;
-  stock: number;
-  amount: number;
-};
+type Store = { id: string; [key: string]: any };
 
-const route = useRoute();
 const router = useRouter();
-
+const route = useRoute();
 const { uploadFile } = useGlobalStore();
 const { processAPIRequest } = useEvents();
+
+const { activeStore, addProduct } = useStoreStore() as { activeStore: Store | null; addProduct: any };
+
+const uploadedProductImage = ref<string>("");
 
 const pageHeaderData = ref({
   name: "Add a Product",
@@ -147,16 +150,7 @@ const pageHeaderData = ref({
     "Add product details to make it available in your store catalog, including pricing, stock, and category.",
 });
 
-const uploadedProductImage = ref<string>("");
-
-const getUploadedProductImageContent = computed(() => {
-  return {
-    name: uploadedProductImage.value ? "Store Logo" : "",
-    link: uploadedProductImage.value,
-  };
-});
-
-const productPayload = ref<IStorefrontType>({
+const productPayload = ref({
   name: "",
   description: "",
   category: "",
@@ -164,15 +158,21 @@ const productPayload = ref<IStorefrontType>({
   amount: 0,
 });
 
+const getUploadedProductImageContent = computed(() => ({
+  name: uploadedProductImage.value ? "Product Image" : "",
+  link: uploadedProductImage.value,
+}));
+
 const isActionReady = computed(() => {
-  return productPayload.value.name.length &&
-    productPayload.value.description.length &&
-    productPayload.value.category.length &&
-    productPayload.value.stock &&
-    productPayload.value.amount &&
+  const { name, description, category, stock, amount } = productPayload.value;
+  return !(
+    name &&
+    description &&
+    category &&
+    stock > 0 &&
+    amount > 0 &&
     uploadedProductImage.value
-    ? false
-    : true;
+  );
 });
 
 const getProductPayload = computed(() => {
@@ -185,9 +185,41 @@ const getProductPayload = computed(() => {
     stock,
     amount,
     image: uploadedProductImage.value,
-    store_id: route.params.storeId,
+    store_id: activeStore?.id ?? null,
   };
 });
+
+const handleAddProduct = async () => {
+  if (!activeStore?.id) {
+    alert("No active store selected.");
+    return;
+  }
+
+  const response = await processAPIRequest({
+    action: addProduct,
+    payload: getProductPayload.value,
+    btnText: "Add Product",
+    alertHandler: {
+      200: {
+        message: "Product added successfully",
+        description: "You can now view your product",
+        type: "success",
+      },
+      400: {
+        message: "Product addition failed",
+        description: "Something went wrong",
+        type: "error",
+      },
+    },
+  });
+
+  if (response?.code === 200) {
+    setTimeout(() => {
+      router.push("/products");
+    }, 1200);
+  }
+};
+
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped lang="scss"></style>

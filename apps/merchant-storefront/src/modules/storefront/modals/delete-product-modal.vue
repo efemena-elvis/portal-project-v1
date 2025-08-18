@@ -12,7 +12,7 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-6">
+      <div class="mt-6 modal-cover-body">
         <img src="@images/bin.png" alt="delete-icon" />
 
         <div class="title-text">Delete Product</div>
@@ -25,18 +25,18 @@
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="modal-cover-footer flex justify-between gap-x-4 -mt-2 mb-1">
+      <div class="flex justify-between mb-1 -mt-2 modal-cover-footer gap-x-4">
         <button
-          class="btn btn-sm btn-secondary w-1/2"
+          class="w-1/2 btn btn-sm btn-secondary"
           @click="$emit('closeTriggered')"
         >
           Cancel
         </button>
 
         <button
-          class="btn btn-sm btn-alert w-1/2"
+          class="w-1/2 btn btn-sm btn-alert"
           ref="deleteBtnRef"
-          @click="handleProductDelete"
+          @click="props.handleProductDelete"
         >
           Delete Product
         </button>
@@ -52,6 +52,12 @@ import { useSettingsStore } from "@/modules/settings/store";
 import { ModalDialog } from "@packages/uikit";
 
 const emits = defineEmits(["closeTriggered"]);
+const props = defineProps({
+  handleProductDelete: {
+    type: Function,
+    required: true,
+  },
+});
 
 const { processAPIRequest, pushToastAlert } = useEvents();
 

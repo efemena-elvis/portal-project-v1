@@ -1,0 +1,12 @@
+export const customerStatusList = [
+  {
+    id: 1,
+    name: "Active",
+    description: "Customer is currently active and can make purchases or use services.",
+  },
+  {
+    id: 2,
+    name: "Blacklisted",
+    description: "Customer is restricted from accessing services due to policy violations or unresolved issues.",
+  },
+];

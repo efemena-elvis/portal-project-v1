@@ -56,7 +56,7 @@
           title: 'No transactions yet!',
           description:
             'No transactions has been initiated on your account yet. Add a product to fix that',
-          actionText: 'Add a Product',
+        
         }"
         @onActionClicked="
           () => router.push('/products/create?redirect=transactions')

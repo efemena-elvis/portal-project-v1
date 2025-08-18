@@ -38,7 +38,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (to.hash) {
+    if (to.hash) {add
       return {
         el: to.hash,
         behavior: "smooth",
