@@ -24,7 +24,6 @@ export default (
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     routeGuard.verifyAuthRoutes(to, next);
   } else if (to.matched.some((record) => record.meta.guest)) {
-    console.log("HAHA WE HERE THEN", to.matched);
     /** Verify if user accessing route is just a guest user **/
     routeGuard.verifyGuestRoutes(to, next);
   } else {
