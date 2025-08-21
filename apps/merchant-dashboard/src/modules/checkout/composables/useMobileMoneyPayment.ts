@@ -7,7 +7,7 @@ export const useMobileMoneyPayment = () => {
   let pollingIntervalId: number | undefined = undefined;
   let pollingTimeoutId: number | undefined = undefined;
   const POLLING_INTERVAL = 5000; // every 5 seconds
-  const POLLING_DURATION = 60000 * 5; // 5 minutes
+  const POLLING_DURATION = 60000 * 2; // 2 minutes
   const paymentButtonRef = ref(null);
 
   const store = useCheckoutStore();
@@ -49,6 +49,28 @@ export const useMobileMoneyPayment = () => {
       showAlert: true,
       btnRef: paymentButtonRef,
       btnText: "Pay",
+      alertHandler: {
+        201: {
+          message: "Processing Payment",
+          description: "Your payment is being processed",
+          type: "success",
+        },
+
+        200: {
+          message: "Processing Payment",
+          description: "Your payment is being processed",
+          type: "success",
+        },
+
+        400: {
+          message: "Payment Failed",
+          type: "error",
+        },
+        500: {
+          message: "Something went wrong",
+          type: "error",
+        },
+      },
     });
     updatingInitiatingPayment(false);
     if (response && response.code === 200) {
@@ -88,6 +110,7 @@ export const useMobileMoneyPayment = () => {
 
     pollingTimeoutId = setTimeout(() => {
       stopPaymentStatusPolling();
+      updatePaymentStatus("failed");
     }, POLLING_DURATION) as unknown as number;
   };
 

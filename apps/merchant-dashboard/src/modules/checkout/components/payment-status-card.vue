@@ -2,14 +2,16 @@
   <div class="rounded-xl bg-gray-50/95 p-6 md:p-4 grid place-items-center">
     <div class="size-20 mx-auto my-6">
       <img
-        :src="status.icon"
+        :src="statusDetails.icon"
         alt="PendingPayment"
         class="object-cover h-full w-full"
       />
     </div>
-    <div class="text-lg font-semibold text-teal-900">{{ status.title }}</div>
+    <div class="text-lg font-semibold text-teal-900">
+      {{ statusDetails.title }}
+    </div>
     <div class="max-w-[600px] mx-auto my-6 text-center text-gray-700">
-      {{ status.description }}
+      {{ statusDetails.description }}
     </div>
     <button
       class="btn btn-lg btn-primary"
@@ -33,15 +35,19 @@
 
 <script lang="ts" setup>
 import { useImage } from "@/shared/composables";
-import { PaymentDetails } from "../types";
+import { PaymentDetails, PaymentStatus } from "../types";
 import { computed } from "vue";
 import { useString } from "@packages/hooks";
 const { renderImg } = useImage();
-const { details } = defineProps<{ details: PaymentDetails | null }>();
+const { details, status } = defineProps<{
+  details: PaymentDetails | null;
+  status: PaymentStatus | "idle";
+}>();
 defineEmits(["retry"]);
 
-const status = computed(() => {
-  switch (details?.status) {
+const statusDetails = computed(() => {
+  const _status = status !== "idle" ? status : details?.status;
+  switch (_status) {
     case "failed":
       return {
         title: "Payment Failed",

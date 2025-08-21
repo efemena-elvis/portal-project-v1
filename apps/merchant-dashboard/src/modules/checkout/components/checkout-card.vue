@@ -55,11 +55,9 @@
           :key="item.name"
           @click="active_method = item.name"
         >
-          <div class="flex gap-x-2 items-center">
-            <!-- <div class="size-[24px] border"></div> -->
-            <div class="text-sm font-medium text-center uppercase">
-              {{ item.name }}
-            </div>
+          <!-- <div class="size-[24px] border"></div> -->
+          <div class="text-sm font-medium text-center uppercase">
+            {{ item.name }}
           </div>
         </div>
       </div>
