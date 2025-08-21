@@ -1,8 +1,8 @@
 # === Combined Anchors ===
 .alexpay_staging_vars: &alexpay_staging_vars
   APP_NAME: alexpay
-  APP_DIR: apps/alexpay
-  BUILD_DIR: apps/alexpay/dist
+  APP_DIR: apps/merchant-dashboard
+  BUILD_DIR: apps/merchant-dashboard/dist
   BUILD_SCRIPT: build:staging:merchant-alexpay
   CI_ENVIRONMENT_NAME: staging
   AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
@@ -13,8 +13,8 @@
 
 .alexpay_prod_vars: &alexpay_prod_vars
   APP_NAME: alexpay
-  APP_DIR: apps/alexpay
-  BUILD_DIR: apps/alexpay/dist
+  APP_DIR: apps/merchant-dashboard
+  BUILD_DIR: apps/merchant-dashboard/dist
   BUILD_SCRIPT: build:prod:merchant-alexpay
   CI_ENVIRONMENT_NAME: main
   AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID

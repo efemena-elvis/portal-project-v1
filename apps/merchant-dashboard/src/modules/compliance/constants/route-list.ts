@@ -44,7 +44,7 @@ const complianceRouteMap = {
       route: "ComplianceRegistrationDocuments",
       title: "Business registration documents",
       description:
-        "Provide your registered business documents, so Vesicash can verify your business information.",
+        "Provide your registered business documents, to help us verify your business information.",
     },
     {
       name: "Tax",
@@ -190,12 +190,12 @@ export const complianceSections: IComplianceSectionType[] = [
     route: "ComplianceRepresentativeIdentity",
     completed: false,
   },
-  // {
-  //   id: "bank_account",
-  //   title: "Bank Account",
-  //   route: "ComplianceBankAccount",
-  //   completed: false,
-  // },
+  {
+    id: "bank_account",
+    title: "Bank Account",
+    route: "ComplianceBankAccount",
+    completed: false,
+  },
   {
     id: "merchant_agreement",
     title: "Merchant Agreement",

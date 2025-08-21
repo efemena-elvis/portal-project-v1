@@ -43,6 +43,7 @@ export const merchantData = ref<IMerchantBaseType[]>([
     },
 
     director1: {
+      client_id: "",
       legal_full_name: "",
       country_id: "",
       address: "",
@@ -51,6 +52,7 @@ export const merchantData = ref<IMerchantBaseType[]>([
     },
 
     director2: {
+      client_id: "",
       legal_full_name: "",
       country_id: "",
       address: "",
@@ -59,6 +61,7 @@ export const merchantData = ref<IMerchantBaseType[]>([
     },
 
     ubo1: {
+      client_id: "",
       legal_full_name: "",
       country_id: "",
       address: "",
@@ -67,6 +70,7 @@ export const merchantData = ref<IMerchantBaseType[]>([
     },
 
     ubo2: {
+      client_id: "",
       legal_full_name: "",
       country_id: "",
       address: "",

@@ -86,6 +86,7 @@ class PayoutConfig {
       bank_name: "Bank Name",
       account_number: "Account Number",
       bank_code: "Bank Code",
+      bank_branch: "Bank Branch",
       bank_address: "Bank Address",
       iban: "IBAN",
       swift_bic: "SWIFT/BIC",
@@ -163,7 +164,8 @@ const payoutConfigData: PayoutConfigData = {
       "bank_name",
       "account_number",
       "bank_code",
-      "mobile_money_number",
+      "bank_branch",
+      // "mobile_money_number",
     ],
   },
   europe_bank_only: {

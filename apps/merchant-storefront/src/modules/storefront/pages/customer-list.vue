@@ -12,18 +12,27 @@
       <div class="mt-4 mb-8">
         <MetricInfoCard
           :metric-items="[
-            { titleText: 'Total Customers', valueText: '0' },
-            { titleText: 'Active Customers', valueText: '0' },
-            { titleText: 'Blacklisted Customers', valueText: '0' },
+            {
+              titleText: 'Total Customers',
+              valueText: customersSummary?.total,
+            },
+            {
+              titleText: 'Active Customers',
+              valueText: customersSummary?.active_customers,
+            },
+            {
+              titleText: 'Blacklisted Customers',
+              valueText: customersSummary?.blacklisted_customers,
+            },
           ]"
         />
       </div>
 
-      <div class="mb-3 flex justify-between items-center gap-x-4">
+      <div class="flex items-center justify-between mb-3 gap-x-4">
         <!-- STATUS FILTER CARD -->
         <StatusFilterCard
           :status-items="[
-            { title: 'All Customers', slug: 'all-orders', active: false },
+            { title: 'All Customers', slug: 'all-customers', active: false },
             {
               title: 'Blacklisted Customers',
               slug: 'blacklisted-customers',
@@ -40,10 +49,10 @@
         :tableBody="tableBody"
         :isLoading="isLoading"
         :emptyData="{
-          title: 'Add a new customer',
+          title: 'No customers yet',
           description:
             'We haven\'t collected payment from any customer on this account yet. Add a customer to get started',
-          actionText: 'Add a Product',
+        
         }"
         @onActionClicked="
           () => router.push('/products/create?redirect=customers')
@@ -60,16 +69,20 @@
   </PageContentWrapper>
 
   <teleport to="body" v-if="showManageCustomerModal">
-    <ManageCustomerModal @closeTriggered="toggleManageCustomerModal" />
+    <ManageCustomerModal
+      @closeTriggered="toggleManageCustomerModal"
+      @reloadStoreCustomers="fetchStoreCustomers"
+      :currentCustomerData="currentCustomerData"
+    />
   </teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, h, reactive, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, h, reactive, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStoreStore } from "../store";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, useStorage } from "@packages/hooks";
 import ManageCustomerModal from "@/modules/storefront/modals/manage-customer-modal.vue";
 
 import {
@@ -82,13 +95,29 @@ import {
   DateFilterCard,
 } from "@packages/uikit";
 
-const router = useRouter();
+type Store = { id: string; [key: string]: any };
+type CustomersSummary = { total_orders?: number; [key: string]: any };
 
-const { formatNumber, getStatus, notAvailable } = useString();
-const { getStoreCustomers } = useStoreStore();
+const router = useRouter();
+const { getStorage } = useStorage();
+
+const { formatNumber, getStatus, notAvailable, capitalizeFirstLetter } =
+  useString();
+
+const { getStoreCustomers } = useStoreStore() as {
+  getStoreCustomers: any;
+};
+
+const activeStore = ref<any>(getStorage({
+  storage_name: "activeStore",
+  storage_type: "object",
+}));
+
 const { processAPIRequest } = useEvents();
+const route = useRoute();
 
 const isLoading = ref(false);
+const customersSummary = ref<CustomersSummary>({});
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Created On", slug: "date_created" },
@@ -98,25 +127,8 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
   { title: "Action", slug: "action" },
 ]);
+const tableBody = ref<any[]>([]);
 
-const tableBody = reactive<any[]>([
-  {
-    date_created: "22nd July, 2024",
-    customer_email: "elvis@vesicash.com",
-    full_name: "Efemena Elvis",
-    phone_number: "+234 813 117 7703",
-    status: getStatus("success", "Whitelisted"),
-    action: h(TableActionBtn, {
-      showPrimaryBtn: true,
-      showSecondaryBtn: false,
-      primaryBtnText: "Manage",
-      onManageClick: () => {
-        // handleManageCustomer(data);
-        toggleManageCustomerModal();
-      },
-    }),
-  },
-]);
 const tablePaging = ref<any>({});
 
 const getDateAdded = (date: string) => {
@@ -126,22 +138,33 @@ const getDateAdded = (date: string) => {
 
 const showManageCustomerModal = ref<boolean>(false);
 
+const currentCustomerData = ref<any>(null);
+
 const toggleManageCustomerModal = () => {
   showManageCustomerModal.value = !showManageCustomerModal.value;
 };
 
-const fetchCustomers = async () => {
+const fetchStoreCustomers = async () => {
   const response = await processAPIRequest({
     action: getStoreCustomers,
-    payload: {},
+    payload: { store_id: activeStore.value?.id || "" },
     showAlert: false,
   });
 
   isLoading.value = false;
 
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
+    const allCustomers = response.data.customers;
+
+    let filteredCustomers = allCustomers;
+    if (route.query.filter === "blacklisted-customers") {
+      filteredCustomers = allCustomers.filter(
+        (item: any) => item.status === "blacklisted"
+      );
+    }
+
+    tableBody.value = filteredCustomers.map((data: any) => {
+      return {
         date_created: getDateAdded(data.created_at),
         full_name: `${data.firstname} ${data.lastname}`,
         customer_email: data.email,
@@ -149,25 +172,42 @@ const fetchCustomers = async () => {
           ? "+" + data.phone_number
           : notAvailable("No phone number"),
         status: getStatus(
-          data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
+          data.status.toLowerCase() === "active" ? "success" : "failed",
+          capitalizeFirstLetter(data.status)
         ),
-      });
+        action: h(TableActionBtn, {
+          showPrimaryBtn: true,
+          showSecondaryBtn: false,
+          primaryBtnText: "Manage",
+          onManageClick: () => {
+            currentCustomerData.value = data;
+            toggleManageCustomerModal();
+          },
+        }),
+      };
     });
 
+    customersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }
 };
 
-const handleManageCustomer = (data: any) => {
-  // Logic to manage customer
-  console.log("Manage Customer:", data);
-};
+watch(
+  () => activeStore.value?.id,
+  (id) => {
+    if (id) {
+      fetchStoreCustomers();
+    }
+  },
+  { immediate: true }
+);
 
-const handleBlacklistCustomer = (data: any) => {
-  // Logic to blacklist customer
-  console.log("Blacklist Customer:", data);
-};
-
-// onMounted(() => fetchCustomers());
+watch(
+  () => route.query.filter,
+  () => {
+    if (activeStore.value?.id) {
+      fetchStoreCustomers();
+    }
+  }
+);
 </script>

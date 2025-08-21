@@ -106,10 +106,13 @@ class serviceDate {
     return this;
   }
 
-  checkDateHasTime(date: string) {
-    if (date.split(" ").length > 1) return date?.replace(/\s/, "T") + "Z";
-    else return `${date}T00:00:00Z`;
-  }
+checkDateHasTime(date: string) {
+  if (!date) return "";
+  if (date.includes("T")) return date;
+  if (date.includes(" ")) return date.replace(" ", "T") + "Z";
+  return `${date}T00:00:00Z`;
+}
+
 
   formatTimestamp(timestamp: any) {
     this.datetime_zone = new Date(parseInt(timestamp) * 1000);

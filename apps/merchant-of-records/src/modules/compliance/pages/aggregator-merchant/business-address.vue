@@ -122,6 +122,8 @@ const loadBusinessCountries = async () => {
 const handleBusinessAddressUpdate = async () => {
   const transformedData = transformMerchantData(merchantDataComputed.value);
 
+  console.log("Transformed Data => ", transformedData);
+
   const response = await processAPIRequest({
     action: onboardBulkMerchant,
     payload: {

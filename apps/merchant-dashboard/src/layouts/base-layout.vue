@@ -108,7 +108,7 @@ const getActivationStatus = () => {
     if (profileUtil.getBusiness()?.activateMyBusiness) {
       alertTopText.value = "Your business compliance is in review.";
       alertTopActionText.value = "View compliance";
-      alertTopActionRoute.value = "/compliance/compliance-summary";
+      alertTopActionRoute.value = "/compliance/summary";
     } else {
       alertTopText.value = "You are on Sandbox mode";
       alertTopActionText.value = "Activate business";

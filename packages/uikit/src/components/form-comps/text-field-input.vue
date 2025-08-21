@@ -314,7 +314,7 @@ const triggerCopyText = async () => {
       @apply relative overflow-hidden;
 
       input {
-        @apply w-3/5;
+        @apply w-3/5 border-none;
       }
 
       .input-suffix {
@@ -326,7 +326,7 @@ const triggerCopyText = async () => {
     .suffix-item,
     .suffix-date-item,
     textarea {
-      @apply hidden;
+      @apply hidden ;
     }
 
     &.has-prefix {
@@ -339,7 +339,7 @@ const triggerCopyText = async () => {
       }
 
       .form-control {
-        @apply pl-[45px];
+        @apply pl-[45px] ;
       }
     }
 

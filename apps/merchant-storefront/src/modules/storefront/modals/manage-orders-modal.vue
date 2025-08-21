@@ -23,7 +23,7 @@
         </div>
 
         <!-- STOREFRONT ORDER STATUS -->
-        <div class="w-full">
+        <div class="w-full h-fit p-4 ">
           <SelectFieldInput
             labelId="productOrders"
             labelTitle=""
@@ -59,17 +59,19 @@ import { ref, computed } from "vue";
 import { useEvents } from "@packages/hooks";
 import { ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { orderStatusList } from "@/modules/storefront/constants/storefront-order-status";
+import { useStoreStore } from "../store";
 
 const emits = defineEmits(["closeTriggered", "reloadStoreOrders"]);
 
 const props = defineProps({
-  orderDetails: {
+  productOrderDetails: {
     type: Object,
     required: true,
   },
 });
 
 const { processAPIRequest, pushToastAlert } = useEvents();
+const { updateOrderStatus } = useStoreStore() 
 
 const orderStatusOptions = computed(() => {
   return orderStatusList.map((status) => {
@@ -87,34 +89,34 @@ const isActionReady = computed(() => {
 
 const getStoreOrderPayload = computed(() => {
   return {
-    id: props.orderDetails.id,
+    id: props.productOrderDetails.id,
     status: orderStatus.value,
   };
 });
 
 const handleUpdateOrderStatus = async () => {
-  //   const response = await processAPIRequest({
-  //     action: updateOrderStatus,
-  //     payload: getStoreOrderPayload.value,
-  //     btnRef: updateStatusBtnRef,
-  //     btnText: "Update Order Status",
-  //     alertHandler: {
-  //       200: {
-  //         message: "Order status updated successfully",
-  //         description: "You are being redirected to your orders dashboard",
-  //         type: "success",
-  //       },
-  //       400: {
-  //         message: "Order status update failed",
-  //         description: "Please provide a valid order status",
-  //         type: "error",
-  //       },
-  //     },
-  //   });
-  //   if (response.code === 200) {
-  //     emits("reloadStoreOrders");
-  //     emits("closeTriggered");
-  //   }
+    const response = await processAPIRequest({
+      action: updateOrderStatus,
+      payload: getStoreOrderPayload.value,
+      btnRef: updateStatusBtnRef,
+      btnText: "Update Order Status",
+      alertHandler: {
+        200: {
+          message: "Order status updated successfully",
+          description: "Your order status has been updated",
+          type: "success",
+        },
+        400: {
+          message: "Order status update failed",
+          description: "Please provide a valid order status",
+          type: "error",
+        },
+      },
+    });
+    if (response.code === 200) {
+      emits("reloadStoreOrders");
+      emits("closeTriggered");
+    }
 };
 </script>
 

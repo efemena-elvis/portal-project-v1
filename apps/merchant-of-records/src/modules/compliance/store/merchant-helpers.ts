@@ -47,6 +47,7 @@ export function cleanMerchantData(
       .map((rep, idx) => {
         const role = idx < 2 ? "director" : "ubo";
         return {
+          client_id: rep.client_id || null,
           legal_full_name: rep.legal_full_name,
           address: rep.address,
           country_id: rep.country_id,
@@ -116,6 +117,7 @@ export function transformCleanedToMerchantData(
 
     // Helper to safely map a representative
     const mapRep = (rep?: (typeof representative)[number]) => ({
+      client_id: rep?.client_id || null,
       legal_full_name: rep?.legal_full_name || "",
       country_id: rep?.country_id || "",
       address: rep?.address || "",

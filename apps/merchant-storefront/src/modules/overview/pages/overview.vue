@@ -2,13 +2,13 @@
   <PageContentWrapper>
     <template v-slot:pageContent>
       <!-- TOP BLOCK -->
-      <div class="top-block pt-3">
+      <div class="pt-3 top-block">
         <div class="top-block--left">
-          <OverviewBlock />
+          <OverviewBlock :metrics="dashboardMetrics" />
         </div>
 
         <div class="top-block--right">
-          <MetricStatsBlock metrics="dashboardMetrics"/>
+          <MetricStatsBlock :metrics="dashboardMetrics" />
         </div>
       </div>
 
@@ -24,9 +24,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, Ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { PageContentWrapper } from "@packages/uikit";
-import { useProfile, useEvents } from "@packages/hooks";
+import { useProfile, useEvents, useStorage } from "@packages/hooks";
 import { storeToRefs } from "pinia";
 import {
   OverviewBlock,
@@ -36,35 +36,58 @@ import {
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
 import { useStoreStore } from "@/modules/storefront/store";
+import { Ref } from "vue";
 
+type Store = { id: string; [key: string]: any };
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
+const { getStoreList } = useStoreStore();
 const profileUtil = new useProfile(authStore);
+const { processAPIRequest } = useEvents();
 
 const { getWallets, updateWalletState, getDashboardMetrics } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
+const dashboardMetrics = ref<Record<string, any>>({});
+const storeList = ref<any[]>([]);
+const { getStorage } = useStorage();
 
-const dashboardMetrics = ref(null)
+const activeStore = ref(getStorage({ storage_name: "activeStore", storage_type: "object" }) || storeList.value[0] );
 
+const fetchStoreList = async () => {
 
-type Store = { id: string; [key: string]: any };
-const { getActiveStore } = storeToRefs(useStoreStore()) as { getActiveStore: Ref<Store | null> };
+  const response = await processAPIRequest({
+    action: getStoreList,
+    payload: {},
+  });
 
-const { processAPIRequest } = useEvents();
-
-watch(() => getActiveStore.value, async (newStore: Store | null) => {
-  if (newStore) {
-
-    const response = await processAPIRequest({
-      action: getDashboardMetrics,
-      payload: { store_id: newStore?.id },
-    });
-dashboardMetrics.value = response.data;
-    console.log("Dashboard Metrics:", dashboardMetrics.value);
-   
+  if (response.code === 200) {
+    storeList.value = response.data;
   }
-});
+}
 
+watch(
+  () => activeStore.value,
+  async (newStore: Store | null) => {
+    if (newStore?.id) {
+      const response = await processAPIRequest({
+        action: getDashboardMetrics,
+        payload: { store_id: newStore.id },
+      });
+      dashboardMetrics.value = response.data;
+    }
+  },
+  { immediate: true }
+);
+
+
+onMounted(async() => {
+ await fetchStoreList(); 
+    if (!activeStore.value?.id && storeList.value.length > 0) {
+    activeStore.value = storeList.value[0];
+    localStorage.setItem("activeStore", JSON.stringify(activeStore.value));
+  }
+  
+});
 </script>
 
 <style lang="scss" scoped>

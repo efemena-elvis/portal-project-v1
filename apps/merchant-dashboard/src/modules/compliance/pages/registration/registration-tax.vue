@@ -6,18 +6,34 @@
     @onBackClick="router.push({ name: 'ComplianceRegistrationDocuments' })"
     @onContinueClick="handleRegistrationConfirmUpdate"
   >
-    <UploadGuidelines
-      title="Please upload a document that:"
-      :guidelines="[
-        'Is government issued',
-        'Is full-sized, original and unedited',
-      ]"
+    <TextFieldInput
+      labelId="businessIncorporationNumber"
+      labelTitle="Tax identification Number"
+      :labelCompact="false"
+      :inputType="IInputType.Text"
+      :inputValue="tax_identification_number"
+      inputPlaceholder="Provide your tax identification number"
+      :isRequired="true"
+      @inputChanged="tax_identification_number = $event"
+      :errorHandler="{
+        validator: 'validateRequired',
+        message: 'Tax identification number is a required field',
+      }"
     />
+
+    <div class="mt-12">
+      <UploadGuidelines
+        title="Please upload a document that:"
+        :guidelines="['Is government issued and original']"
+      />
+    </div>
 
     <!-- DOCUMENT FIELD UPLOAD -->
     <div class="mb-14">
       <div class="form-block">
-        <label class="form-label-basic">Business tax identification</label>
+        <label class="form-label-basic"
+          >Business tax identification (Optional)</label
+        >
         <FileUploadInput
           showSkip
           skipRoute="ComplianceRepresentativeProfile"
@@ -36,10 +52,15 @@ import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useComplianceUtil } from "@packages/hooks";
-import { UploadGuidelines, FileUploadInput } from "@packages/uikit";
+import {
+  UploadGuidelines,
+  FileUploadInput,
+  TextFieldInput,
+} from "@packages/uikit";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
+import { IInputType } from "@packages/models";
 
 const router = useRouter();
 
@@ -57,16 +78,23 @@ const uploadedDocumentContent = ref<{ name: string; link: string }>({
   link: getComplianceRegistration.value?.tax_doc_url || "",
 });
 
+const tax_identification_number = ref<string>(
+  getComplianceRegistration.value?.tax_number || ""
+);
+
 const getUploadedDocumentContent = computed(() => {
   return uploadedDocumentContent.value;
 });
 
 const isActionReady = computed(() => {
-  return uploadedDocument.value ? false : true;
+  return tax_identification_number.value || uploadedDocument.value
+    ? false
+    : true;
 });
 
 const getBusinessPayload = computed(() => {
   return {
+    tax_number: tax_identification_number.value,
     tax_doc_url: uploadedDocument.value,
   };
 });
@@ -86,11 +114,12 @@ watch(
   getComplianceRegistration,
   (newValue) => {
     if (newValue) {
+      tax_identification_number.value = newValue.tax_number || "";
       uploadedDocument.value = newValue.tax_doc_url || "";
 
       uploadedDocumentContent.value = {
         name: "Business tax registeration",
-        link: newValue.tax_doc_url,
+        link: newValue.tax_doc_url || "",
       };
     }
   },

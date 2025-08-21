@@ -191,11 +191,19 @@ const processDocumentUpload = async ($event: Event) => {
     isUploading.value = false;
     isDocUploaded.value = false;
   }
+
+  console.log(docPayload)
 };
 
+// Remove uploaded file handler
 const removeUploadedFile = () => {
+  docPayload.value = { name: "", link: "" };
   isDocUploaded.value = false;
+  emits("onDocumentUploaded", null);
 };
+
+
+
 </script>
 
 <style lang="scss" scoped>

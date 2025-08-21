@@ -74,7 +74,7 @@ class APIService {
       ? `${this.API_BASE_URL}/${this.API_VERSION}`
       : this.API_BASE_URL;
 
-    console.log("API Base URL:", axios.defaults.baseURL);
+    // console.log("API Base URL:", axios.defaults.baseURL);
 
     axios.defaults.timeout = this.DEFAULT_TIMEOUT;
   }
@@ -101,7 +101,7 @@ class APIService {
         // Handle 401
         if (error.response?.status === 401 && !originalConfig._retry) {
           originalConfig._retry = true;
-          // location.replace("/logout");
+          location.replace("/logout");
           return Promise.reject(error);
         }
 

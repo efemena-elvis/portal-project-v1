@@ -6,19 +6,33 @@
     @onBackClick="router.push({ name: 'ComplianceBusinessVerification' })"
     @onContinueClick="handleRegistrationConfirmUpdate"
   >
-    <UploadGuidelines
-      title="Please upload a document that:"
-      :guidelines="[
-        'Is government issued',
-        'Is full-sized, original and unedited',
-      ]"
+    <TextFieldInput
+      labelId="businessIncorporationNumber"
+      labelTitle="Business Incorporation Number"
+      :labelCompact="false"
+      :inputType="IInputType.Text"
+      :inputValue="business_incorporation_number"
+      inputPlaceholder="Provide your business incorporation number"
+      :isRequired="true"
+      @inputChanged="business_incorporation_number = $event"
+      :errorHandler="{
+        validator: 'validateRequired',
+        message: 'Business incorporation number is a required field',
+      }"
     />
 
+    <div class="mt-12">
+      <UploadGuidelines
+        title="Please upload a document that:"
+        :guidelines="['Is government issued and original']"
+      />
+    </div>
+
     <!-- DOCUMENT FIELD UPLOAD -->
-    <div class="mb-14">
+    <div class="-mt-5 mb-14">
       <div class="form-block">
         <label class="form-label-basic"
-          >Certificate of business incorporation</label
+          >Certificate of business incorporation (Optional)</label
         >
         <FileUploadInput
           showSkip
@@ -38,10 +52,15 @@ import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useComplianceUtil } from "@packages/hooks";
-import { UploadGuidelines, FileUploadInput } from "@packages/uikit";
+import {
+  UploadGuidelines,
+  FileUploadInput,
+  TextFieldInput,
+} from "@packages/uikit";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
+import { IInputType } from "@packages/models";
 
 const router = useRouter();
 
@@ -59,16 +78,23 @@ const uploadedDocumentContent = ref<{ name: string; link: string }>({
   link: getComplianceRegistration.value?.doc_url || "",
 });
 
+const business_incorporation_number = ref<string>(
+  getComplianceRegistration.value?.number || ""
+);
+
 const getUploadedDocumentContent = computed(() => {
   return uploadedDocumentContent.value;
 });
 
 const isActionReady = computed(() => {
-  return uploadedDocument.value ? false : true;
+  return business_incorporation_number.value || uploadedDocument.value
+    ? false
+    : true;
 });
 
 const getBusinessPayload = computed(() => {
   return {
+    number: business_incorporation_number.value,
     doc_url: uploadedDocument.value,
   };
 });
@@ -88,11 +114,12 @@ watch(
   getComplianceRegistration,
   (newValue) => {
     if (newValue) {
+      business_incorporation_number.value = newValue.number || "";
       uploadedDocument.value = newValue.doc_url || "";
 
       uploadedDocumentContent.value = {
         name: "Certificate of incorporation",
-        link: newValue.doc_url,
+        link: newValue.doc_url || "",
       };
     }
   },

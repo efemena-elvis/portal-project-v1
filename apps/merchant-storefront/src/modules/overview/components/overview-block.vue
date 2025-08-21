@@ -5,15 +5,32 @@
         <!-- TITLE ROW -->
         <div class="title-row">
           <div class="title-text">Total Balance</div>
-          <div class="icon icon-eye"></div>
+          <div
+            v-if="showBalance"
+            class="icon icon-eye"
+            @click="toggleShowBalance"
+          ></div>
+          <div
+            v-else
+            class="icon icon-eye-slash"
+            @click="toggleShowBalance"
+          ></div>
         </div>
 
         <div class="balance-amount">
-          <span class="mr-0.5">ZMW</span><span>5,280.00</span>
+          <span class="mr-0.5">ZMW</span><span>{{ displayBalance }}</span>
         </div>
 
         <div class="metric-stat-row">
-          <div class="stat-value">ZMW540 (10.2%)</div>
+          <div
+            class="stat-value"
+            :class="{
+              'text-red-500': metrics?.total_balance_change < 50,
+              'text-green-600': metrics?.total_balance_change >= 50,
+            }"
+          >
+            ZMW ({{ metrics?.total_balance_change || 0 }}%)
+          </div>
           <div class="stat-ref">Past 30 days</div>
         </div>
       </div>
@@ -31,6 +48,38 @@
 
 <script setup lang="ts">
 import { BarChart } from "@packages/uikit";
+import { computed, watch } from "vue";
+import { useString } from "@packages/hooks";
+import { ref } from "vue";
+
+const props = defineProps<{
+  metrics: Record<string, any>;
+}>();
+
+const { maskNumbers, formatNumber } = useString();
+
+const showBalance = ref(true);
+
+const displayBalance = computed(() => {
+  const value = props.metrics?.total_balance;
+
+  if (!value) return showBalance.value ? "0" : maskNumbers("0");
+
+
+  const formatted = value?.toLocaleString()
+  return showBalance.value ? formatted : maskNumbers(formatted);
+});
+
+
+const toggleShowBalance = () => {
+  showBalance.value = !showBalance.value;
+};
+
+watch(
+  () => props.metrics,
+  (newMetrics) => {},
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>
@@ -63,7 +112,7 @@ import { BarChart } from "@packages/uikit";
         @apply flex justify-start items-center gap-x-2 text-sm;
 
         .stat-value {
-          @apply text-green-600 font-semibold;
+          @apply font-semibold;
         }
 
         .stat-ref {

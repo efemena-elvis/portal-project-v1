@@ -47,17 +47,19 @@
       labelTitle="Store Website URL"
       :labelCompact="false"
       :inputType="IInputType.Text"
-      :inputValue="storefrontPayload.tag"
+      :inputValue="storefrontPayload.sub_domain"
       inputPlaceholder="Provide a website store name"
       suffixText=".storoapp.com"
       :isRequired="true"
-      @inputChanged="storefrontPayload.tag = $event"
+      @inputChanged="storefrontPayload.sub_domain = $event"
       @inputValidated="storeNameValidity = $event"
       :errorHandler="{
         validator: 'validateAlphanumeric',
         message: 'Store URL should only contain letters or numbers',
       }"
     />
+
+    <span class="text-red-600 relative bottom-4" v-if="storefrontPayload.sub_domain">Your store URL is <span class="text-black tracking-wider" >"{{ storefrontPayload.sub_domain }}.storoapp.com"</span>. Once created, it can't be changed, unless you get a custom domain.</span>
 
     <!-- STOREFRONT CURRENCY -->
     <SelectFieldInput
@@ -103,6 +105,7 @@ type IStorefrontType = {
   tag: string;
   business_id: string;
   instagram: string;
+  sub_domain: string;
 };
 
 const route = useRoute();
@@ -126,8 +129,9 @@ const storefrontPayload = ref<IStorefrontType>({
   name: "",
   instagram: "",
   currency: "ZMW",
-  tag: "",
+  sub_domain: "",
   business_id: getBusinessProfile?.value?.businessId || "",
+  tag: "",
 });
 
 const storeNameValidity = ref<boolean>(false);
@@ -147,7 +151,7 @@ const createStorefrontBtnRef = ref(null);
 const isActionReady = computed(() => {
   return storefrontPayload.value.name &&
     storeNameValidity.value &&
-    storefrontPayload.value.tag
+    storefrontPayload.value.sub_domain
     ? false
     : true;
 });

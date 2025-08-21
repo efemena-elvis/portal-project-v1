@@ -73,7 +73,15 @@
           By clicking the “<span class="font-semibold">Create your account</span
           >” button, you agree to
           {{ appVariant === "alexpay" ? "AlexPay" : "Redstone" }}
-          <a href="">terms and conditions</a>.
+          <a
+            :href="
+              appVariant === 'alexpay'
+                ? 'https://alexpay.com/terms'
+                : 'https://redstonepgs.com/terms'
+            "
+            target="_blank"
+            >terms and conditions</a
+          >.
         </div>
       </div>
 

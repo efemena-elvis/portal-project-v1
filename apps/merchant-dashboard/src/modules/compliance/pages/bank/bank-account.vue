@@ -63,7 +63,7 @@
 
     <!-- SKIP ROW -->
     <div class="skip-row">
-      Don’t have a business bank account?
+      Don't have a business bank account?
       <span @click="router.push({ name: 'ComplianceTerms' })"
         >Skip and update later</span
       >
@@ -76,7 +76,7 @@ import { computed, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
-import { useComplianceUtil, useProfile } from "@packages/hooks";
+import { useComplianceUtil, useProfile, useAppVariant } from "@packages/hooks";
 import { payoutConfig } from "@packages/constants";
 import {
   TextFieldInput,
@@ -87,9 +87,13 @@ import {
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useComplianceStore } from "@/modules/compliance/store";
-import { complianceBase } from "@/modules/compliance/store/compliance-base";
+import {
+  complianceBase,
+  IComplianceBankAccount,
+} from "@/modules/compliance/store/compliance-base";
 
 const router = useRouter();
+const appVariant = ref<string>(useAppVariant());
 
 const authStore = useAuthStore();
 const complianceStore = useComplianceStore();
@@ -107,8 +111,13 @@ const bankCurrency = ref<string>("");
 
 const businessPayload = ref<Record<string, string>>({});
 
+const defaultCountryCode = ref<string>(
+  appVariant.value === "alexpay" ? "233" : "260"
+);
+
 const phoneCountryCode = ref<string>(
-  getComplianceBusiness.value?.phone_number?.split("-")[0] || "234"
+  getComplianceBusiness.value?.phone_number?.split("-")[0] ||
+    defaultCountryCode.value
 );
 
 const getLocalCurrencyCode = computed(() => {
@@ -141,6 +150,7 @@ const getPayoutCurrencies = computed(() => {
 const isActionReady = computed(() => {
   return businessPayload.value.account_holder_name &&
     businessPayload.value.account_number &&
+    businessPayload.value.bank_name &&
     bankCurrency.value
     ? false
     : true;
@@ -158,9 +168,14 @@ const updateBusinessPayloadData = (
 
 const getBusinessPayload = computed(() => {
   return {
-    ...complianceBase.bank_account,
+    // ...complianceBase.bank_account,
     currency: bankCurrency.value,
-    ...businessPayload.value,
+    account_holder_name: businessPayload.value.account_holder_name,
+    account_number: businessPayload.value.account_number,
+    name: businessPayload.value.bank_name,
+    code: businessPayload.value.bank_code || "",
+    branch: businessPayload.value.bank_branch || "",
+    mobile_money_number: businessPayload.value.mobile_money_number || "",
   };
 });
 
@@ -174,8 +189,6 @@ const handleBankAccountUpdate = async () => {
     payloadType: "bank_account",
   });
 };
-
-const predefinedBankDetails = () => {};
 
 watch(
   bankCurrency,
@@ -197,7 +210,17 @@ watch(
   (newValue) => {
     if (newValue) {
       bankCurrency.value = newValue.currency;
-      businessPayload.value = newValue;
+      // businessPayload.value = newValue;
+
+      businessPayload.value = Object.fromEntries(
+        Object.entries(newValue).map(([key, val]) => [key, String(val ?? "")])
+      );
+
+      //@ts-ignore
+      businessPayload.value.bank_name = newValue.name || "";
+      businessPayload.value.bank_code = newValue.code || "";
+      //@ts-ignore
+      businessPayload.value.bank_branch = newValue.branch || "";
     }
   },
   { immediate: true }
