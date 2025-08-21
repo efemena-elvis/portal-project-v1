@@ -9,6 +9,7 @@ import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
 import settingsRoutes from "@/modules/settings";
 import overviewRoutes from "@/modules/overview";
+import checkoutRoutes from "@/modules/checkout";
 
 const routes = [
   ...authRoutes,
@@ -17,6 +18,7 @@ const routes = [
   ...balancesRoutes,
   ...complianceRoutes,
   ...settingsRoutes,
+  ...checkoutRoutes,
 
   {
     path: "/*",

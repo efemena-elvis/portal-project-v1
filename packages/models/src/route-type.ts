@@ -4,7 +4,7 @@ export interface IRouteType {
   path: string;
   alias?: string;
   name?: string;
-  component: Component | (() => Component | Promise<Component>);
+  component?: Component | (() => Component | Promise<Component>);
   meta?: {
     title: string;
     guest?: boolean;
