@@ -23,9 +23,9 @@ interface IAlertHandler {
   [key: number]: IAlertType | undefined;
 }
 
-interface IHandleDataRequestParams {
-  action: (payload: any) => Promise<any>;
-  payload?: Record<string, any>;
+interface IHandleDataRequestParams<T> {
+  action: (payload: any) => Promise<T>;
+  payload?: Record<string, any> | string;
   btnRef?: Ref<HTMLButtonElement | null>;
   btnText?: string;
   showAlert?: boolean;
@@ -60,14 +60,14 @@ export default function useEvents() {
     return !!alertHandler[alertCode as keyof IAlertHandler];
   };
 
-  const processAPIRequest = async ({
+  const processAPIRequest = async <T = any>({
     action,
     payload = {},
     btnRef,
     btnText = "Button Text",
     showAlert = true,
     alertHandler = {},
-  }: IHandleDataRequestParams) => {
+  }: IHandleDataRequestParams<T>) => {
     // Set loading state on the button
     btnRef && clickHandler(btnRef);
 

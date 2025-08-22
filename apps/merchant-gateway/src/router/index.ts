@@ -1,7 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
 import middlewares from "@/middlewares";
+import checkoutRoutes from "@/modules/vesicash";
+import generalRoutes from "@/modules/general";
 
 const routes = [
+  ...generalRoutes,
+  ...checkoutRoutes,
   {
     path: "/*",
     name: "NotFoundError",
