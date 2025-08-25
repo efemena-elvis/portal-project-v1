@@ -188,7 +188,7 @@ const overviewRoutes: IRouteType[] = [
 
       // *********** MERCHANT COMPLIANCE SUMMARY *********** //
       {
-        path: "summary",
+        path: "compliance-summary",
         name: "ComplianceSummary",
         component: () =>
           import(
