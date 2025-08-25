@@ -12,10 +12,17 @@ const profileUtil = new useProfile(authStore);
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const activeMode = getBusinessProfile.value?.businessMode || "test";
+
 const publicKey = computed(() =>
   activeMode === "test"
     ? profileUtil.getAPIKeys().test.public
     : profileUtil.getAPIKeys().live.public
+);
+
+const secretKey = computed(() =>
+  activeMode === "test"
+    ? profileUtil.getAPIKeys().test.secret
+    : profileUtil.getAPIKeys().live.secret
 );
 
 const $api = new useServiceAPI({
@@ -23,7 +30,8 @@ const $api = new useServiceAPI({
   API_VERSION: MOR_API_VERSION,
   TOKEN_KEY: MOR_AUTH_TOKEN,
   HEADERS: {
-    // "public-key": publicKey.value,
+    "public-key": publicKey.value,
+    "secret-key": secretKey.value,
   },
 });
 
