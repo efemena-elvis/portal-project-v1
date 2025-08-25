@@ -71,18 +71,18 @@ const countries = [
       description: "Danish Krone",
     },
   },
-  {
-    country: "Ecuador",
-    dialing_code: "593",
-    code: "ec",
-    flag: "https://flagsapi.com/EC/flat/64.png",
-    currency: {
-      sign: "$",
-      short: "USD",
-      long: "Dollar",
-      description: "United States Dollar",
-    },
-  },
+  // {
+  //   country: "Ecuador",
+  //   dialing_code: "593",
+  //   code: "ec",
+  //   flag: "https://flagsapi.com/EC/flat/64.png",
+  //   currency: {
+  //     sign: "$",
+  //     short: "USD",
+  //     long: "Dollar",
+  //     description: "United States Dollar",
+  //   },
+  // },
   {
     country: "Egypt",
     dialing_code: "20",

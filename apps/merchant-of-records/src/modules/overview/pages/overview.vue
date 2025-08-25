@@ -162,13 +162,17 @@ const fetchAllWallets = async () => {
     taxBalance.value[0].amount = localWallet?.tax_balance ?? 0;
 
     // LOAD OTHER CURRENCIES BALANCE
+    // const nonLocalWallets = response.data.filter(
+    //   (wallet: any) =>
+    //     wallet.currency !== getLocalCurrencyCode.value &&
+    //     wallet.currency !== "USD"
+    // );
     const nonLocalWallets = response.data.filter(
-      (wallet: any) =>
-        wallet.currency !== getLocalCurrencyCode.value &&
-        wallet.currency !== "USD"
+      (wallet: any) => wallet.currency !== getLocalCurrencyCode.value
     );
 
     nonLocalWallets.forEach((wallet: any) => {
+      console.log("Processing wallet:", wallet);
       const walletCurrencyData = countryCurrencies.find(
         (country) => country.currency.short === wallet.currency
       );
