@@ -28,13 +28,22 @@
     </template>
 
     <template v-else>
-      <div class="flex flex-wrap justify-between items-center gap-4 my-6">
-        <div class="bg-white text-green-700 font-bold text-lg p-4 rounded-lg">
-          {{ store?.payment_details?.currency }}
-          {{ formatNumber(store.payment_details?.amount ?? 0) }}
+      <div class="my-6 space-y-1">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <div class="bg-white text-green-700 font-bold text-lg p-4 rounded-lg">
+            {{ store?.payment_details?.currency }} {{ formatNumber(totalCost) }}
+          </div>
+          <div class="text-teal-800 font-medium">
+            {{ store?.payment_details?.email }}
+          </div>
         </div>
-        <div class="text-teal-800 font-medium">
-          {{ store?.payment_details?.email }}
+        <div class="text-sm text-gray-500" v-if="hasCharge">
+          This total cost includes a
+          <b
+            >{{ store.payment_details?.currency
+            }}{{ formatNumber(store.payment_details?.charge ?? 0) }}</b
+          >
+          charge
         </div>
       </div>
 
@@ -53,7 +62,7 @@
           ]"
           v-for="item in payment_methods"
           :key="item.name"
-          @click="active_method = item.name"
+          @click="active_method = 'Mobile Money'"
         >
           <!-- <div class="size-[24px] border"></div> -->
           <div class="text-sm font-medium text-center uppercase">
@@ -100,7 +109,7 @@
 <script lang="ts" setup>
 import { useImage } from "@/shared/composables";
 import PhoneFieldInput from "@packages/uikit/src/components/form-comps/phone-field-input.vue";
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
 import { useRoute } from "vue-router";
 import { useString } from "@packages/hooks";
@@ -135,6 +144,16 @@ const reference = route.params.reference as string;
 onMounted(() => {
   fetchPaymentDetails(reference);
 });
+
+const totalCost = computed(() => {
+  return (
+    (store.payment_details?.amount ?? 0) + (store.payment_details?.charge ?? 0)
+  );
+});
+
+const hasCharge = computed(() =>
+  store.payment_details?.charge ? true : false
+);
 
 const handlePayment = () => {
   const payload: MobileMoneyPaymentRequest = {
