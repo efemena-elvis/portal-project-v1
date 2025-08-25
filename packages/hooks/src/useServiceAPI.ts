@@ -99,11 +99,11 @@ class APIService {
         const originalConfig = error.config as CustomAxiosRequestConfig;
 
         // Handle 401
-        if (error.response?.status === 401 && !originalConfig._retry) {
-          originalConfig._retry = true;
-          location.replace("/logout");
-          return Promise.reject(error);
-        }
+        // if (error.response?.status === 401 && !originalConfig._retry) {
+        //   originalConfig._retry = true;
+        //   location.replace("/logout");
+        //   return Promise.reject(error);
+        // }
 
         return Promise.reject(error);
       }

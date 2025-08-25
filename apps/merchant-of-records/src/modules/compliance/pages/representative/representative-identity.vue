@@ -33,7 +33,12 @@
         :hasDocumentUploaded="!!uploadedDocument"
         :uploadedDocumentContent="getUploadedDocumentContent"
         :uploadAction="uploadFile"
-        @onDocumentUploaded="uploadedDocument = $event"
+        @onDocumentUploaded="
+          {
+            uploadedDocument = $event;
+            businessPayload.url = $event;
+          }
+        "
       />
     </div>
   </ComplianceWrapper>

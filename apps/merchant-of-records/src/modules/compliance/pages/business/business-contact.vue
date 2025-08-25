@@ -142,7 +142,7 @@ watch(
         website: newValue.website || "",
       };
 
-      phoneCountryCode.value = newValue.phone_number?.split("-")[0] || "260";
+      phoneCountryCode.value = newValue.phone_number?.split("-")[0] || "234";
     }
   },
   { immediate: true }
