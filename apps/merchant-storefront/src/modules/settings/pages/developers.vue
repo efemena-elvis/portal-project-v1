@@ -1,4 +1,10 @@
 <template>
+   <div class="mb-6 text-[18px]">
+    <p class="font-semibold">Manage your API configurations</p>
+    <span class="mt-1 text-[14px] text-grey-500">
+    Easily configure and manage your API settings to ensure seamless integration with your services.
+    </span>
+  </div>
   <div class="developer-area">
     <div class="developer-input">
       <div class="input-form mb-7">
@@ -64,7 +70,7 @@
       </div>
 
       <button
-        class="btn btn-primary w-full mt-3"
+        class="w-full mt-3 btn btn-primary"
         ref="updateKeysBtnRef"
         :disabled="isActionReady"
         @click="updateProfileAPIKeys"

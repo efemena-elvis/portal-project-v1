@@ -145,13 +145,14 @@ const toggleManageCustomerModal = () => {
 };
 
 const fetchStoreCustomers = async () => {
+    isLoading.value = true;
   const response = await processAPIRequest({
     action: getStoreCustomers,
     payload: { store_id: activeStore.value?.id || "" },
     showAlert: false,
   });
 
-  isLoading.value = false;
+
 
   if (response.code === 200) {
     const allCustomers = response.data.customers;
@@ -186,7 +187,7 @@ const fetchStoreCustomers = async () => {
         }),
       };
     });
-
+  isLoading.value = false;
     customersSummary.value = response?.data;
     tablePaging.value = response.pagination[0];
   }

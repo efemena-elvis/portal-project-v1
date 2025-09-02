@@ -121,12 +121,12 @@ export const complianceRouteList = [
     category: "representative",
     metadata: complianceRouteMap.representative,
   },
-  {
-    name: "Bank Account",
-    route: "ComplianceBankAccount",
-    category: "bank",
-    metadata: complianceRouteMap.bank,
-  },
+  // {
+  //   name: "Bank Account",
+  //   route: "ComplianceBankAccount",
+  //   category: "bank",
+  //   metadata: complianceRouteMap.bank,
+  // },
   {
     name: "Terms & Agreement",
     route: "ComplianceTerms",

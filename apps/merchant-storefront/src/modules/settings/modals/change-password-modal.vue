@@ -8,7 +8,7 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body mt-3">
+      <div class="mt-3 modal-cover-body">
         <TextFieldInput
           labelId="oldPassword"
           labelTitle="Old Password"
@@ -61,9 +61,9 @@
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="modal-cover-footer -mt-2 mb-1">
+      <div class="mb-1 -mt-2 modal-cover-footer">
         <button
-          class="btn btn-primary w-full"
+          class="w-full btn btn-primary"
           ref="changePasswordBtnRef"
           :disabled="isActionReady"
           @click="saveChanges"
@@ -99,7 +99,7 @@ const emits = defineEmits(["closeTriggered"]);
 const { updateUserPassword } = useSettingsStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 
-console.log(">>>>>>>> p ", updateUserPassword);
+// console.log(updateUserPassword);
 
 const changePasswordBtnRef = ref<boolean>(false);
 

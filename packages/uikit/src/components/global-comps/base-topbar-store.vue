@@ -124,26 +124,26 @@
         >
           <div class="dropdown-wrapper">
             <router-link to="/settings/profile" class="app-dropdown-item">
-              <div class="icon icon-user text-base"></div>
+              <div class="text-base icon icon-user"></div>
               <div class="text">Profile</div>
             </router-link>
 
             <router-link to="/user-support" class="app-dropdown-item">
-              <div class="icon icon-chat text-base"></div>
+              <div class="text-base icon icon-chat"></div>
               <div class="text">Help & Support</div>
             </router-link>
 
-            <router-link to="/settings/preferences" class="app-dropdown-item">
-              <div class="icon icon-cog text-base"></div>
+            <!-- <router-link to="/settings" class="app-dropdown-item">
+              <div class="text-base icon icon-cog"></div>
               <div class="text">Settings</div>
-            </router-link>
+            </router-link> -->
 
             <router-link
               to="/logout"
               class="app-dropdown-item bg-red-100/40 hover:!bg-red-100/70"
             >
-              <div class="icon icon-logout text-lg text-red-600"></div>
-              <div class="text text-red-600">Sign Out</div>
+              <div class="text-lg text-red-600 icon icon-logout"></div>
+              <div class="text-red-600 text">Sign Out</div>
             </router-link>
           </div>
         </div>

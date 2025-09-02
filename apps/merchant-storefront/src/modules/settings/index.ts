@@ -52,18 +52,34 @@ const overviewRoutes: IRouteType[] = [
           },
 
           {
-            path: "custom-domain",
-            name: "VesicashCustomDomain",
+            path: "domains",
+            name: "VesicashDomains",
             component: () =>
               import(
-                /* webpackChunkName: "settings-module" */ "@/modules/settings/pages/custom-domain.vue"
+                /* webpackChunkName: "settings-module" */ "@/modules/settings/pages/domains.vue"
               ),
             meta: {
               requiresAuth: true,
-              title: "Merchant Custom Domain",
+              title: "Merchant Domains",
               pageMeta: {
-                title: "Settings - Custom Domain",
-                description: "Merchant Custom Domain",
+                title: "Settings - Domains",
+                description: "Merchant Domains",
+              },
+            },
+          },
+          {
+            path: "developers",
+            name: "VesicashDevelopers",
+            component: () =>
+              import(
+                /* webpackChunkName: "settings-module" */ "@/modules/settings/pages/developers.vue"
+              ),
+            meta: {
+              requiresAuth: true,
+              title: "Merchant Developers",
+              pageMeta: {
+                title: "Settings - Developers",
+                description: "Merchant Developers",
               },
             },
           },

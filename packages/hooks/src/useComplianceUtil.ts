@@ -52,46 +52,48 @@ export default class ComplianceUtil<TStore extends Store> {
     };
   }
 
-  private getRequestPayload({
-    businessPayload = {},
-    registrationPayload = {},
-    representativePayload = {},
-    bankPayload = {},
-    signatoryPayload = {},
-    termsPayload = {},
-  }: any) {
-    const {
-      getComplianceBusiness,
-      getComplianceRegistration,
-      getComplianceRepresentative,
-      getComplianceBankAccount,
-      getComplianceBusinessSignatory,
-      getComplianceAgreement,
-    } = this.storeRefs;
+private getRequestPayload({
+  businessPayload = {},
+  registrationPayload = {},
+  representativePayload = {},
+  bankPayload = {},
+  signatoryPayload = {},
+  termsPayload = {},
+}: any) {
+  const {
+    getComplianceBusiness,
+    getComplianceRegistration,
+    getComplianceRepresentative,
+    getComplianceBankAccount,
+    getComplianceBusinessSignatory,
+    getComplianceAgreement,
+  } = this.storeRefs;
 
-    return {
-      business: { ...getComplianceBusiness.value, ...businessPayload.value },
-      registration: {
-        ...getComplianceRegistration.value,
-        ...registrationPayload.value,
-      },
-      representatives: [
-        {
-          ...(getComplianceRepresentative.value?.[0] || {}),
-          ...representativePayload.value,
-        },
-      ],
-      bank_account: {
-        ...getComplianceBankAccount.value,
-        ...bankPayload.value,
-      },
-      business_signatory: {
-        ...getComplianceBusinessSignatory.value,
-        ...signatoryPayload.value,
-      },
-      terms: { ...getComplianceAgreement.value, ...termsPayload.value },
-    };
-  }
+  return {
+    business: { ...getComplianceBusiness.value, ...businessPayload },
+    registration: {
+      ...getComplianceRegistration.value,
+      ...registrationPayload,
+    },
+    representatives: Array.isArray(representativePayload.representatives)
+      ? representativePayload.representatives.map((rep: any, index: number) => ({
+          ...(getComplianceRepresentative.value?.[index] || {}),
+          ...rep,
+        }))
+      : [],
+    bank_account: {
+      ...getComplianceBankAccount.value,
+      ...bankPayload,
+    },
+    business_signatory: {
+      ...getComplianceBusinessSignatory.value,
+      ...signatoryPayload,
+    },
+    terms: { ...getComplianceAgreement.value, ...termsPayload },
+  };
+}
+
+
 
   private getRequestAlertHandler(successMsg: string, errorMsg: string) {
     return {

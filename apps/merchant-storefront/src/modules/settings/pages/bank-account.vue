@@ -1,4 +1,11 @@
 <template>
+  <div class="mb-6 text-[18px]">
+    <p class="font-semibold">Provide your business bank account number</p>
+    <span class="mt-1 text-[14px] text-grey-500">
+      Ensure the name on your bank account matches the legal business name you
+      provided.
+    </span>
+  </div>
   <div class="bank-account-area">
     <div class="bank-input">
       <SelectFieldInput
@@ -58,7 +65,7 @@
             </template>
 
             <button
-              class="btn btn-primary w-full mt-8"
+              class="w-full mt-8 btn btn-primary"
               ref="updateBankBtnRef"
               :disabled="isActionReady"
               @click="updateBankAccount"

@@ -14,38 +14,55 @@
       ]"
     />
 
-    <SelectFieldInput
-      labelId="selectDocumentID"
-      labelTitle="Select Identification Document"
-      inputPlaceholder="Select identification document"
-      inputBaseColor="bg-grey-10"
-      :inputValue="businessPayload.type"
-      :selectData="documentList"
-      isRequired
-      @onSelectionChange="handleSelectChange"
-    />
+    <div
+      v-for="(rep, index) in representativeProfile"
+      :key="index"
+      class="border rounded-md bg-white pb-1 pt-4 px-4 mb-4 cursor-pointer"
+    >
+      <div class="flex justify-between items-center relative">
+        <span class="text-[14px] font-[500] text-gray-700">{{ rep.legal_first_name }} {{ rep.legal_last_name }}</span>
+        <div
+          class="icon icon-caret-down transition-transform duration-200"
+          @click="toggleRep(index)"
+          :class="{ 'rotate-180': activeRep === index }"
+        ></div>
+      </div>
 
-    <!-- DOCUMENT FIELD UPLOAD -->
-    <div class="mb-14">
-      <FileUploadInput
-        showSkip
-        skipRoute="ComplianceBankAccount"
-        :hasDocumentUploaded="!!uploadedDocument"
-        :uploadedDocumentContent="getUploadedDocumentContent"
-        :uploadAction="uploadFile"
-        @onDocumentUploaded="
-          ($event) => {
-            uploadedDocument = $event;
-            businessPayload.url = $event;
-          }
-        "
-      />
+      <transition name="fade-slide">
+        <div v-if="activeRep === index" class="mt-6">
+          <SelectFieldInput
+            labelId="selectDocumentID"
+            labelTitle="Select Identification Document"
+            inputPlaceholder="Select identification document"
+            inputBaseColor="bg-grey-10"
+            :inputValue="repPayloads[index]?.type"
+            :selectData="documentList"
+            isRequired
+            @onSelectionChange="(val) => handleSelectChange(index, val)"
+          />
+
+          <div class="mb-4">
+            <FileUploadInput
+              showSkip
+              skipRoute="ComplianceBankAccount"
+              :hasDocumentUploaded="!!repPayloads[index]?.url"
+              :uploadedDocumentContent="getUploadedDocumentContent(index)"
+              :uploadAction="uploadFile"
+              @onDocumentUploaded="
+                ($event) => {
+                  repPayloads[index].url = $event;
+                }
+              "
+            />
+          </div>
+        </div>
+      </transition>
     </div>
   </ComplianceWrapper>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import {
@@ -62,6 +79,11 @@ type IBusinessType = {
   type: string;
   value: string;
   url: string;
+  percentage_ownership?: number | string;
+  business_role?: string[];
+  legal_full_name?: string;
+  dob?: string;
+  nationality?: string;
 };
 
 const router = useRouter();
@@ -76,22 +98,10 @@ const { getComplianceRepresentative } = storeToRefs(complianceStore);
 
 const complianceUtil = new useComplianceUtil(complianceStore);
 
-const businessPayload = ref<IBusinessType>({
-  type: getComplianceRepresentative.value?.[0]?.doc.type || "",
-  value: getComplianceRepresentative.value?.[0]?.doc.value || "",
-  url: getComplianceRepresentative.value?.[0]?.doc.url || "",
-});
+const representativeProfile = ref<any[]>([]);
+const activeRep = ref<number | null>(null);
 
-const uploadedDocument = ref<string>(
-  getComplianceRepresentative.value?.[0]?.doc.url || ""
-);
-
-const getUploadedDocumentContent = computed(() => {
-  return {
-    name: getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" "),
-    link: getComplianceRepresentative.value?.[0].doc.url,
-  };
-});
+const repPayloads = ref<Record<number, IBusinessType>>({});
 
 const documentList = ref<{ value: string; name: string }[]>([
   { value: "drivers_license", name: "Driver's License" },
@@ -106,31 +116,56 @@ const documentList = ref<{ value: string; name: string }[]>([
   { value: "passport", name: "International Passport" },
 ]);
 
-const selectedDocumentName = ref<string>(
-  getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" ") || ""
-);
-
-const handleSelectChange = (value: string): void => {
+const handleSelectChange = (index: number, value: string): void => {
   const selected = documentList.value.find((doc) => doc.value === value);
+  if (!repPayloads.value[index]) {
+    repPayloads.value[index] = { type: "", value: "", url: "" };
+  }
+  repPayloads.value[index].type = selected ? selected.value : "";
+  repPayloads.value[index].value = selected ? selected.name : "";
+};
 
-  businessPayload.value.type = selected ? selected.value : "";
-  selectedDocumentName.value = selected ? selected.name : "";
+const getUploadedDocumentContent = (index: number) => {
+  const payload = repPayloads.value[index];
+  return payload?.type
+    ? {
+        name: payload.type.split("_").join(" "),
+        link: payload.url,
+      }
+    : {};
 };
 
 const isActionReady = computed(() => {
-  console.log("businessPayload.value", businessPayload.value);
-  return businessPayload.value.type && businessPayload.value.url ? false : true;
+  return representativeProfile.value.some((_, i) => {
+    const payload = repPayloads.value[i];
+    return !payload || !payload.type || !payload.url;
+  });
 });
 
 const getBusinessPayload = computed(() => {
-  const { type, value, url } = businessPayload.value;
-  return { doc: { type, value, url } };
+  return representativeProfile.value.map((rep: any, index: number) => {
+    const repDoc: IBusinessType = repPayloads.value[index] || {
+      type: "",
+      value: "",
+      url: "",
+    };
+
+    return {
+      ...rep,
+      doc: {
+        type: repDoc.type || rep.doc?.type || "",
+        value: repDoc.value || rep.doc?.value || "",
+        url: repDoc.url || rep.doc?.url || "",
+      },
+    };
+  });
 });
+
 
 const handleRepresentativeIdentityUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
-    redirectRoute: "ComplianceBankAccount",
+    payload: { representatives: getBusinessPayload.value },
+    redirectRoute: "ComplianceTerms",
     stopClickHandler,
     succesMsg: "Representative identity submitted",
     errorMsg: "Representative update failed",
@@ -138,23 +173,43 @@ const handleRepresentativeIdentityUpdate = async () => {
   });
 };
 
+const toggleRep = (index: number) => {
+  activeRep.value = activeRep.value === index ? null : index;
+};
+
 watch(
   getComplianceRepresentative,
   (newValue) => {
+    console.log(newValue, "newValue");
     if (newValue && newValue.length > 0) {
-      businessPayload.value = {
-        type: newValue[0]?.doc.type || "",
-        value: newValue[0]?.doc.value || "",
-        url: newValue[0]?.doc.url || "",
-      };
+      representativeProfile.value = newValue;
+      newValue.forEach((rep: any, i: number) => {
 
-      uploadedDocument.value = newValue[0]?.doc.url || "";
-      selectedDocumentName.value =
-        newValue[0]?.doc.type?.split("_").join(" ") || "";
+        repPayloads.value[i] = {
+          
+          type: rep?.doc?.type || "",
+          value: rep?.doc?.value || "",
+          url: rep?.doc?.url || "",
+        };
+      });
     }
   },
   { immediate: true }
 );
+
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.rotate-180 {
+  transform: rotate(180deg);
+}
+</style>
