@@ -38,7 +38,7 @@
     </div>
 
     <MultiSelectFieldInput
-  v-if="addNewRepresentative || isEditing"
+      v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="businessRole"
       labelTitle="Business Role"
       :labelCompact="false"
@@ -53,7 +53,7 @@
     />
 
     <TextFieldInput 
-     v-if="addNewRepresentative || isEditing" 
+   v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="legalFullName"
       labelTitle="Legal Full Name"
       :labelCompact="false"
@@ -69,7 +69,7 @@
     />
 
     <TextFieldInput 
-     v-if="addNewRepresentative || isEditing"
+     v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="dateOfBirth"
       labelTitle="Date of Birth"
       :labelCompact="false"
@@ -87,7 +87,7 @@
     />
 
     <SelectFieldInput
-      v-if="addNewRepresentative || isEditing"
+        v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="nationality"
       labelTitle="Nationality"
       :labelCompact="false"

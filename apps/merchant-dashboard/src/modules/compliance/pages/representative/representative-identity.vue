@@ -20,7 +20,9 @@
       class="border rounded-md bg-white pb-1 pt-4 px-4 mb-4 cursor-pointer"
     >
       <div class="flex justify-between items-center relative">
-        <span class="text-[14px] font-[500] text-gray-700">{{ rep.legal_first_name }} {{ rep.legal_last_name }}</span>
+        <span class="text-[14px] font-[500] text-gray-700"
+          >{{ rep.legal_first_name }} {{ rep.legal_last_name }}</span
+        >
         <div
           class="icon icon-caret-down transition-transform duration-200"
           @click="toggleRep(index)"
@@ -62,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import {
@@ -136,8 +138,8 @@ const getUploadedDocumentContent = (index: number) => {
 };
 
 const isActionReady = computed(() => {
-  return representativeProfile.value.some((_, i) => {
-    const payload = repPayloads.value[i];
+  return representativeProfile.value.some((_, index) => {
+    const payload = repPayloads.value[index];
     return !payload || !payload.type || !payload.url;
   });
 });
@@ -153,14 +155,13 @@ const getBusinessPayload = computed(() => {
     return {
       ...rep,
       doc: {
-        type: repDoc.type || rep.doc?.type || "",
-        value: repDoc.value || rep.doc?.value || "",
-        url: repDoc.url || rep.doc?.url || "",
+        type: repDoc.type,
+        value: repDoc.value,
+        url: repDoc.url,
       },
     };
   });
 });
-
 
 const handleRepresentativeIdentityUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
@@ -180,22 +181,21 @@ const toggleRep = (index: number) => {
 watch(
   getComplianceRepresentative,
   (newValue) => {
-    console.log(newValue, "newValue");
     if (newValue && newValue.length > 0) {
       representativeProfile.value = newValue;
       newValue.forEach((rep: any, i: number) => {
-
         repPayloads.value[i] = {
-          
           type: rep?.doc?.type || "",
           value: rep?.doc?.value || "",
           url: rep?.doc?.url || "",
         };
       });
     }
+
   },
   { immediate: true }
 );
+
 
 </script>
 
