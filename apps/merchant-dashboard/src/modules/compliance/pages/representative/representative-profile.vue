@@ -101,7 +101,7 @@
     <button 
       type="button"
       @click="handleAddNewRepresentative"
-      class="btn btn-primary-outline mt-12 "
+      class="btn btn-primary-outline mt-12 !w-[170px] text-[14px]"
     >
       {{ isEditing ? "Update Representative" : "+ Add Representative" }}
     </button>
