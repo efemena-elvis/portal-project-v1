@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, watch } from "vue";
+import { computed, ref, reactive, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { EmptyComplianceSection, SectionTextCard } from "@packages/uikit";
@@ -190,7 +190,7 @@ const updateCompletionStatus = () => {
         break;
 
   case "representative_profile":
-  section.completed = complianceRepresentative.value?.length
+  section.completed = complianceRepresentative.value?.length > 0
     && complianceRepresentative.value.every(
         (rep: any) =>
           rep.legal_first_name &&
@@ -203,7 +203,7 @@ const updateCompletionStatus = () => {
   break;
 
 case "representative_identity":
-  section.completed = complianceRepresentative.value?.length
+  section.completed = complianceRepresentative.value?.length > 0
     && complianceRepresentative.value.every(
         (rep: any) => rep.doc?.type && rep.doc?.url
       ) ? true : false;
@@ -279,6 +279,11 @@ watch(
   },
   { immediate: true }
 );
+
+// onMounted(() => {
+// console.log(complianceRepresentative.value);
+ 
+// });
 </script>
 
 <style lang="scss" scoped>

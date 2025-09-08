@@ -155,7 +155,7 @@ const getBusinessPayload = computed(() => {
     return {
       ...rep,
       doc: {
-        type: repDoc.type,
+        type: repDoc.type, 
         value: repDoc.value,
         url: repDoc.url,
       },
