@@ -191,23 +191,22 @@ const updateCompletionStatus = () => {
 
   case "representative_profile":
   section.completed = complianceRepresentative.value?.length
-    ? complianceRepresentative.value.every(
+    && complianceRepresentative.value.every(
         (rep: any) =>
           rep.legal_first_name &&
           rep.legal_last_name &&
           rep.dob &&
           rep.nationality &&
           rep.business_role?.length
-      )
+      ) ? true
     : false;
   break;
 
 case "representative_identity":
   section.completed = complianceRepresentative.value?.length
-    ? complianceRepresentative.value.every(
+    && complianceRepresentative.value.every(
         (rep: any) => rep.doc?.type && rep.doc?.url
-      )
-    : false;
+      ) ? true : false;
   break;
 
 

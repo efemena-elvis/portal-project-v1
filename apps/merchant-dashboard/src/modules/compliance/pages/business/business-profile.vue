@@ -123,7 +123,7 @@ const getBusinessPayload = computed(() => {
 
 const handleBusinessProfileUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceBusinessContact",
     stopClickHandler,
     succesMsg: "Business profile submitted",
