@@ -172,13 +172,14 @@ const toggleViewOrdersModal = () => {
 };
 
 const fetchStoreOrders = async () => {
+    isLoading.value = true;
   const response = await processAPIRequest({
     action: getStoreOrders,
     payload: { store_id: activeStore.value?.id },
     showAlert: false,
   });
 
-  isLoading.value = true;
+
   if (response.code === 200) {
     let allOrders = response?.data.orders;
 

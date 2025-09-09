@@ -121,12 +121,12 @@ export const complianceRouteList = [
     category: "representative",
     metadata: complianceRouteMap.representative,
   },
-  {
-    name: "Bank Account",
-    route: "ComplianceBankAccount",
-    category: "bank",
-    metadata: complianceRouteMap.bank,
-  },
+  // {
+  //   name: "Bank Account",
+  //   route: "ComplianceBankAccount",
+  //   category: "bank",
+  //   metadata: complianceRouteMap.bank,
+  // },
   {
     name: "Terms & Agreement",
     route: "ComplianceTerms",
@@ -190,12 +190,12 @@ export const complianceSections: IComplianceSectionType[] = [
     route: "ComplianceRepresentativeIdentity",
     completed: false,
   },
-  {
-    id: "bank_account",
-    title: "Bank Account",
-    route: "ComplianceBankAccount",
-    completed: false,
-  },
+  // {
+  //   id: "bank_account",
+  //   title: "Bank Account",
+  //   route: "ComplianceBankAccount",
+  //   completed: false,
+  // },
   {
     id: "merchant_agreement",
     title: "Merchant Agreement",
@@ -310,7 +310,7 @@ export const merchantOnboardingRouteList = [
   },
   {
     name: "Ultimate Business Owner (2)",
-    route: "AggregatorUboDetails2",
+    route: "AggregatorUboDetails2", 
     category: "ubo2",
     metadata: aggregatorMerchantRouteMap.ubo2,
   },

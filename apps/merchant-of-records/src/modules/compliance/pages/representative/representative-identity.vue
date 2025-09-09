@@ -19,21 +19,20 @@
       labelTitle="Select Identification Document"
       inputPlaceholder="Select identification document"
       inputBaseColor="bg-grey-10"
-      :inputValue="businessPayload.type"
+      :inputValue="selectedDocumentName[currentIndex]"
       :selectData="documentList"
       isRequired
       @onSelectionChange="handleSelectChange"
     />
 
-    <!-- DOCUMENT FIELD UPLOAD -->
     <div class="mb-14">
       <FileUploadInput
         showSkip
-        skipRoute="ComplianceBankAccount"
-        :hasDocumentUploaded="!!uploadedDocument"
+        skipRoute="ComplianceSummary"
+        :hasDocumentUploaded="!!uploadedDocument[currentIndex]"
         :uploadedDocumentContent="getUploadedDocumentContent"
         :uploadAction="uploadFile"
-        @onDocumentUploaded="uploadedDocument = $event"
+        @onDocumentUploaded="uploadedDocument[currentIndex] = $event"
       />
     </div>
   </ComplianceWrapper>
@@ -52,6 +51,7 @@ import { useComplianceUtil } from "@packages/hooks";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
+import { get } from "http";
 
 type IBusinessType = {
   type: string;
@@ -61,7 +61,6 @@ type IBusinessType = {
 
 const router = useRouter();
 const stopClickHandler = ref<boolean>(false);
-
 const { uploadFile } = useGlobalStore();
 
 const complianceStore = useComplianceStore();
@@ -69,20 +68,32 @@ const { getComplianceRepresentative } = storeToRefs(complianceStore);
 
 const complianceUtil = new useComplianceUtil(complianceStore);
 
-const businessPayload = ref<IBusinessType>({
-  type: getComplianceRepresentative.value?.[0]?.doc.type || "",
-  value: getComplianceRepresentative.value?.[0]?.doc.value || "",
-  url: getComplianceRepresentative.value?.[0]?.doc.url || "",
-});
+// track which representative is being edited
+const currentIndex = ref<number>(0);
 
-const uploadedDocument = ref<string>(
-  getComplianceRepresentative.value?.[0]?.doc.url || ""
+const businessPayload = ref<IBusinessType[]>(
+  getComplianceRepresentative.value?.map((rep) => ({
+    type: rep.doc?.type || "",
+    value: rep.doc?.value || "",
+    url: rep.doc?.url || "",
+  })) || []
+);
+
+const uploadedDocument = ref<string[]>(
+  getComplianceRepresentative.value?.map((rep) => rep.doc?.url || "") || []
+);
+
+const selectedDocumentName = ref<string[]>(
+  getComplianceRepresentative.value?.map(
+    (rep) => rep.doc?.type?.split("_").join(" ") || ""
+  ) || []
 );
 
 const getUploadedDocumentContent = computed(() => {
+  const rep = getComplianceRepresentative.value?.[currentIndex.value];
   return {
-    name: getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" "),
-    link: getComplianceRepresentative.value?.[0].doc.url,
+    name: rep?.doc?.type?.split("_").join(" "),
+    link: rep?.doc?.url,
   };
 });
 
@@ -96,24 +107,22 @@ const documentList = ref<{ value: string; name: string }[]>([
   { value: "passport", name: "International Passport" },
 ]);
 
-const selectedDocumentName = ref<string>(
-  getComplianceRepresentative.value?.[0].doc.type?.split("_").join(" ") || ""
-);
-
 const handleSelectChange = (value: string): void => {
   const selected = documentList.value.find((doc) => doc.value === value);
-
-  businessPayload.value.type = selected ? selected.value : "";
-  selectedDocumentName.value = selected ? selected.name : "";
+  businessPayload.value[currentIndex.value].type = selected ? selected.value : "";
+  selectedDocumentName.value[currentIndex.value] = selected ? selected.name : "";
 };
 
 const isActionReady = computed(() => {
-  return businessPayload.value.type && businessPayload.value.url ? false : true;
+  return businessPayload.value.some(
+    (rep) => !rep.type || !rep.url
+  );
 });
 
 const getBusinessPayload = computed(() => {
-  const { type, value, url } = businessPayload.value;
-  return { doc: { type, value, url } };
+  return businessPayload.value.map(({ type, value, url }) => ({
+    doc: { type, value, url },
+  }));
 });
 
 const handleRepresentativeIdentityUpdate = async () => {
@@ -130,20 +139,23 @@ const handleRepresentativeIdentityUpdate = async () => {
 watch(
   getComplianceRepresentative,
   (newValue) => {
+ 
     if (newValue && newValue.length > 0) {
-      businessPayload.value = {
-        type: newValue[0]?.doc.type || "",
-        value: newValue[0]?.doc.value || "",
-        url: newValue[0]?.doc.url || "",
-      };
-
-      uploadedDocument.value = newValue[0]?.doc.url || "";
-      selectedDocumentName.value =
-        newValue[0]?.doc.type?.split("_").join(" ") || "";
+      businessPayload.value = newValue.map((rep) => ({
+        type: rep.doc?.type || "",
+        value: rep.doc?.value || "",
+        url: rep.doc?.url || "",
+      }));
+      uploadedDocument.value = newValue.map((rep) => rep.doc?.url || "");
+      selectedDocumentName.value = newValue.map(
+        (rep) => rep.doc?.type?.split("_").join(" ") || ""
+      );
     }
   },
   { immediate: true }
 );
+
+ 
 </script>
 
 <style lang="scss" scoped></style>

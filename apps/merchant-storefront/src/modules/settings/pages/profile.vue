@@ -1,7 +1,7 @@
 <template>
   <div class="profile-area">
     <div class="profile-input">
-      <div class="title-text">{{ "hello" }}</div>
+      <div class="title-text">{{ getBusinessProfile?.businessName }}</div>
 
       <FileUploadInput
         :showSkip="false"
@@ -65,7 +65,7 @@
 
         <!-- CHANGE PASSWORD SECTION -->
         <div class="mt-4">
-          <div class="link font-medium" @click="toggleChangePasswordModal">
+          <div class="font-medium link" @click="toggleChangePasswordModal">
             Change Password
           </div>
         </div>
@@ -73,7 +73,7 @@
     </div>
 
     <div class="profile-display">
-      <div class="logo-area pt-12">
+      <div class="pt-12 logo-area">
         <div class="logo-wrapper">
           <img
             class="w-4/5 h-auto"

@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, watch } from "vue";
+import { computed, ref, reactive, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { EmptyComplianceSection, SectionTextCard } from "@packages/uikit";
@@ -189,33 +189,35 @@ const updateCompletionStatus = () => {
             : false;
         break;
 
-      case "representative_profile":
-        section.completed =
-          complianceRepresentative.value?.[0].legal_first_name &&
-          complianceRepresentative.value?.[0].legal_last_name &&
-          complianceRepresentative.value?.[0].dob &&
-          complianceRepresentative.value?.[0].nationality &&
-          complianceRepresentative.value?.[0].business_role?.length
-            ? true
-            : false;
-        break;
+  case "representative_profile":
+  section.completed = complianceRepresentative.value?.length > 0
+    && complianceRepresentative.value.every(
+        (rep: any) =>
+          rep.legal_first_name &&
+          rep.legal_last_name &&
+          rep.dob &&
+          rep.nationality &&
+          rep.business_role?.length
+      ) ? true
+    : false;
+  break;
 
-      case "representative_identity":
-        section.completed =
-          complianceRepresentative.value?.[0].doc.type &&
-          complianceRepresentative.value?.[0].doc.url
-            ? true
-            : false;
-        break;
+case "representative_identity":
+  section.completed = complianceRepresentative.value?.length > 0
+    && complianceRepresentative.value.every(
+        (rep: any) => rep.doc?.type && rep.doc?.url
+      ) ? true : false;
+  break;
 
-      case "bank_account":
-        section.completed =
-          complianceBankAccount.value?.account_number &&
-          complianceBankAccount.value?.code &&
-          complianceBankAccount.value?.account_holder_name
-            ? true
-            : false;
-        break;
+
+      // case "bank_account":
+      //   section.completed =
+      //     complianceBankAccount.value?.account_number &&
+      //     complianceBankAccount.value?.code &&
+      //     complianceBankAccount.value?.account_holder_name
+      //       ? true
+      //       : false;
+      //   break;
 
       case "merchant_agreement":
         section.completed = complianceAgreement.value?.signed_agreement
@@ -277,6 +279,11 @@ watch(
   },
   { immediate: true }
 );
+
+// onMounted(() => {
+// console.log(complianceRepresentative.value);
+ 
+// });
 </script>
 
 <style lang="scss" scoped>
