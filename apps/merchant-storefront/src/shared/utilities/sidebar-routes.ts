@@ -94,7 +94,11 @@ export const settingsSidebarRoutes: ISideNavType[] = [
     routeLinkName: "VesicashBankAccount",
   },
   {
-    routeTitle: "Custom Domain",
-    routeLinkName: "VesicashCustomDomain",
+    routeTitle: "Domains",
+    routeLinkName: "VesicashDomains",
+  },
+  {
+    routeTitle: "Developers",
+    routeLinkName: "VesicashDevelopers",
   },
 ];

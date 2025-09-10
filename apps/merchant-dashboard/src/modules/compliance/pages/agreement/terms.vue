@@ -3,7 +3,7 @@
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'ComplianceBankAccount' })"
+    @onBackClick="router.push({ name: 'ComplianceRepresentativeProfile' })"
     @onContinueClick="handleMerchantAgreementUpdate"
   >
     <!-- AGREEMENT ALERT -->
@@ -125,7 +125,7 @@ const getBusinessPayload = computed(() => {
 
 const handleMerchantAgreementUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceSummary",
     stopClickHandler,
     succesMsg: "Merchant agreement submitted",

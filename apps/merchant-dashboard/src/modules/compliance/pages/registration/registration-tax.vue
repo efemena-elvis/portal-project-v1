@@ -101,7 +101,7 @@ const getBusinessPayload = computed(() => {
 
 const handleRegistrationConfirmUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceRepresentativeProfile",
     stopClickHandler,
     succesMsg: "Registration tax document submitted",

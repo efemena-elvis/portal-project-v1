@@ -164,13 +164,12 @@ const getDateAdded = (date: string) => {
 };
 
 const fetchProducts = async () => {
+    isLoading.value = true;
   const response = await processAPIRequest({
     action: getStoreProducts,
     payload: { slug: activeStore.value?.slug || "" },
     showAlert: false,
   });
-
-  isLoading.value = false;
 
 if (response.code === 200) {
   let filteredData = response.data;
@@ -210,7 +209,7 @@ if (response.code === 200) {
       },
     }),
   }));
-
+ isLoading.value = false;
   tablePaging.value = response?.pagination?.[0];
 }
 
