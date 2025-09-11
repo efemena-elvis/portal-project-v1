@@ -118,7 +118,7 @@ const getBusinessPayload = computed(() => {
 
 const handleMerchantAgreementUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceSummary",
     stopClickHandler,
     succesMsg: "Merchant agreement submitted",

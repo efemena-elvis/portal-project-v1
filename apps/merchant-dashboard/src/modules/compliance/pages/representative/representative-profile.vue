@@ -10,7 +10,7 @@
       <div
         v-for="(rep, index) in businessPayload"
         :key="index"
-        class="border border-green-400  rounded-lg bg-white p-6 mb-8 items-center shadow-sm relative flex justify-between"
+        class="relative flex items-center justify-between p-6 mb-8 bg-white border border-green-400 rounded-lg shadow-sm"
       >
         <div>
           <p class="font-semibold text-[18px]">
@@ -63,7 +63,7 @@
       :isRequired="true"
       @inputChanged="(val) => (currentRep.legal_full_name = val)"
       :errorHandler="{
-        validator: 'validateRequired',
+        validator: 'validateFullName',
         message: 'Legal fullname is a required field',
       }"
     />
@@ -184,23 +184,14 @@ const createBlankRep = (): IBusinessType => ({
   percentage_ownership: "",
 });
 
-const currentRep = ref<IBusinessType>({
-  legal_full_name: "",
-  dob: "",
-  nationality: "",
-  business_role: [],
-  percentage_ownership: "",
-});
+const currentRep = ref<IBusinessType>(createBlankRep());
 
 const isEditing = ref(false);
 const editIndex = ref<number | null>(null);
 
-
-
 const handleBusinessRoleChange = (val: string[] | any) => {
   currentRep.value.business_role = Array.isArray(val) ? [...val] : [];
 };
-
 
 const removeRepresentative = (index: number) => {
   businessPayload.value.splice(index, 1);
@@ -211,7 +202,6 @@ const removeRepresentative = (index: number) => {
     Object.assign(currentRep.value, createBlankRep());
     payloadValidity.value.dob = false;
   }
- 
 };
 
 const editRepresentative = (index: number) => {
@@ -219,7 +209,6 @@ const editRepresentative = (index: number) => {
   isEditing.value = true;
   editIndex.value = index;
 };
-
 
 const getBusinessPayload = computed(() =>
   businessPayload.value.map((rep) => ({
@@ -232,7 +221,52 @@ const getBusinessPayload = computed(() =>
   }))
 );
 
+const commitCurrentEditIfValid = () => {
+  if ((!isEditing.value && !addNewRepresentative.value) || !currentRep.value) return false;
+
+  const rep = {
+    legal_full_name: (currentRep.value.legal_full_name || "").trim(),
+    dob: (currentRep.value.dob || "").trim(),
+    nationality: (currentRep.value.nationality || "").trim(),
+    business_role: Array.isArray(currentRep.value.business_role)
+      ? [...currentRep.value.business_role]
+      : [],
+    percentage_ownership: (currentRep.value.percentage_ownership || "").trim(),
+  };
+
+  const isValid =
+    !!rep.legal_full_name &&
+    !!rep.dob &&
+    !!rep.nationality &&
+    rep.business_role.length > 0 &&
+    payloadValidity.value.dob;
+
+  if (!isValid) return false;
+
+  if (isEditing.value && editIndex.value !== null) {
+    businessPayload.value.splice(editIndex.value, 1, rep);
+    isEditing.value = false;
+    editIndex.value = null;
+  } else if (addNewRepresentative.value) {
+    businessPayload.value.push(rep);
+    addNewRepresentative.value = false;
+  }
+
+  Object.assign(currentRep.value, createBlankRep());
+  payloadValidity.value.dob = false;
+  return true;
+};
+
+
 const handleRepresentativeProfileUpdate = async () => {
+
+  try {
+    commitCurrentEditIfValid();
+  } catch (err) {
+    console.warn("Failed to auto-commit representative edit:", err);
+  }
+
+
   await complianceUtil.handleComplianceRequest({
     payload: { representatives: getBusinessPayload.value },
     redirectRoute: "ComplianceRepresentativeIdentity",
@@ -250,7 +284,6 @@ const loadCountryList = () => {
   }));
 };
 loadCountryList();
-
 
 const handleAddNewRepresentative = () => {
   addNewRepresentative.value = true;
@@ -286,34 +319,46 @@ const handleAddNewRepresentative = () => {
 };
 
 const isActionReady = computed(() => {
-  return businessPayload.value.length === 0;
+  if (
+    businessPayload.value.length === 0 &&
+    !addNewRepresentative.value &&
+    !isEditing.value
+  ) {
+    return true;
+  }
+
+  if (addNewRepresentative.value || isEditing.value) {
+    const rep = currentRep.value;
+    const invalid =
+      !rep.legal_full_name ||
+      !rep.dob ||
+      !rep.nationality ||
+      rep.business_role.length === 0 ||
+      !payloadValidity.value.dob;
+
+    return invalid;
+  }
+
+  return false;
 });
 
 watch(
   getComplianceRepresentative,
   (newValue) => {
-    if (newValue && newValue.length > 0) {
-      
-      if (businessPayload.value.length === 0) {
-        businessPayload.value = newValue
-            .map((item: any) => ({
-              legal_full_name:
-                (item?.legal_first_name || "") +
-                (item?.legal_last_name ? ` ${item?.legal_last_name}` : ""),
-              dob: item?.dob || "",
-              nationality: item?.nationality || "",
-              business_role: formatBusinessRoles(item?.business_role) || [],
-              percentage_ownership: item?.percentage_ownership || "",
-            })).filter((rep: IBusinessType) => rep.legal_full_name);
-
-       
-      }
+    if (Array.isArray(newValue)) {
+      businessPayload.value = newValue
+        .map((item: any) => ({
+          legal_full_name:
+            (item?.legal_first_name || "") +
+            (item?.legal_last_name ? ` ${item?.legal_last_name}` : ""),
+          dob: item?.dob || "",
+          nationality: item?.nationality || "",
+          business_role: formatBusinessRoles(item?.business_role) || [],
+          percentage_ownership: item?.percentage_ownership || "",
+        }))
+        .filter((rep: IBusinessType) => rep.legal_full_name);
     }
   },
-  { deep: true }
+  { deep: true, immediate: true }
 );
-
-
-
-
 </script>

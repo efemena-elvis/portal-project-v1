@@ -53,7 +53,7 @@
       </div>
 
       <div class="agreement-copy-section">
-        <div class="decription-text text-grey-900 font-semibold">
+        <div class="font-semibold decription-text text-grey-900">
           By signing this agreement, I am accepting this agreement on behalf of
           {{ getBusinessProfile?.businessName ?? "-------" }}. I represent and
           warrant that (a) I have the full legal authority to bind the entity to
@@ -66,7 +66,7 @@
       <div class="mt-8 mb-2">
         <label
           for="acceptAgreement"
-          class="flex justify-start items-center gap-x-3 cursor-pointer"
+          class="flex items-center justify-start cursor-pointer gap-x-3"
         >
           <input
             type="checkbox"
@@ -74,7 +74,7 @@
             id="acceptAgreement"
             v-model="businessPayload.signed_agreement"
           />
-          <div class="text-grey-900 font-medium text-sm">
+          <div class="text-sm font-medium text-grey-900">
             I accept the Merchant Terms & Agreement
           </div>
         </label>

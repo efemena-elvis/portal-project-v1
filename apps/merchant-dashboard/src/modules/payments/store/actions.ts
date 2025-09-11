@@ -34,3 +34,9 @@ export const getTransactions = async () => {
 export const getCustomers = async () => {
   return await $api.fetch(paymentRoutes.getCustomers);
 };
+
+export const getBanks = async (payload: any) => {
+  return await $api.fetch(
+    `${paymentRoutes.getBanks}?country=${payload.country}`
+  );
+};

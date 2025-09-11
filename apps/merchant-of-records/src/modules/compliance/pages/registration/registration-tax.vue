@@ -73,7 +73,7 @@ const getBusinessPayload = computed(() => {
 
 const handleRegistrationConfirmUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceRepresentativeProfile",
     stopClickHandler,
     succesMsg: "Registration tax document submitted",
@@ -87,7 +87,6 @@ watch(
   (newValue) => {
     if (newValue) {
       uploadedDocument.value = newValue.tax_doc_url || "";
-
       uploadedDocumentContent.value = {
         name: "Business tax registeration",
         link: newValue.tax_doc_url,

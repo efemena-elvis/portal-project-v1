@@ -6,7 +6,7 @@
     <form @submit.prevent="handleUserLogin">
       <!-- EMAIL ADDRESS -->
       <TextFieldInput
-        labelId="businessEmail"
+        labelId="bu nessEmail"
         labelTitle="Email address"
         :labelCompact="false"
         :inputType="IInputType.Email"

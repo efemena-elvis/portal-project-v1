@@ -83,9 +83,9 @@ class PayoutConfig {
 
     const fieldToLabelMap: Record<string, string> = {
       account_holder_name: "Account Holder Name",
-      bank_name: "Bank Name",
+      // bank_name: "Bank Name",
       account_number: "Account Number",
-      bank_code: "Bank Code",
+      // bank_code: "Bank Code",
       bank_branch: "Bank Branch",
       bank_address: "Bank Address",
       iban: "IBAN",
@@ -106,7 +106,7 @@ class PayoutConfig {
 
     const numberFields = new Set([
       "account_number",
-      "bank_code",
+      // "bank_code",
       "sort_code",
       "mobile_money_number",
       "routing_number",
@@ -155,15 +155,15 @@ class PayoutConfig {
 const payoutConfigData: PayoutConfigData = {
   africa_bank_only: {
     currencies: ["NGN", "ZAR", "EGP", "MAD"],
-    fields: ["account_holder_name", "bank_name", "account_number", "bank_code"],
+    fields: ["account_holder_name", "account_number", ],
   },
   africa_bank_and_mobile_money: {
     currencies: ["KES", "GHS", "UGX", "TZS", "RWF", "XAF", "XOF", "ZMW"],
     fields: [
       "account_holder_name",
-      "bank_name",
+      // "bank_name",
       "account_number",
-      "bank_code",
+      // "bank_code",
       "bank_branch",
       // "mobile_money_number",
     ],
@@ -174,7 +174,7 @@ const payoutConfigData: PayoutConfigData = {
       "account_holder_name",
       "iban",
       "swift_bic",
-      "bank_name",
+      // "bank_name",
       "bank_address",
     ],
   },
@@ -185,7 +185,7 @@ const payoutConfigData: PayoutConfigData = {
       "account_number",
       "routing_number",
       "swift_bic",
-      "bank_name",
+      // "bank_name",
       "bank_address",
     ],
   },
@@ -197,7 +197,7 @@ const payoutConfigData: PayoutConfigData = {
       "transit_number",
       "institution_number",
       "swift_bic",
-      "bank_name",
+      // "bank_name",
       "bank_address",
     ],
   },

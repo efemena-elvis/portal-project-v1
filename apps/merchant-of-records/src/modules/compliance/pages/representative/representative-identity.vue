@@ -14,32 +14,57 @@
       ]"
     />
 
-    <SelectFieldInput
-      labelId="selectDocumentID"
-      labelTitle="Select Identification Document"
-      inputPlaceholder="Select identification document"
-      inputBaseColor="bg-grey-10"
-      :inputValue="selectedDocumentName[currentIndex]"
-      :selectData="documentList"
-      isRequired
-      @onSelectionChange="handleSelectChange"
-    />
+    <div
+      v-for="(rep, index) in representativeProfile"
+      :key="index"
+      class="border rounded-md bg-white pb-1 pt-4 px-4 mb-4 cursor-pointer"
+    >
+      <div class="flex justify-between items-center relative">
+        <span class="text-[14px] font-[500] text-gray-700"
+          >{{ rep.legal_first_name }} {{ rep.legal_last_name }}</span
+        >
+        <div
+          class="icon icon-caret-down transition-transform duration-200"
+          @click="toggleRep(index)"
+          :class="{ 'rotate-180': activeRep === index }"
+        ></div>
+      </div>
 
-    <div class="mb-14">
-      <FileUploadInput
-        showSkip
-        skipRoute="ComplianceSummary"
-        :hasDocumentUploaded="!!uploadedDocument[currentIndex]"
-        :uploadedDocumentContent="getUploadedDocumentContent"
-        :uploadAction="uploadFile"
-        @onDocumentUploaded="uploadedDocument[currentIndex] = $event"
-      />
+      <transition name="fade-slide">
+        <div v-if="activeRep === index" class="mt-6">
+          <SelectFieldInput
+            labelId="selectDocumentID"
+            labelTitle="Select Identification Document"
+            inputPlaceholder="Select identification document"
+            inputBaseColor="bg-grey-10"
+            :inputValue="repPayloads[index]?.type"
+            :selectData="documentList"
+            isRequired
+            @onSelectionChange="(val) => handleSelectChange(index, val)"
+          />
+
+          <div class="mb-4">
+            <FileUploadInput
+              showSkip
+              skipRoute="ComplianceBankAccount"
+              :hasDocumentUploaded="!!repPayloads[index]?.url"
+              :uploadedDocumentContent="getUploadedDocumentContent(index)"
+              :uploadAction="uploadFile"
+              @onDocumentUploaded="
+                ($event) => {
+                  repPayloads[index].url = $event;
+                }
+              "
+            />
+          </div>
+        </div>
+      </transition>
     </div>
   </ComplianceWrapper>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import {
@@ -47,20 +72,27 @@ import {
   FileUploadInput,
   SelectFieldInput,
 } from "@packages/uikit";
-import { useComplianceUtil } from "@packages/hooks";
+import { useComplianceUtil, useAppVariant } from "@packages/hooks";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
-import { get } from "http";
 
 type IBusinessType = {
   type: string;
   value: string;
   url: string;
+  percentage_ownership?: number | string;
+  business_role?: string[];
+  legal_full_name?: string;
+  dob?: string;
+  nationality?: string;
 };
 
 const router = useRouter();
+const appVariant = ref<string>(useAppVariant());
+
 const stopClickHandler = ref<boolean>(false);
+
 const { uploadFile } = useGlobalStore();
 
 const complianceStore = useComplianceStore();
@@ -68,68 +100,72 @@ const { getComplianceRepresentative } = storeToRefs(complianceStore);
 
 const complianceUtil = new useComplianceUtil(complianceStore);
 
-// track which representative is being edited
-const currentIndex = ref<number>(0);
+const representativeProfile = ref<any[]>([]);
+const activeRep = ref<number | null>(null);
 
-const businessPayload = ref<IBusinessType[]>(
-  getComplianceRepresentative.value?.map((rep) => ({
-    type: rep.doc?.type || "",
-    value: rep.doc?.value || "",
-    url: rep.doc?.url || "",
-  })) || []
-);
-
-const uploadedDocument = ref<string[]>(
-  getComplianceRepresentative.value?.map((rep) => rep.doc?.url || "") || []
-);
-
-const selectedDocumentName = ref<string[]>(
-  getComplianceRepresentative.value?.map(
-    (rep) => rep.doc?.type?.split("_").join(" ") || ""
-  ) || []
-);
-
-const getUploadedDocumentContent = computed(() => {
-  const rep = getComplianceRepresentative.value?.[currentIndex.value];
-  return {
-    name: rep?.doc?.type?.split("_").join(" "),
-    link: rep?.doc?.url,
-  };
-});
+const repPayloads = ref<Record<number, IBusinessType>>({});
 
 const documentList = ref<{ value: string; name: string }[]>([
   { value: "drivers_license", name: "Driver's License" },
   {
-    value: "national_identification_number",
-    name: "National Identification Number",
+    value: appVariant.value === "alexpay" ? "ghana_card" : "national_id_card",
+    name:
+      appVariant.value === "alexpay"
+        ? "Ghana Card"
+        : "National Identification Number",
   },
   { value: "voters_card", name: "Voter's Card" },
   { value: "passport", name: "International Passport" },
 ]);
 
-const handleSelectChange = (value: string): void => {
+const handleSelectChange = (index: number, value: string): void => {
   const selected = documentList.value.find((doc) => doc.value === value);
-  businessPayload.value[currentIndex.value].type = selected
-    ? selected.value
-    : "";
-  selectedDocumentName.value[currentIndex.value] = selected
-    ? selected.name
-    : "";
+  if (!repPayloads.value[index]) {
+    repPayloads.value[index] = { type: "", value: "", url: "" };
+  }
+  repPayloads.value[index].type = selected ? selected.value : "";
+  repPayloads.value[index].value = selected ? selected.name : "";
+};
+
+const getUploadedDocumentContent = (index: number) => {
+  const payload = repPayloads.value[index];
+  return payload?.type
+    ? {
+        name: payload.type.split("_").join(" "),
+        link: payload.url,
+      }
+    : {};
 };
 
 const isActionReady = computed(() => {
-  return businessPayload.value.some((rep) => !rep.type || !rep.url);
+  return representativeProfile.value.some((_, index) => {
+    const payload = repPayloads.value[index];
+    return !payload || !payload.type || !payload.url;
+  });
 });
 
 const getBusinessPayload = computed(() => {
-  return businessPayload.value.map(({ type, value, url }) => ({
-    doc: { type, value, url },
-  }));
+  return representativeProfile.value.map((rep: any, index: number) => {
+    const repDoc: IBusinessType = repPayloads.value[index] || {
+      type: "",
+      value: "",
+      url: "",
+    };
+
+    return {
+      ...rep,
+      doc: {
+        type: repDoc.type, 
+        value: repDoc.value,
+        url: repDoc.url,
+      },
+    };
+  });
 });
 
 const handleRepresentativeIdentityUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: { representatives: getBusinessPayload.value },
     redirectRoute: "ComplianceBankAccount",
     stopClickHandler,
     succesMsg: "Representative identity submitted",
@@ -138,23 +174,42 @@ const handleRepresentativeIdentityUpdate = async () => {
   });
 };
 
+const toggleRep = (index: number) => {
+  activeRep.value = activeRep.value === index ? null : index;
+};
+
 watch(
   getComplianceRepresentative,
   (newValue) => {
     if (newValue && newValue.length > 0) {
-      businessPayload.value = newValue.map((rep) => ({
-        type: rep.doc?.type || "",
-        value: rep.doc?.value || "",
-        url: rep.doc?.url || "",
-      }));
-      uploadedDocument.value = newValue.map((rep) => rep.doc?.url || "");
-      selectedDocumentName.value = newValue.map(
-        (rep) => rep.doc?.type?.split("_").join(" ") || ""
-      );
+      representativeProfile.value = newValue;
+      newValue.forEach((rep: any, i: number) => {
+        repPayloads.value[i] = {
+          type: rep?.doc?.type || "",
+          value: rep?.doc?.value || "",
+          url: rep?.doc?.url || "",
+        };
+      });
     }
+
   },
   { immediate: true }
 );
+
+
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+.rotate-180 {
+  transform: rotate(180deg);
+}
+</style>

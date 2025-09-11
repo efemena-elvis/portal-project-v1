@@ -17,14 +17,14 @@
     <div
       v-for="(rep, index) in representativeProfile"
       :key="index"
-      class="border rounded-md bg-white pb-1 pt-4 px-4 mb-4 cursor-pointer"
+      class="px-4 pt-4 pb-1 mb-4 bg-white border rounded-md cursor-pointer"
     >
-      <div class="flex justify-between items-center relative">
+      <div class="relative flex items-center justify-between">
         <span class="text-[14px] font-[500] text-gray-700"
           >{{ rep.legal_first_name }} {{ rep.legal_last_name }}</span
         >
         <div
-          class="icon icon-caret-down transition-transform duration-200"
+          class="transition-transform duration-200 icon icon-caret-down"
           @click="toggleRep(index)"
           :class="{ 'rotate-180': activeRep === index }"
         ></div>
@@ -46,7 +46,7 @@
           <div class="mb-4">
             <FileUploadInput
               showSkip
-              skipRoute="ComplianceBankAccount"
+              skipRoute="ComplianceTerms"
               :hasDocumentUploaded="!!repPayloads[index]?.url"
               :uploadedDocumentContent="getUploadedDocumentContent(index)"
               :uploadAction="uploadFile"
