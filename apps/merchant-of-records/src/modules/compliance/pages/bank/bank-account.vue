@@ -166,7 +166,7 @@ const getBusinessPayload = computed(() => {
 
 const handleBankAccountUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceTerms",
     stopClickHandler,
     succesMsg: "Bank account submitted",

@@ -75,12 +75,16 @@ private getRequestPayload({
       ...getComplianceRegistration.value,
       ...registrationPayload,
     },
-    representatives: Array.isArray(representativePayload.representatives)
-      ? representativePayload.representatives.map((rep: any, index: number) => ({
-          ...(getComplianceRepresentative.value?.[index] || {}),
-          ...rep,
-        }))
-      : [],
+representatives:
+  Array.isArray(representativePayload.representatives) &&
+  representativePayload.representatives.length > 0
+    ? representativePayload.representatives.map((rep: any, index: number) => ({
+        ...(getComplianceRepresentative.value?.[index] || {}),
+        ...rep,
+      }))
+    : getComplianceRepresentative.value || [],
+
+
     bank_account: {
       ...getComplianceBankAccount.value,
       ...bankPayload,
@@ -92,8 +96,6 @@ private getRequestPayload({
     terms: { ...getComplianceAgreement.value, ...termsPayload },
   };
 }
-
-
 
   private getRequestAlertHandler(successMsg: string, errorMsg: string) {
     return {

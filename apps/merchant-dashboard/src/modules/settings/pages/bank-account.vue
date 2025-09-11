@@ -19,6 +19,27 @@
 
       <template v-else>
         <template v-if="bankDetailsFields.length">
+          <SelectFieldInput
+            labelId="bankName"
+            labelTitle="Bank Name"
+            :labelCompact="false"
+            inputPlaceholder="Select your bank name"
+            :inputValue="businessPayload?.code"
+            :selectData="allBanks"
+            isRequired
+            @onSelectionChange="selectedBank = $event"
+          />
+
+          <!-- <TextFieldInput
+          labelId="bankCode"
+          labelTitle="Bank Code"
+          :labelCompact="false"
+          :inputType="IInputType.Number"
+          inputValue="12345"
+          inputPlaceholder="Enter your bank code"
+          isRequired
+          @inputChanged="(val) => updateBusinessPayloadData('bankCode', val)"
+        /> -->
           <div class="mb-12">
             <template v-for="field in bankDetailsFields" :key="field.labelId">
               <TextFieldInput
@@ -58,7 +79,7 @@
             </template>
 
             <button
-              class="btn btn-primary w-full mt-8"
+              class="w-full mt-8 btn btn-primary"
               ref="updateBankBtnRef"
               :disabled="isActionReady"
               @click="updateBankAccount"
@@ -73,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
 import { payoutConfig } from "@packages/constants";
@@ -87,6 +108,8 @@ import {
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import { usePaymentStore } from "@/modules/payments/store";
+import { bankList } from "@packages/constants";
 
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
@@ -102,19 +125,27 @@ const {
   getProfileDeveloper,
 } = storeToRefs(useSettingsStore());
 const { getAllWallets } = storeToRefs(overviewStore);
+const { getBanks } = usePaymentStore();
 
 const updateBankBtnRef = ref<HTMLButtonElement | null>(null);
 
 const isBankAccountLoading = ref<boolean>(false);
 const bankDetailsFields = ref<any[]>([]);
 const bankCurrency = ref<string>("");
+const allBanks = ref<any[]>([]);
+const selectedBank = ref<{ name: string; code: string } | null>(null);
 
 const phoneCountryCode = ref<string>("234");
-const businessPayload = ref<Record<string, string>>({});
+const businessPayload = ref<Record<string, string | number>>({});
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
   return userProfile?.country?.currency_code;
+});
+
+const selectedBankDetails = computed(() => {
+  const bank = allBanks.value.find((b) => b.value === selectedBank.value);
+  return bank ? { name: bank.name, code: bank.value } : null;
 });
 
 const getPayoutCurrencies = computed(() => {
@@ -146,7 +177,7 @@ const isActionReady = computed(() => {
 
 const updateBusinessPayloadData = (
   payloadKey: string,
-  payloadValue: string
+  payloadValue: string | number
 ) => {
   businessPayload.value = {
     ...businessPayload.value,
@@ -160,30 +191,50 @@ const getPayload = computed(() => {
     contact: { ...getProfileContact.value },
     bank: {
       ...getProfileAccount.value,
-      currency: bankCurrency.value,
+      payout_currency: bankCurrency.value,
       ...businessPayload.value,
+      ...selectedBankDetails.value,
     },
     ...getProfileDeveloper.value,
   };
 });
 
-const updateProfileAPIKeys = async () => {
-  // const response = await processAPIRequest({
-  //   action: updateUserProfile,
-  //   btnRef: updateBankBtnRef,
-  //   btnText: "Update Bank Account",
-  //   payload: getPayload.value,
-  //   alertHandler: {
-  //     200: {
-  //       message: "Bank account updated successfully",
-  //       type: "success",
-  //     },
-  //     400: {
-  //       message: "Bank account update failed",
-  //       type: "error",
-  //     },
-  //   },
-  // });
+// const fetchAllBanks = async () => {
+//   try {
+//     const response = await processAPIRequest({
+//       action: getBanks,
+//       payload: { country: "GH" },
+//     });
+
+//     if (response.code === 200) {
+//       allBanks.value = response.data.map((bank: any) => ({
+//         value: bank.code,
+//         name: bank.name,
+//       }));
+//     }
+//   } catch (err) {
+//     console.error("Failed to fetch banks:", err);
+//     allBanks.value = [];
+//   }
+// };
+
+const updateBankAccount = async () => {
+  const response = await processAPIRequest({
+    action: updateUserProfile,
+    btnRef: updateBankBtnRef,
+    btnText: "Update Bank Account",
+    payload: getPayload.value,
+    alertHandler: {
+      200: {
+        message: "Bank account updated successfully",
+        type: "success",
+      },
+      400: {
+        message: "Bank account update failed",
+        type: "error",
+      },
+    },
+  });
 };
 
 watch(
@@ -201,7 +252,6 @@ watch(
   { immediate: true }
 );
 
-// Fetch all profile data
 const fetchProfileData = async () => {
   const response = await processAPIRequest({
     action: fetchUserProfile,
@@ -213,13 +263,22 @@ watch(
   getProfileAccount,
   (newValue) => {
     if (newValue) {
-      console.log(newValue);
+      businessPayload.value = {
+        ...businessPayload.value,
+        name: newValue.name,
+        code: newValue.code,
+        account_number: newValue.account_number,
+        account_holder_name: newValue.account_holder_name,
+      };
     }
   },
   { immediate: true }
 );
 
-fetchProfileData();
+onMounted(() => {
+  fetchProfileData();
+  // fetchAllBanks();
+});
 </script>
 
 <style lang="scss" scoped>

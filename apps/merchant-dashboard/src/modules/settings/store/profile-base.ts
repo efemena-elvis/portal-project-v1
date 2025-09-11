@@ -17,6 +17,8 @@ export interface IProfileDeveloper {
 }
 
 export interface IProfileAccount {
+  bank_branch: any;
+  branch: any;
   name: string;
   account_number: string | number;
   code: string;

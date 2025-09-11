@@ -129,7 +129,7 @@ const getBusinessPayload = computed(() => {
 
 const handleBusinessConfirmUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
-    payload: getBusinessPayload,
+    payload: getBusinessPayload.value,
     redirectRoute: "ComplianceRegistrationDocuments",
     stopClickHandler,
     succesMsg: "Business address document submitted",
