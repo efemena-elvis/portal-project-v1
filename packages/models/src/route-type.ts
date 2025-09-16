@@ -9,6 +9,7 @@ export interface IRouteType {
     title: string;
     guest?: boolean;
     open?: boolean;
+    public?: boolean;
     requiresAuth?: boolean;
     description?: string;
     pageMeta?: {

@@ -20,8 +20,11 @@ export default (
   from: RouteLocationNormalized,
   next: NavigationGuardNext
 ) => {
-  /** Verify if user accessing route is an authenticated user **/
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
+  // ALLOW PASSAGE IF IT'S A PUBLIC ROUTE
+  if (to.matched.some((record) => record.meta.public)) {
+    next();
+  } else if (to.matched.some((record) => record.meta.requiresAuth)) {
+    /** Verify if user accessing route is an authenticated user **/
     routeGuard.verifyAuthRoutes(to, next);
   } else if (to.matched.some((record) => record.meta.guest)) {
     /** Verify if user accessing route is just a guest user **/
