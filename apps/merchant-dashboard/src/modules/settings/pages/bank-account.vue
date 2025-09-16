@@ -1,25 +1,11 @@
 <template>
   <div class="bank-account-area">
+    
     <div class="bank-input">
-      <SelectFieldInput
-        labelId="payoutCurrencies"
-        labelTitle="Payout Currency"
-        :labelCompact="false"
-        inputPlaceholder="Select your payout currency"
-        :inputValue="bankCurrency"
-        :selectData="getPayoutCurrencies"
-        isRequired
-        @onSelectionChange="bankCurrency = $event"
-      />
-
-      <!-- DYNAMIC FORM FIELDS -->
-      <template v-if="isBankAccountLoading">
-        <ComplianceSkeleton />
-      </template>
-
-      <template v-else>
         <template v-if="bankDetailsFields.length">
+          <!-- Ghana Banks -->
           <SelectFieldInput
+            v-if="bankCurrency === 'GHS'"
             labelId="bankName"
             labelTitle="Bank Name"
             :labelCompact="false"
@@ -30,16 +16,28 @@
             @onSelectionChange="selectedBank = $event"
           />
 
-          <!-- <TextFieldInput
-          labelId="bankCode"
-          labelTitle="Bank Code"
-          :labelCompact="false"
-          :inputType="IInputType.Number"
-          inputValue="12345"
-          inputPlaceholder="Enter your bank code"
-          isRequired
-          @inputChanged="(val) => updateBusinessPayloadData('bankCode', val)"
-        /> -->
+          <div v-else class="mb-6">
+            <TextFieldInput
+              labelId="bankName"
+              labelTitle="Bank Name"
+              :labelCompact="false"
+              :inputType="IInputType.Text"
+              :inputValue="businessPayload?.name"
+              inputPlaceholder="Enter your bank name"
+              isRequired
+              @inputChanged="(val) => updateBusinessPayloadData('name', val)"
+            />
+            <TextFieldInput
+              labelId="bankCode"
+              labelTitle="Bank Code"
+              :labelCompact="false"
+              :inputType="IInputType.Text"
+              :inputValue="businessPayload?.code"
+              inputPlaceholder="Enter your bank code"
+              isRequired
+              @inputChanged="(val) => updateBusinessPayloadData('code', val)"
+            />
+          </div>
           <div class="mb-12">
             <template v-for="field in bankDetailsFields" :key="field.labelId">
               <TextFieldInput
@@ -88,7 +86,7 @@
             </button>
           </div>
         </template>
-      </template>
+    
     </div>
   </div>
 </template>
@@ -109,7 +107,7 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useOverviewStore } from "@/modules/overview/store";
 import { usePaymentStore } from "@/modules/payments/store";
-import { bankList } from "@packages/constants";
+import { useAppVariant } from "@packages/hooks";
 
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
@@ -117,6 +115,7 @@ const { fetchUserProfile, updateUserProfile } = useSettingsStore();
 
 const { processAPIRequest } = useEvents();
 const profileUtil = new useProfile(authStore);
+const { getBanks } = usePaymentStore();
 
 const {
   getProfileDetails,
@@ -125,7 +124,6 @@ const {
   getProfileDeveloper,
 } = storeToRefs(useSettingsStore());
 const { getAllWallets } = storeToRefs(overviewStore);
-const { getBanks } = usePaymentStore();
 
 const updateBankBtnRef = ref<HTMLButtonElement | null>(null);
 
@@ -135,20 +133,52 @@ const bankCurrency = ref<string>("");
 const allBanks = ref<any[]>([]);
 const selectedBank = ref<{ name: string; code: string } | null>(null);
 
+const defaultCountries = ref<{
+  [key: string]: { value: string; name: string };
+}>({
+  alexpay: { value: "54cf288c-a5b9-4234-8e58-b88ae3457db6", name: "Ghana" },
+  redstonepgs: {
+    value: "4613642d-4af3-41de-a863-6b8ae84915b9",
+    name: "Zambia",
+  },
+});
+
 const phoneCountryCode = ref<string>("234");
-const businessPayload = ref<Record<string, string | number>>({});
+const businessPayload = ref<Record<string, string>>({});
+const appVariant = ref<string>(useAppVariant());
+const defaultCountry = computed(() => {
+  return defaultCountries.value[appVariant.value];
+});
 
 const getLocalCurrencyCode = computed(() => {
-  const userProfile = profileUtil.getUser();
-  return userProfile?.country?.currency_code;
+  const code =
+    defaultCountry.value?.name === "Ghana"
+      ? "GHS"
+      : defaultCountry.value?.name === "Zambia"
+        ? "ZMW"
+        : "USD";
+
+  const currencyList = payoutConfig
+    .getAllCurrencies()
+    .filter((currency) => currency.currency === code);
+
+  return {
+    ...currencyList[0],
+  };
 });
 
-const selectedBankDetails = computed(() => {
-  const bank = allBanks.value.find((b) => b.value === selectedBank.value);
-  return bank ? { name: bank.name, code: bank.value } : null;
-});
+// const getBankCurrency = computed(() => {
+//   bankCurrency.value = getLocalCurrencyCode.value.currency;
+//   return bankCurrency.value;
+// });
+
+// const getLocalCurrencyCode = computed(() => {
+//   const userProfile = profileUtil.getUser();
+//   return userProfile?.country?.currency_code;
+// });
 
 const getPayoutCurrencies = computed(() => {
+ 
   const currencyList = payoutConfig
     .getAllCurrencies()
     .map((currency) => ({
@@ -159,12 +189,16 @@ const getPayoutCurrencies = computed(() => {
 
   const deployedWallets = [
     ...getAllWallets.value?.walletBalance.map((wallet) => wallet.currencyShort),
-    getLocalCurrencyCode.value,
+    getLocalCurrencyCode.value.currency,
   ];
-
   return currencyList.filter((currency) =>
     deployedWallets.includes(currency.value)
   );
+});
+
+const selectedBankDetails = computed(() => {
+  const bank = allBanks.value.find((b) => b.value === selectedBank.value);
+  return bank ? { name: bank.name, code: bank.value } : null;
 });
 
 const isActionReady = computed(() => {
@@ -177,7 +211,7 @@ const isActionReady = computed(() => {
 
 const updateBusinessPayloadData = (
   payloadKey: string,
-  payloadValue: string | number
+  payloadValue: string
 ) => {
   businessPayload.value = {
     ...businessPayload.value,
@@ -199,26 +233,31 @@ const getPayload = computed(() => {
   };
 });
 
-// const fetchAllBanks = async () => {
-//   try {
-//     const response = await processAPIRequest({
-//       action: getBanks,
-//       payload: { country: "GH" },
-//     });
-
-//     if (response.code === 200) {
-//       allBanks.value = response.data.map((bank: any) => ({
-//         value: bank.code,
-//         name: bank.name,
-//       }));
-//     }
-//   } catch (err) {
-//     console.error("Failed to fetch banks:", err);
-//     allBanks.value = [];
-//   }
-// };
+const fetchAllBanks = async () => {
+   
+  try {
+    const response = await processAPIRequest({
+      action: getBanks,
+      payload: { country: "GH" },
+    });
+    let data = null;
+    if (response && typeof response.json === "function") {
+      data = await response.json();
+      if (data.code === 200) {
+        allBanks.value = data.data.map((bank: any) => ({
+          value: bank.code,
+          name: bank.name,
+        }));
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch banks:", err);
+    allBanks.value = [];
+  }
+};
 
 const updateBankAccount = async () => {
+  // console.log(bankCurrency.value)
   const response = await processAPIRequest({
     action: updateUserProfile,
     btnRef: updateBankBtnRef,
@@ -241,7 +280,6 @@ watch(
   bankCurrency,
   (currency) => {
     if (currency) {
-      isBankAccountLoading.value = true;
 
       const result = payoutConfig.getBankDetailsByCurrency(currency);
       bankDetailsFields.value = payoutConfig.getBankDetailsFields(result);
@@ -252,32 +290,48 @@ watch(
   { immediate: true }
 );
 
+// Fetch all profile data
 const fetchProfileData = async () => {
   const response = await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,
   });
+  return response;
 };
 
 watch(
-  getProfileAccount,
+  () => getProfileAccount.value,
   (newValue) => {
     if (newValue) {
       businessPayload.value = {
-        ...businessPayload.value,
         name: newValue.name,
-        code: newValue.code,
+        code: newValue.code ,
         account_number: newValue.account_number,
         account_holder_name: newValue.account_holder_name,
       };
+
+     
+      if (bankCurrency.value === "GHS" && newValue.code) {
+        const bank = allBanks.value.find((b) => b.value === newValue.code);
+        if (bank) {
+          selectedBank.value = { name: bank.name, code: bank.value };
+        }
+      }
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
+
 onMounted(() => {
+
   fetchProfileData();
-  // fetchAllBanks();
+    bankCurrency.value = getLocalCurrencyCode.value.currency;
+  if (appVariant.value === "alexpay") {
+    fetchAllBanks();
+  }
+  
+  
 });
 </script>
 

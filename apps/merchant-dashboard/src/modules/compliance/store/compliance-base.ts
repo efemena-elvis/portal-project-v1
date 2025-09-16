@@ -37,7 +37,7 @@ export interface IComplianceBankAccount {
   // Required fields for all account types
   currency: string;
   account_holder_name: string;
-  account_number: string | number;
+  account_number: string;
 
   // Common optional fields
   bank_name?: string;
