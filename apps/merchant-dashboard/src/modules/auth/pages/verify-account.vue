@@ -58,12 +58,15 @@ import { useRoute, useRouter } from "vue-router";
 import { useEvents, useProfile } from "@packages/hooks";
 import AuthCenterWrapper from "@/modules/auth/components/auth-center-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
+import { useAppVariant } from "@packages/hooks";
+
 
 const route = useRoute();
 const router = useRouter();
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
+const appVariant = ref<string>(useAppVariant());
 
 const { sendVerifyEmailOTP, verifyEmailOTP } = authStore;
 const { processAPIRequest } = useEvents();
@@ -71,7 +74,8 @@ const { processAPIRequest } = useEvents();
 const userEmailAddress = ref<string | null>(null);
 const verifyBtnRef = ref(null);
 
-const otpFields = ref(Array(4).fill(""));
+
+const otpFields = ref(appVariant.value === "alexpay" ? Array(4).fill("") : Array(9).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
 
 const resendCountdown = ref(0);
