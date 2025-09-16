@@ -300,7 +300,7 @@ const fetchProfileData = async () => {
 };
 
 watch(
-  () => getProfileAccount.value,
+ getProfileAccount,
   (newValue) => {
     if (newValue) {
       businessPayload.value = {
@@ -309,26 +309,20 @@ watch(
         account_number: newValue.account_number,
         account_holder_name: newValue.account_holder_name,
       };
-
      
-      if (bankCurrency.value === "GHS" && newValue.code) {
-        const bank = allBanks.value.find((b) => b.value === newValue.code);
-        if (bank) {
-          selectedBank.value = { name: bank.name, code: bank.value };
-        }
-      }
+ 
     }
   },
   { immediate: true, deep: true }
 );
 
 
-onMounted(() => {
+onMounted(async () => {
 
-  fetchProfileData();
+ await fetchProfileData();
     bankCurrency.value = getLocalCurrencyCode.value.currency;
   if (appVariant.value === "alexpay") {
-    fetchAllBanks();
+   await fetchAllBanks();
   }
   
   
