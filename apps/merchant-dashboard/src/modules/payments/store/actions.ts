@@ -5,7 +5,7 @@ import { useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
 import { computed } from "vue";
 
-const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN } = constants;
+const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN, PROD_BASE_URL } = constants;
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -27,6 +27,7 @@ const $api = new useServiceAPI({
   },
 });
 
+
 export const getTransactions = async () => {
   return await $api.fetch(paymentRoutes.getPaymentTransactions);
 };
@@ -36,7 +37,11 @@ export const getCustomers = async () => {
 };
 
 export const getBanks = async (payload: any) => {
-  return await $api.fetch(
-    `${paymentRoutes.getBanks}?country=${payload.country}`
-  );
+  const url = `${PROD_BASE_URL}/v1/${paymentRoutes.getBanks}?country=${payload.country}`;
+  return await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${APP_AUTH_TOKEN}`,
+    },
+  });
 };

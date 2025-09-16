@@ -59,6 +59,7 @@ import { useEvents, useProfile } from "@packages/hooks";
 import AuthCenterWrapper from "@/modules/auth/components/auth-center-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
 
+
 const route = useRoute();
 const router = useRouter();
 
@@ -70,6 +71,7 @@ const { processAPIRequest } = useEvents();
 
 const userEmailAddress = ref<string | null>(null);
 const verifyBtnRef = ref(null);
+
 
 const otpFields = ref(Array(4).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);

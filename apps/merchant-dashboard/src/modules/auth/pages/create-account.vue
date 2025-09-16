@@ -25,16 +25,7 @@
       />
 
       <!-- BUSINESS LOCATION -->
-      <SelectFieldInput
-        labelId="businessCountry"
-        labelTitle="Business location"
-        :labelCompact="false"
-        inputPlaceholder="Select country of business registeration"
-        :inputValue="signupPayload.country_id"
-        :selectData="validCountries"
-        isRequired
-        @onSelectionChange="signupPayload.country_id = $event"
-      />
+ 
 
       <!-- EMAIL ADDRESS -->
       <TextFieldInput
