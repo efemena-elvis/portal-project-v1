@@ -109,7 +109,7 @@
 <script lang="ts" setup>
 import { useImage } from "@/shared/composables";
 import PhoneFieldInput from "@packages/uikit/src/components/form-comps/phone-field-input.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
 import { useRoute } from "vue-router";
 import { useString } from "@packages/hooks";
@@ -136,9 +136,19 @@ const payment_methods = [
 const mobile_country_code = ref("260");
 const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
-const mobile_money_phone_number = ref(
-  store?.payment_details?.phone_number ?? ""
-);
+
+const refinedPaymentMobileNumber = computed(() => {
+  if (store.payment_details?.phone_number)
+    return store.payment_details.phone_number.replace("+", "");
+  return "";
+});
+
+watch(refinedPaymentMobileNumber, (number) => {
+  if (!mobile_money_phone_number.value)
+    mobile_money_phone_number.value = number;
+});
+
+const mobile_money_phone_number = ref(refinedPaymentMobileNumber.value);
 const route = useRoute();
 const reference = route.params.reference as string;
 onMounted(() => {
