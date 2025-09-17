@@ -57,7 +57,7 @@
               ? 'border-teal-700 hover:border-teal-500 bg-teal-700 text-white'
               : 'border-white hover:border-teal-300 bg-white text-grey-700',
             item.name !== 'Mobile Money'
-              ? 'cursor-not-allowed opacity-45'
+              ? 'cursor-not-allowed opacity-45 hidden'
               : 'cursor-pointer',
           ]"
           v-for="item in payment_methods"
@@ -114,6 +114,10 @@ import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
 import { useRoute } from "vue-router";
 import { useString } from "@packages/hooks";
 import { MobileMoneyPaymentRequest } from "../types";
+import {
+  dialingCodeRegex,
+  getDialingCode,
+} from "@packages/constants/src/country-currencies";
 const { renderImg } = useImage();
 const { formatNumber } = useString();
 
@@ -137,18 +141,20 @@ const mobile_country_code = ref("260");
 const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
 
-const refinedPaymentMobileNumber = computed(() => {
-  if (store.payment_details?.phone_number)
-    return store.payment_details.phone_number.replace("+", "");
-  return "";
-});
+watch(
+  () => store.payment_details?.phone_number,
+  (number) => {
+    if (!number) return;
+    if (!mobile_money_phone_number.value) {
+      mobile_money_phone_number.value = number.replace(dialingCodeRegex, "");
+    }
+    mobile_country_code.value = getDialingCode(number);
+  }
+);
 
-watch(refinedPaymentMobileNumber, (number) => {
-  if (!mobile_money_phone_number.value)
-    mobile_money_phone_number.value = number;
-});
-
-const mobile_money_phone_number = ref(refinedPaymentMobileNumber.value);
+const mobile_money_phone_number = ref(
+  store.payment_details?.phone_number ?? ""
+);
 const route = useRoute();
 const reference = route.params.reference as string;
 onMounted(() => {
