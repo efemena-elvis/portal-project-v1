@@ -1,7 +1,8 @@
 <template>
   <div class="bank-account-area">
-    
     <div class="bank-input">
+      <ComplianceSkeleton v-if="isBankAccountLoading" />
+      <div v-else>
         <template v-if="bankDetailsFields.length">
           <!-- Ghana Banks -->
           <SelectFieldInput
@@ -15,7 +16,6 @@
             isRequired
             @onSelectionChange="selectedBank = $event"
           />
-
           <div v-else class="mb-6">
             <TextFieldInput
               labelId="bankName"
@@ -38,6 +38,7 @@
               @inputChanged="(val) => updateBusinessPayloadData('code', val)"
             />
           </div>
+
           <div class="mb-12">
             <template v-for="field in bankDetailsFields" :key="field.labelId">
               <TextFieldInput
@@ -58,7 +59,6 @@
                 "
                 :errorHandler="field.errorHandler"
               />
-
               <PhoneFieldInput
                 v-else
                 :labelId="field.labelId"
@@ -86,7 +86,7 @@
             </button>
           </div>
         </template>
-    
+      </div>
     </div>
   </div>
 </template>
@@ -178,7 +178,6 @@ const getLocalCurrencyCode = computed(() => {
 // });
 
 const getPayoutCurrencies = computed(() => {
- 
   const currencyList = payoutConfig
     .getAllCurrencies()
     .map((currency) => ({
@@ -234,7 +233,6 @@ const getPayload = computed(() => {
 });
 
 const fetchAllBanks = async () => {
-   
   try {
     const response = await processAPIRequest({
       action: getBanks,
@@ -280,7 +278,7 @@ watch(
   bankCurrency,
   (currency) => {
     if (currency) {
-
+      isBankAccountLoading.value = true;
       const result = payoutConfig.getBankDetailsByCurrency(currency);
       bankDetailsFields.value = payoutConfig.getBankDetailsFields(result);
 
@@ -300,32 +298,26 @@ const fetchProfileData = async () => {
 };
 
 watch(
- getProfileAccount,
+  getProfileAccount,
   (newValue) => {
     if (newValue) {
       businessPayload.value = {
         name: newValue.name,
-        code: newValue.code ,
+        code: newValue.code,
         account_number: newValue.account_number,
         account_holder_name: newValue.account_holder_name,
       };
-     
- 
     }
   },
   { immediate: true, deep: true }
 );
 
-
 onMounted(async () => {
-
- await fetchProfileData();
-    bankCurrency.value = getLocalCurrencyCode.value.currency;
+  await fetchProfileData();
+  bankCurrency.value = getLocalCurrencyCode.value.currency;
   if (appVariant.value === "alexpay") {
-   await fetchAllBanks();
+    await fetchAllBanks();
   }
-  
-  
 });
 </script>
 
