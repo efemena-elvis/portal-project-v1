@@ -577,4 +577,34 @@ const countries = [
   },
 ];
 
+const dialingCodes = countries.map((c) => c.dialing_code);
+const escapedCodes = dialingCodes.map((dc) =>
+  dc.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")
+);
+export const dialingCodeRegex = new RegExp(
+  `^(?:\\+)?(?:${escapedCodes.join("|")})`
+);
+
+export function getDialingCode(phone: string, fallback = "260") {
+  // normalize (remove spaces, dashes, parentheses)
+  const normalized = phone.replace(/[\s()-]/g, "");
+
+  // drop leading "+" if present
+  const clean = normalized.startsWith("+") ? normalized.slice(1) : normalized;
+
+  // sort dialing codes longest → shortest (to handle overlaps like "1" vs "1-876")
+  const dialingCodes = countries
+    .map((c) => c.dialing_code)
+    .sort((a, b) => b.length - a.length);
+
+  for (const code of dialingCodes) {
+    if (clean.startsWith(code.replace(/[^0-9]/g, ""))) {
+      // return code without formatting characters (like "-")
+      return code.replace(/\D/g, "");
+    }
+  }
+
+  return fallback;
+}
+
 export default countries;
