@@ -8,13 +8,13 @@
               ? '/aggregator-merchant/business-profile'
               : '/market/wallet-entry'
           "
-          class="btn btn-primary btn-sm hover:text-white"
+          class="btn btn-primary  hover:text-white"
         >
-          <div class="text-xl font-semibold icon icon-add"></div>
+      
           {{
             morAccountType === "aggregator"
-              ? "Add merchants"
-              : "Deploy a wallet"
+              ? "+ Add merchants"
+              : "Expand"
           }}
         </router-link>
       </div>

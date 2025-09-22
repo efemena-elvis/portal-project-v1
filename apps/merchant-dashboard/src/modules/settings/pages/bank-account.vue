@@ -255,7 +255,7 @@ const fetchAllBanks = async () => {
 };
 
 const updateBankAccount = async () => {
-  // console.log(bankCurrency.value)
+
   const response = await processAPIRequest({
     action: updateUserProfile,
     btnRef: updateBankBtnRef,
@@ -326,7 +326,7 @@ onMounted(async () => {
   @apply flex justify-between items-start gap-x-4;
 
   .bank-input {
-    @apply w-[48%];
+    @apply w-[48%] md:w-full;
   }
 }
 </style>

@@ -64,7 +64,7 @@
       </div>
 
       <button
-        class="btn btn-primary w-full mt-3"
+        class="w-full mt-3 btn btn-primary"
         ref="updateKeysBtnRef"
         :disabled="isActionReady"
         @click="updateProfileAPIKeys"
@@ -225,17 +225,17 @@ fetchProfileData();
 
 <style lang="scss" scoped>
 .developer-area {
-  @apply flex justify-between items-start gap-x-4;
+  @apply flex flex-row md:flex-col justify-between  items-start gap-x-4;
 
   .developer-input {
-    @apply w-[48%];
+    @apply w-[48%] md:w-full;
   }
 
   .developer-display {
-    @apply w-[45%] ml-auto flex justify-end;
+    @apply w-[45%] md:w-full md:ml-0 ml-auto flex justify-end md:justify-start;
 
     .help-area {
-      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply w-[310px] md:w-full md:mt-8 h-auto rounded-2xl p-6 text-[15px] bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }

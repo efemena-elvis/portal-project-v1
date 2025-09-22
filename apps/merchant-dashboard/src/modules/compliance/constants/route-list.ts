@@ -72,15 +72,15 @@ const complianceRouteMap = {
     },
   ],
 
-  bank: [
-    {
-      name: "Bank Account",
-      route: "ComplianceBankAccount",
-      title: "Business bank details",
-      description:
-        "Ensure the name on your bank account matches the legal business name you provided.",
-    },
-  ],
+  // bank: [
+  //   {
+  //     name: "Bank Account",
+  //     route: "ComplianceBankAccount",
+  //     title: "Business bank details",
+  //     description:
+  //       "Ensure the name on your bank account matches the legal business name you provided.",
+  //   },
+  // ],
 
   agreement: [
     {

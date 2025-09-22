@@ -1,7 +1,7 @@
 <template>
   <AuthCenterWrapper
     title_text="Reset successful"
-    :meta_text="`Your password reset was successfully.<br>
+    :meta_text="`Your password reset was successful.<br>
           Click button below to login`"
     icon_display_type="icon-check-circle"
   >

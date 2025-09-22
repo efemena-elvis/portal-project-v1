@@ -46,7 +46,7 @@
           <div class="mb-4">
             <FileUploadInput
               showSkip
-              skipRoute="ComplianceBankAccount"
+              skipRoute="ComplianceTerms"
               :hasDocumentUploaded="!!repPayloads[index]?.url"
               :uploadedDocumentContent="getUploadedDocumentContent(index)"
               :uploadAction="uploadFile"
@@ -166,7 +166,7 @@ const getBusinessPayload = computed(() => {
 const handleRepresentativeIdentityUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
     payload: { representatives: getBusinessPayload.value },
-    redirectRoute: "ComplianceBankAccount",
+    redirectRoute: "ComplianceTerms",
     stopClickHandler,
     succesMsg: "Representative identity submitted",
     errorMsg: "Representative update failed",
