@@ -72,6 +72,36 @@
       </div>
 
       <form class="p-6 bg-white rounded-lg" @submit.prevent="handlePayment">
+        <div class="grid grid-cols-2 sm:grid-cols-1 gap-2">
+          <TextFieldInput
+            :labelId="'customer-first-name'"
+            :labelTitle="'First Name'"
+            :labelCompact="false"
+            :inputType="IInputType.Text"
+            :inputValue="first_name"
+            :inputPlaceholder="'Enter First Name'"
+            isRequired
+            @inputChanged="(val) => (first_name = val)"
+            :errorHandler="{
+              validator: 'validateRequired',
+              message: 'First Name is a required field',
+            }"
+          />
+          <TextFieldInput
+            :labelId="'customer-last-name'"
+            :labelTitle="'Last Name'"
+            :labelCompact="false"
+            :inputType="IInputType.Text"
+            :inputValue="last_name"
+            :inputPlaceholder="'Enter Last Name'"
+            isRequired
+            @inputChanged="(val) => (last_name = val)"
+            :errorHandler="{
+              validator: 'validateRequired',
+              message: 'Last Name is a required field',
+            }"
+          />
+        </div>
         <TextFieldInput
           :labelId="'customer-phone-number'"
           :labelTitle="'Email'"
@@ -155,24 +185,31 @@ const payment_methods = [
 
 const mobile_country_code = ref("260");
 const email = ref("");
+const first_name = ref("");
+const last_name = ref("");
 const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
 
 watch(
-  () => store.payment_details?.email,
-  (_email) => {
+  () => store.payment_details,
+  (details) => {
+    if (!details) return;
+    const {
+      phone_number,
+      email: _email,
+      customer_first_name,
+      customer_last_name,
+    } = details;
     email.value = _email ?? "";
-  }
-);
-
-watch(
-  () => store.payment_details?.phone_number,
-  (number) => {
-    if (!number) return;
-    if (!mobile_money_phone_number.value) {
-      mobile_money_phone_number.value = number.replace(dialingCodeRegex, "");
+    first_name.value = customer_first_name;
+    last_name.value = customer_last_name;
+    if (!mobile_money_phone_number.value && phone_number) {
+      mobile_money_phone_number.value = phone_number.replace(
+        dialingCodeRegex,
+        ""
+      );
+      mobile_country_code.value = getDialingCode(phone_number);
     }
-    mobile_country_code.value = getDialingCode(number);
   }
 );
 
@@ -198,8 +235,8 @@ const hasCharge = computed(() =>
 const handlePayment = () => {
   const payload: MobileMoneyPaymentRequest = {
     account_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
-    customer_first_name: store.payment_details?.customer_first_name ?? "",
-    customer_last_name: store.payment_details?.customer_last_name ?? "",
+    customer_first_name: first_name.value ?? "",
+    customer_last_name: last_name.value ?? "",
     email: email.value,
     method: "mobilemoney",
     phone_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
