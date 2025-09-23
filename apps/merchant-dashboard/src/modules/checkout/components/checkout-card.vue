@@ -71,7 +71,22 @@
         </div>
       </div>
 
-      <div class="p-6 bg-white rounded-lg">
+      <form class="p-6 bg-white rounded-lg" @submit.prevent="handlePayment">
+        <TextFieldInput
+          :labelId="'customer-phone-number'"
+          :labelTitle="'Email'"
+          :labelCompact="false"
+          :inputType="IInputType.Email"
+          :inputValue="email"
+          :inputPlaceholder="'Enter Email'"
+          isRequired
+          @inputChanged="(val) => (email = val)"
+          :errorHandler="{
+            validator: 'validateRequired',
+            message: 'Email is a required field',
+          }"
+        />
+
         <PhoneFieldInput
           :labelId="'mobile-money-phone-number'"
           :labelTitle="'Phone number'"
@@ -86,12 +101,11 @@
         <button
           class="btn btn-primary w-full btn-sm"
           ref="paymentButtonRef"
-          @click="handlePayment"
-          :disabled="!mobile_money_phone_number"
+          type="submit"
         >
           Pay
         </button>
-      </div>
+      </form>
 
       <div class="flex justify-center items-center mt-6">
         <div class="flex gap-x-1 items-center border">
@@ -109,6 +123,8 @@
 <script lang="ts" setup>
 import { useImage } from "@/shared/composables";
 import PhoneFieldInput from "@packages/uikit/src/components/form-comps/phone-field-input.vue";
+import TextFieldInput from "@packages/uikit/src/components/form-comps/text-field-input.vue";
+import { IInputType } from "@packages/models";
 import { computed, onMounted, ref, watch } from "vue";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
 import { useRoute } from "vue-router";
@@ -138,8 +154,16 @@ const payment_methods = [
 ];
 
 const mobile_country_code = ref("260");
+const email = ref("");
 const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
+
+watch(
+  () => store.payment_details?.email,
+  (_email) => {
+    email.value = _email ?? "";
+  }
+);
 
 watch(
   () => store.payment_details?.phone_number,
@@ -176,7 +200,7 @@ const handlePayment = () => {
     account_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
     customer_first_name: store.payment_details?.customer_first_name ?? "",
     customer_last_name: store.payment_details?.customer_last_name ?? "",
-    email: store.payment_details?.email ?? "",
+    email: email.value,
     method: "mobilemoney",
     phone_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
   };
