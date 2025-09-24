@@ -5,7 +5,8 @@ import { useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
 import { computed } from "vue";
 
-const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN, ENVIRONMENT } =
+  constants;
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -31,6 +32,7 @@ const $api = new useServiceAPI({
     "public-key": publicKey.value,
     "secret-key": secretKey.value,
     "x-api-key": "EKtNqS86B1oFgcjZFr1484SdrqXyxK12AZj1fW6",
+    "x-environments": ENVIRONMENT,
   },
 });
 
