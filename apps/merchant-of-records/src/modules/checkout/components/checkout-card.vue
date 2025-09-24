@@ -2,7 +2,7 @@
   <div class="rounded-xl bg-gray-50/95 p-6 md:p-4">
     <div class="flex items-center justify-between">
       <img
-        :src="renderImg('alexpay-logo.png')"
+        :src="renderImg('vesicash-brand.png')"
         alt="brand-logo"
         class="w-[96px] h-[32px] object-center"
       />
@@ -141,7 +141,7 @@
         <div class="flex gap-x-1 items-center">
           <div>Powered by</div>
           <img
-            :src="renderImg('alexpay-logo.png')"
+            :src="renderImg('vesicash-brand.svg')"
             class="w-[60.41px] h-[20px] object-center mt-1"
           />
         </div>
