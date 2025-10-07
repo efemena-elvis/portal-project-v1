@@ -8,7 +8,7 @@
 
           <select
             v-model="selectedStatus"
-            class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-grey-50/80"
+                     class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80"
           >
             <option value="">Status</option>
             <option
