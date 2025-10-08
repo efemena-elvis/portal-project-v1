@@ -34,7 +34,7 @@
         <div class="icon-calendar text-lg"></div>
       </div>
     </div>
-    <!-- Show only filters that have a value -->
+   
     <div
       class="flex gap-4"
       v-if="selectedFilters.some((filter) => filter.value)"

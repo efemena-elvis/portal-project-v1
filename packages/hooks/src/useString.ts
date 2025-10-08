@@ -44,6 +44,12 @@ export default function useString() {
     return randomstring;
   };
 
+  const stripHtml = (html: any) => {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || "";
+};
+
   // ======================================================
   // ENCODES A STRING WITH A STRING ARGUMENT
   // ======================================================
@@ -237,5 +243,6 @@ export default function useString() {
     createPreviewLink,
     maskNumbers,
     maskCardNumber,
+    stripHtml
   };
 }
