@@ -1,43 +1,51 @@
 <template>
   <PageContentWrapper>
-
-     <template #pageOptions>
+    <template #pageOptions>
       <div class="button-row">
         <div class="flex items-center gap-3 mr-12">
-       
-
-          <select
-            v-model="selectedStatus"
-                       class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80"
+        <select
+          v-model="selectedStatus"
+          class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80 w-[120px]"
+        >
+          <option value="">Status</option>
+          <option
+            class="bg-white rounded-md"
+            v-for="(status, index) in statusOptions"
+            :value="status"
+            :key="index"
           >
-            <option value="">Status</option>
-            <option
-              v-for="(status, index) in statusOptions"
-              :value="status"
-              :key="index"
-            >
-              {{ status }}
-            </option>
-          </select>
+            {{ status }}
+          </option>
+        </select>
+
+        <div class="relative">
+          <div
+            class="flex justify-between items-center gap-x-2 p-3 border rounded-md bg-grey-50/80 cursor-pointer text-sm w-[120px]"
+            @click="showDropdown = !showDropdown"
+          >
+            <span>{{ activePeriod }}</span>
+            <span class="icon-calendar transition-transform duration-200"></span>
+          </div>
 
           <div
-            class="flex items-center px-3 py-2 text-sm border rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-grey-50/80"
+            v-if="showDropdown"
+            class="absolute z-10 mt-1 bg-white border rounded-md shadow-md w-full"
           >
-            <input
-              type="date"
-              v-model="selectedDate"
-              class="outline-none bg-grey-50/80"
-            />
-            <div class="icon icon-calendar text-[14px] "></div>
+            <div
+              v-for="(period, index) in periodList"
+              :key="index"
+              @click="processFilterSelection(period); showDropdown = false"
+              class="px-4 py-2 text-sm cursor-pointer hover:bg-indigo-50"
+            >
+              {{ period }}
+            </div>
           </div>
         </div>
-
-    
+      </div>
       </div>
     </template>
-    <template v-slot:pageContent>
 
-      
+    <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
         :tableBody="filteredTableBody"
@@ -45,11 +53,10 @@
         :emptyData="{
           title: 'No payout initiated yet',
           description:
-            'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your  initiated payout transactions.',
-             actionText: 'Initiate a Payout',
+            'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your initiated payout transactions.',
+          actionText: 'Initiate a Payout',
         }"
       >
-
         <TableContainerBody
           v-for="(payload, index) in filteredTableBody"
           :key="index"
@@ -78,7 +85,17 @@ const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
-const selectedDate = ref("");
+
+const activePeriod = ref("All Time");
+const showDropdown = ref(false);
+
+const periodList = ref([
+  "Today",
+  "Last 7 days",
+  "This month",
+  "Last month",
+  "All time",
+]);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 
@@ -94,8 +111,38 @@ const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 
 const getDateCreated = (date: string) => {
-  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const processFilterSelection = (selectedPeriod: string) => {
+  activePeriod.value = selectedPeriod;
+};
+
+const normalize = (val: string) => val?.trim().toLowerCase() || "";
+
+const isWithinPeriod = (date: Date, period: string): boolean => {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+  const sevenDaysAgo = new Date(now);
+  sevenDaysAgo.setDate(now.getDate() - 7);
+
+  switch (period) {
+    case "Today":
+      return date >= startOfToday;
+    case "Last 7 days":
+      return date >= sevenDaysAgo;
+    case "This month":
+      return date >= startOfMonth;
+    case "Last month":
+      return date >= startOfLastMonth && date <= endOfLastMonth;
+    case "All time":
+    default:
+      return true;
+  }
 };
 
 const fetchPayouts = async () => {
@@ -109,12 +156,8 @@ const fetchPayouts = async () => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => ({
-      // raw values (for filtering)
       raw_date: data.created_at,
       raw_status: data.status,
-
-      // formatted values (for display)
-     
       date_created: getDateCreated(data.created_at),
       reference_id: data.reference,
       amount_requested: getBoldTableText(
@@ -128,21 +171,16 @@ const fetchPayouts = async () => {
   }
 };
 
-
-const filteredTableBody = computed(() =>
-  tableBody.value.filter((tx) => {
+const filteredTableBody = computed(() => {
+  return tableBody.value.filter((tx) => {
+    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
     const matchesStatus = selectedStatus.value
-      ? tx.raw_status.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? tx.raw_status?.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
-
-    const matchesDate = selectedDate.value
-      ? new Date(tx.raw_date).toDateString() ===
-        new Date(selectedDate.value).toDateString()
-      : true;
-
+    const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
     return matchesStatus && matchesDate;
-  })
-);
+  });
+});
 
 onMounted(() => {
   fetchPayouts();
