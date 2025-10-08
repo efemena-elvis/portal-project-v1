@@ -1,15 +1,10 @@
 <template>
-  <div
-    :class="['form-block form-text-block', hasBottomPadding ? 'mb-5' : 'mb-0']"
-  >
+  <div :class="['form-block form-text-block', hasBottomPadding ? 'mb-5' : 'mb-0']">
     <!-- LABEL TEXT -->
     <label
       v-if="labelTitle"
       :for="labelId"
-      :class="[
-        inputBaseColor,
-        labelCompact ? 'form-label' : 'form-label-basic',
-      ]"
+      :class="[inputBaseColor, labelCompact ? 'form-label' : 'form-label-basic']"
       >{{ labelTitle }}</label
     >
 
@@ -19,18 +14,19 @@
           <div
             class="item-selection"
             ref="togglerRef"
-            @click="toggleDropdown(!showDropdown)"
+            @click="showMoreOptions ? toggleDropdown(!showDropdown) : null"
           >
             <div class="flex justify-start items-center gap-x-1">
-              <img
-                :src="countryFlag"
-                class="size-5 min-h-5 min-w-5 sm:hidden"
-              />
+              <img :src="countryFlag" class="size-5 min-h-5 min-w-5 sm:hidden" />
               <div class="selected-text">+{{ countryCode }}</div>
+
               <div
+                v-if="showMoreOptions"
                 class="toggler-icon icon-caret-down"
                 :class="showDropdown && 'rotate-180'"
               ></div>
+
+              <div v-else class="separator-icon"></div>
             </div>
           </div>
 
@@ -70,9 +66,7 @@
                       <div class="primary-text">{{ country.country }}</div>
                     </div>
 
-                    <div class="secondary-text">
-                      +{{ country.dialing_code }}
-                    </div>
+                    <div class="secondary-text">+{{ country.dialing_code }}</div>
                   </div>
                 </div>
               </div>
@@ -113,11 +107,7 @@ import { IPhoneInputField, IInputValidator } from "@packages/models";
 import { useValidators, useClickOutside } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
 
-const emits = defineEmits([
-  "inputChanged",
-  "countryCodeChanged",
-  "inputValidated",
-]);
+const emits = defineEmits(["inputChanged", "countryCodeChanged", "inputValidated"]);
 
 const props = withDefaults(defineProps<IPhoneInputField>(), {
   labelId: "",
@@ -129,6 +119,7 @@ const props = withDefaults(defineProps<IPhoneInputField>(), {
   isRequired: false,
   isDisabled: false,
   hasBottomPadding: true,
+  showMoreOptions: true,
   activeCountryCode: "",
 });
 
@@ -208,11 +199,7 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       break;
 
     case "validatePhone":
-      formErrorMsg.value = validatePhone(
-        formValue.value,
-        countryCode.value,
-        message
-      );
+      formErrorMsg.value = validatePhone(formValue.value, countryCode.value, message);
       break;
 
     default:
@@ -228,8 +215,7 @@ watch(
       (countryData) => countryData.dialing_code === activeCode
     );
 
-    countryFlag.value =
-      countryData?.flag || "https://flagsapi.com/NG/flat/64.png";
+    countryFlag.value = countryData?.flag || "https://flagsapi.com/NG/flat/64.png";
     countryName.value = countryData?.country || "";
     countryCode.value = countryData?.dialing_code || "234";
   },
@@ -282,6 +268,10 @@ watch(
 
           .toggler-icon {
             @apply text-grey-700 relative text-[15.5px] transition duration-300 ease-in-out;
+          }
+
+          .separator-icon {
+            @apply h-[18px] w-[1px] bg-grey-400/90 ml-2;
           }
         }
       }

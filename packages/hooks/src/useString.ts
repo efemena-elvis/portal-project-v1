@@ -131,9 +131,19 @@ export default function useString() {
   // ======================================================
   // CREATE AND CLICK ANCHOR TAG
   // ======================================================
-  const createAndClickAnchor = (href: string, target = "_self") => {
-    const anchor = document.createElement("a");
+  const createAndClickAnchor = (
+    href: string,
+    target = "_self",
+    noHistory = false
+  ): void => {
+    // This is the special case. It uses window.location.replace() which
+    // only works on the current window.
+    if (noHistory && target === "_self") {
+      window.location.replace(href);
+      return;
+    }
 
+    const anchor = document.createElement("a");
     anchor.href = href;
     anchor.target = target;
 
@@ -163,7 +173,9 @@ export default function useString() {
       "out of stock": "bg-red-100/75 text-red-800 border-red-300",
     };
 
-    return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${statusData[status.toLowerCase()]}'>${capitalizeFirstLetter(suffixText as string)}</div>`;
+    return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${
+      statusData[status.toLowerCase()]
+    }'>${capitalizeFirstLetter(suffixText as string)}</div>`;
   };
 
   // MASK NUMBER
@@ -202,7 +214,9 @@ export default function useString() {
   // CREATE PREVIEW LINK
   // ======================================================
   const createPreviewLink = (link: string, linkTitle?: string): string => {
-    return `<a class='text-green-600 underline cursor-pointer' href='${link}' target='_blank' rel='noopener noreferrer'>${linkTitle ?? "Preview"}</a>`;
+    return `<a class='text-green-600 underline cursor-pointer' href='${link}' target='_blank' rel='noopener noreferrer'>${
+      linkTitle ?? "Preview"
+    }</a>`;
   };
 
   return {

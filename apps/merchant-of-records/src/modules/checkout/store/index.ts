@@ -1,6 +1,6 @@
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import * as actions from "./actions";
-import { ref } from "vue";
 import { PaymentDetails, PaymentStatus } from "../types";
 
 export const useCheckoutStore = defineStore("checkout", () => {
@@ -20,6 +20,7 @@ export const useCheckoutStore = defineStore("checkout", () => {
   const updateFetchingPaymentDetails = (state: boolean) => {
     fetching_payment_details.value = state;
   };
+
   const updatePaymentStatus = (status: PaymentStatus | "idle") => {
     payment_status.value = status;
   };

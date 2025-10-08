@@ -581,9 +581,18 @@ const dialingCodes = countries.map((c) => c.dialing_code);
 const escapedCodes = dialingCodes.map((dc) =>
   dc.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")
 );
+
 export const dialingCodeRegex = new RegExp(
   `^(?:\\+)?(?:${escapedCodes.join("|")})`
 );
+
+export function getCountryByCurrencyShort(shortCode: string) {
+  return (
+    countries.find(
+      (c) => c.currency.short.toUpperCase() === shortCode.toUpperCase()
+    ) || null
+  );
+}
 
 export function getDialingCode(phone: string, fallback = "260") {
   // normalize (remove spaces, dashes, parentheses)

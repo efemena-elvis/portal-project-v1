@@ -4,6 +4,7 @@ export type PaymentDetails = {
   type: "payment";
   method: string;
   status: "pending" | "failed" | "success" | "successful";
+  country: string;
   currency: string;
   reference: string;
   business_id: string;
@@ -11,6 +12,7 @@ export type PaymentDetails = {
   environment: string;
   redirect_url: string;
   email: string;
+  customer?: any;
   customer_first_name: string;
   customer_last_name: string;
   phone_number: string;
@@ -24,10 +26,9 @@ export type PaymentDetails = {
 export type PaymentStatus = "pending" | "failed" | "success" | "successful";
 
 export type MobileMoneyPaymentRequest = {
-  account_number: string;
-  customer_first_name: string;
-  customer_last_name: string;
   phone_number: string;
-  email: string;
-  method: "mobilemoney";
+  method: string;
+  country: string;
+  business_name: string;
+  reference: string;
 };

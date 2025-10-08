@@ -7,12 +7,15 @@
         class="object-cover h-full w-full"
       />
     </div>
+
     <div class="text-lg font-semibold text-teal-900">
       {{ statusDetails.title }}
     </div>
+
     <div class="max-w-[600px] mx-auto my-6 text-center text-gray-700">
       {{ statusDetails.description }}
     </div>
+
     <button
       class="btn btn-lg btn-primary"
       v-if="details?.status === 'failed'"

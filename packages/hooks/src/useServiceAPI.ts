@@ -10,7 +10,7 @@ const { urlHash } = useString();
 interface IApiSetup {
   API_BASE_URL: string;
   API_VERSION?: string;
-  TOKEN_KEY: string;
+  TOKEN_KEY?: string;
   HEADERS?: Record<string, string>;
 }
 
@@ -52,31 +52,41 @@ class APIService {
   private readonly TOKEN_KEY: string;
   private readonly DEFAULT_HEADERS: Record<string, string>;
   private readonly DEFAULT_TIMEOUT: number = 15000; // 15 seconds
+  private axiosInstance;
 
   constructor(config: IApiSetup) {
     this.API_BASE_URL = config.API_BASE_URL;
     this.API_VERSION = config.API_VERSION || "";
-    this.TOKEN_KEY = config.TOKEN_KEY;
+    this.TOKEN_KEY = config.TOKEN_KEY || "";
     this.DEFAULT_HEADERS = {
       // "X-Requested-With": "XMLHttpRequest",
       ...(config.HEADERS || {}),
     };
 
-    this.initializeAxios();
+    // this.initializeAxios();
+    this.axiosInstance = this.initializeAxios();
     this.setupInterceptors();
   }
 
   // ======================================================
   // INITIALIZATION METHOD
   // ======================================================
-  private initializeAxios(): void {
-    axios.defaults.baseURL = this.API_VERSION
-      ? `${this.API_BASE_URL}/${this.API_VERSION}`
-      : this.API_BASE_URL;
+  // private initializeAxios(): void {
+  //   axios.defaults.baseURL = this.API_VERSION
+  //     ? `${this.API_BASE_URL}/${this.API_VERSION}`
+  //     : this.API_BASE_URL;
 
-    // console.log("API Base URL:", axios.defaults.baseURL);
+  //   // console.log("API Base URL:", axios.defaults.baseURL);
 
-    axios.defaults.timeout = this.DEFAULT_TIMEOUT;
+  //   axios.defaults.timeout = this.DEFAULT_TIMEOUT;
+  // }
+  private initializeAxios() {
+    return axios.create({
+      baseURL: this.API_VERSION
+        ? `${this.API_BASE_URL}/${this.API_VERSION}`
+        : this.API_BASE_URL,
+      timeout: this.DEFAULT_TIMEOUT,
+    });
   }
 
   // ======================================================
@@ -84,7 +94,7 @@ class APIService {
   // ======================================================
   private setupInterceptors(): void {
     // Step 1: Request interceptor
-    axios.interceptors.request.use((config: any) => {
+    this.axiosInstance.interceptors.request.use((config: any) => {
       // Add security headers to every request
       config.headers = {
         ...config.headers,
@@ -93,7 +103,7 @@ class APIService {
     });
 
     // Step 2: Response interceptor
-    axios.interceptors.response.use(
+    this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
       async (error: AxiosError) => {
         const originalConfig = error.config as CustomAxiosRequestConfig;
@@ -118,7 +128,7 @@ class APIService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.get<T>(urlHash(url), {
+      const response = await this.axiosInstance.get<T>(urlHash(url), {
         params: options.params,
         headers: this.prepareHeaders(options),
         signal: options.signal,
@@ -139,7 +149,7 @@ class APIService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.post<T>(url, payload, {
+      const response = await this.axiosInstance.post<T>(url, payload, {
         params: options.params,
         headers: this.prepareHeaders(options),
         signal: options.signal,
@@ -160,7 +170,7 @@ class APIService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.put<T>(url, payload, {
+      const response = await this.axiosInstance.put<T>(url, payload, {
         params: options.params,
         headers: this.prepareHeaders(options),
         signal: options.signal,
@@ -181,7 +191,7 @@ class APIService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.patch<T>(url, payload, {
+      const response = await this.axiosInstance.patch<T>(url, payload, {
         params: options.params,
         headers: this.prepareHeaders(options),
         signal: options.signal,
@@ -201,7 +211,7 @@ class APIService {
     options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await axios.delete<T>(url, {
+      const response = await this.axiosInstance.delete<T>(url, {
         params: options.params,
         headers: this.prepareHeaders(options),
         signal: options.signal,
