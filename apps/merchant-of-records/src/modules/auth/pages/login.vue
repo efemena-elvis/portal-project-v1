@@ -6,7 +6,7 @@
     <form @submit.prevent="handleUserLogin">
       <!-- EMAIL ADDRESS -->
       <TextFieldInput
-        labelId="bu nessEmail"
+        labelId="businessEmail"
         labelTitle="Email address"
         :labelCompact="false"
         :inputType="IInputType.Email"
@@ -39,9 +39,7 @@
       <div class="helper-row mt-5 mb-6">
         <div class="text">
           Forgot your password?
-          <router-link :to="{ name: 'VesicashPasswordRequest' }"
-            >Reset it</router-link
-          >
+          <router-link :to="{ name: 'VesicashPasswordRequest' }">Reset it</router-link>
         </div>
       </div>
 
@@ -56,9 +54,7 @@
       <div class="helper-row justify-center mt-7">
         <div class="text">
           Don't have an account yet?
-          <router-link :to="{ name: 'VesicashCreateAccount' }"
-            >Register now</router-link
-          >
+          <router-link :to="{ name: 'VesicashCreateAccount' }">Register now</router-link>
         </div>
       </div>
     </form>
@@ -90,9 +86,7 @@ const { loginUser } = useAuthStore();
 const { processAPIRequest } = useEvents();
 
 const isLoginReady = computed(() => {
-  return loginPayload.value.email &&
-    loginPayload.value.password &&
-    emailValidity.value
+  return loginPayload.value.email && loginPayload.value.password && emailValidity.value
     ? false
     : true;
 });
@@ -122,7 +116,7 @@ const handleUserLogin = async () => {
     },
   });
 
-  if (response.code === 200) {
+  if (response && response.code === 200) {
     // Check if user email is verified
     const { is_email_verified } = response.data;
 

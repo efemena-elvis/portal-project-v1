@@ -10,6 +10,7 @@ import complianceRoutes from "@/modules/compliance";
 import externalRoutes from "@/modules/external";
 import settingsRoutes from "@/modules/settings";
 import overviewRoutes from "@/modules/overview";
+import checkoutRoutes from "@/modules/checkout";
 
 const routes = [
   ...authRoutes,
@@ -19,6 +20,7 @@ const routes = [
   ...complianceRoutes,
   ...externalRoutes,
   ...settingsRoutes,
+  ...checkoutRoutes,
 
   {
     path: "/*",
@@ -38,7 +40,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    if (to.hash) {add
+    if (to.hash) {
       return {
         el: to.hash,
         behavior: "smooth",

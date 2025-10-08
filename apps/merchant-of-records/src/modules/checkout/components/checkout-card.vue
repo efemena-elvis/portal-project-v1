@@ -2,13 +2,13 @@
   <div class="rounded-xl bg-gray-50/95 p-6 md:p-4">
     <div class="flex items-center justify-between">
       <img
-        :src="renderImg('alexpay-logo.png')"
+        :src="renderImg('vesicash-brand.png')"
         alt="brand-logo"
-        class="w-[96px] h-[32px] object-center"
+        class="w-40 h-auto object-center"
       />
 
       <button
-        class="size-[28px] bg-white hover:bg-gray-50 transition-colors rounded-full"
+        class="size-8 bg-white hover:bg-gray-50 transition-colors rounded-full"
         title="Close checkout"
       >
         <div class="icon icon-times"></div>
@@ -47,9 +47,7 @@
         </div>
       </div>
 
-      <div
-        class="grid grid-cols-[repeat(auto-fit,_minmax(145.5px,_1fr))] gap-4 my-6"
-      >
+      <div class="grid grid-cols-[repeat(auto-fit,_minmax(145.5px,_1fr))] gap-4 my-6">
         <div
           :class="[
             'rounded-lg h-[69px] border-2 grid items-center px-4 transition-colors',
@@ -141,7 +139,7 @@
         <div class="flex gap-x-1 items-center">
           <div>Powered by</div>
           <img
-            :src="renderImg('alexpay-logo.png')"
+            :src="renderImg('vesicash-brand.svg')"
             class="w-[60.41px] h-[20px] object-center mt-1"
           />
         </div>
@@ -187,8 +185,12 @@ const mobile_country_code = ref("260");
 const email = ref("");
 const first_name = ref("");
 const last_name = ref("");
-const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
-  useMobileMoneyPayment();
+const {
+  fetchPaymentDetails,
+  store,
+  paymentButtonRef,
+  makePayment,
+} = useMobileMoneyPayment();
 
 watch(
   () => store.payment_details,
@@ -204,18 +206,13 @@ watch(
     first_name.value = customer_first_name;
     last_name.value = customer_last_name;
     if (!mobile_money_phone_number.value && phone_number) {
-      mobile_money_phone_number.value = phone_number.replace(
-        dialingCodeRegex,
-        ""
-      );
+      mobile_money_phone_number.value = phone_number.replace(dialingCodeRegex, "");
       mobile_country_code.value = getDialingCode(phone_number);
     }
   }
 );
 
-const mobile_money_phone_number = ref(
-  store.payment_details?.phone_number ?? ""
-);
+const mobile_money_phone_number = ref(store.payment_details?.phone_number ?? "");
 const route = useRoute();
 const reference = route.params.reference as string;
 onMounted(() => {
@@ -223,14 +220,10 @@ onMounted(() => {
 });
 
 const totalCost = computed(() => {
-  return (
-    (store.payment_details?.amount ?? 0) + (store.payment_details?.charge ?? 0)
-  );
+  return (store.payment_details?.amount ?? 0) + (store.payment_details?.charge ?? 0);
 });
 
-const hasCharge = computed(() =>
-  store.payment_details?.charge ? true : false
-);
+const hasCharge = computed(() => (store.payment_details?.charge ? true : false));
 
 const handlePayment = () => {
   const payload: MobileMoneyPaymentRequest = {

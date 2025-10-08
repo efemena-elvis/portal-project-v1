@@ -50,6 +50,7 @@ export interface IPhoneInputField {
   isDisabled?: boolean;
   activeCountryCode?: string;
   hasBottomPadding?: boolean;
+  showMoreOptions?: boolean;
   errorHandler?: IInputValidator;
 }
 

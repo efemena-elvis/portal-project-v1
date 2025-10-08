@@ -14,9 +14,8 @@ const checkoutRoutes: IRouteType[] = [
             /* webpackChunkName: "checkout" */ "@/modules/checkout/pages/checkout.vue"
           ),
         meta: {
-          // guest: true,
+          public: true,
           title: "Checkout",
-          requiresAuth: true,
         },
       },
     ],
