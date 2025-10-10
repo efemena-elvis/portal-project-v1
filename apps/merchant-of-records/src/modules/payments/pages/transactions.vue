@@ -198,6 +198,7 @@ const fetchPaymentTransactions = async () => {
           status: data.status,
           reference: data.reference,
         },
+        
       };
     });
     tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);

@@ -1,7 +1,6 @@
 <template>
-  <PageContentWrapper
-   
-  >
+  <PageContentWrapper>
+  
     <template #pageOptions>
     <div class="flex items-center gap-4 mb-4" v-if="tableBody.length > 0 && !isLoading">
       <div class="relative w-52">
@@ -35,6 +34,7 @@
       </div>
     </div>
 </template>
+  <template #pageContent>
     <TableContainer
       :tableHeader="tableHeader"
       :tableBody="filteredTableBody"
@@ -51,6 +51,7 @@
         :tableData="payload"
       />
     </TableContainer>
+    </template>
   </PageContentWrapper>
 </template>
 
