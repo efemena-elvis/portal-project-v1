@@ -74,7 +74,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
     }
 
     &--right {
-      @apply flex justify-end items-center gap-3 sm:w-full;
+      @apply flex justify-end items-center gap-3 sm:w-full sm:mt-7;
     }
   }
 
