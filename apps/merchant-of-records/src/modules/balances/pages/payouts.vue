@@ -1,54 +1,40 @@
 <template>
   <PageContentWrapper>
-    <template #pageOptions>
-      <div class="button-row">
-        <div class="flex items-center gap-3 mr-12">
+    <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
+    
+    
+     <div class="relative w-48 sm:w-1/2 border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800  ">
         <select
           v-model="selectedStatus"
-          class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80 w-[120px]"
+          class=" appearance-none w-full p-4 bg-transparent focus:outline-none"
         >
           <option value="">Status</option>
           <option
-            class="bg-white rounded-md"
             v-for="(status, index) in statusOptions"
-            :value="status"
+            :value="status.toLowerCase()"
             :key="index"
           >
             {{ status }}
           </option>
         </select>
-
-        <div class="relative">
-          <div
-            class="flex justify-between items-center gap-x-2 p-3 border rounded-md bg-grey-50/80 cursor-pointer text-sm w-[120px]"
-            @click="showDropdown = !showDropdown"
-          >
-            <span>{{ activePeriod }}</span>
-            <span class="icon-calendar transition-transform duration-200"></span>
-          </div>
-
-          <div
-            v-if="showDropdown"
-            class="absolute z-10 mt-1 bg-white border rounded-md shadow-md w-full"
-          >
-            <div
-              v-for="(period, index) in periodList"
-              :key="index"
-              @click="processFilterSelection(period); showDropdown = false"
-              class="px-4 py-2 text-sm cursor-pointer hover:bg-indigo-50"
-            >
-              {{ period }}
-            </div>
-          </div>
-        </div>
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
       </div>
-      </div>
+
+          <DatePicker  
+          filterSize="lg"
+          :activePeriod="activePeriod"
+          @onFilterSelected="processFilterSelection"/>
+  
+    
+    
     </template>
 
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
+     :tableBody="filteredTableBody"
         :isLoading="isLoading"
         :emptyData="{
           title: 'No payout initiated yet',
@@ -73,6 +59,7 @@ import { ref, computed, onMounted } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
+import { DatePicker } from "@packages/uikit";
 import {
   TableContainer,
   TableContainerBody,
@@ -86,16 +73,8 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref(true);
 const selectedStatus = ref("");
 
-const activePeriod = ref("All Time");
+const activePeriod = ref<[Date, Date] | null>(null);
 const showDropdown = ref(false);
-
-const periodList = ref([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 
@@ -115,33 +94,36 @@ const getDateCreated = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const processFilterSelection = (selectedPeriod: string) => {
-  activePeriod.value = selectedPeriod;
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 };
 
-const normalize = (val: string) => val?.trim().toLowerCase() || "";
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
 
-const isWithinPeriod = (date: Date, period: string): boolean => {
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999); 
 
-  switch (period) {
-    case "Today":
-      return date >= startOfToday;
-    case "Last 7 days":
-      return date >= sevenDaysAgo;
-    case "This month":
-      return date >= startOfMonth;
-    case "Last month":
-      return date >= startOfLastMonth && date <= endOfLastMonth;
-    case "All time":
-    default:
-      return true;
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
+
+
+
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
   }
 };
 
@@ -177,7 +159,7 @@ const filteredTableBody = computed(() => {
     const matchesStatus = selectedStatus.value
       ? tx.raw_status?.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
-    const matchesDate = rawDate ? isWithinPeriod(rawDate, activePeriod.value) : true;
+    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
     return matchesStatus && matchesDate;
   });
 });
@@ -185,4 +167,10 @@ const filteredTableBody = computed(() => {
 onMounted(() => {
   fetchPayouts();
 });
+
+
 </script>
+
+<style scoped>
+
+ </style>

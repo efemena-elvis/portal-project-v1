@@ -10,3 +10,4 @@ export { default as TabBar } from "./tab-bar.vue";
 export { default as MetricInfoCard } from "./metric-info-card.vue";
 export { default as StatusFilterCard } from "./status-filter-card.vue";
 export { default as DateFilterCard } from "./date-filter-card.vue";
+export { default as DatePicker } from "./date-picker.vue";

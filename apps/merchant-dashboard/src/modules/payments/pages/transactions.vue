@@ -1,88 +1,56 @@
 <template>
   <PageContentWrapper>
+  
     <template #pageOptions>
-      <div class="button-row">
-        <div class="flex items-center gap-3 mr-12">
-          <select
-            v-model="selectedMethod"
-            class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80"
-          >
-            <option value=""  class="bg-white rounded-md">Payment Method</option>
-            <option
-             class="bg-white rounded-md"
-              v-for="(method, index) in paymentMethods"
-              :value="method"
-              :key="index"
-            >
-              {{ method }}
-            </option>
-          </select>
-
-          <select
-            v-model="selectedStatus"
-            class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none bg-grey-50/80 w-[120px]"
-          >
-            <option value="">Status</option>
-            <option
-            class="bg-white rounded-md"
-              v-for="(status, index) in statusOptions"
-              :value="status"
-              :key="index"
-            >
-              {{ status }}
-            </option>
-          </select>
-
-          <div class="relative">
-            <div
-              class="flex justify-between items-center gap-x-2 p-3 border rounded-md bg-grey-50/80 cursor-pointer text-sm w-[120px]"
-              @click="showDropdown = !showDropdown"
-            >
-              <span>{{ activePeriod }}</span>
-              <span
-                class="icon-calendar transition-transform duration-200"
-                
-              ></span>
-            </div>
-
-            <div
-              v-if="showDropdown"
-              class="absolute z-10 mt-1 bg-white border rounded-md shadow-md w-full"
-            >
-              <div
-                v-for="(period, index) in periodList"
-                :key="index"
-                @click="processFilterSelection(period); showDropdown = false"
-                class="px-4 py-2 text-sm cursor-pointer hover:bg-indigo-50"
-              >
-                {{ period }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button @click="exportToExcel" class="btn btn-secondary">Export</button>
+    <div class="flex items-center gap-4 mb-4" v-if="tableBody.length > 0 && !isLoading">
+      <div class="relative w-52">
+        <select
+          v-model="selectedMethod"
+          class="w-full p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
+        >
+          <option value="">Payment Method</option>
+          <option v-for="(method, index) in paymentMethods" :value="method" :key="index">
+            {{ method }}
+          </option>
+        </select>
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
       </div>
-    </template>
 
-    <template #pageContent>
-      <TableContainer
+      <div class="relative w-36">
+        <select
+          v-model="selectedStatus"
+          class="w-full p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
+        >
+          <option value="">Status</option>
+          <option v-for="(status, index) in statusOptions" :value="status.toLowerCase()" :key="index">
+            {{ status }}
+          </option>
+        </select>
+        <div
+          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+        ></div>
+      </div>
+    </div>
+</template>
+  <template #pageContent>
+    <TableContainer
+      :tableHeader="tableHeader"
+      :tableBody="filteredTableBody"
+      :isLoading="isLoading"
+      :emptyData="{
+        title: 'No transaction yet',
+        description: 'We haven\'t received any payment on this account yet. This is where you\'ll be able to see all your collected transactions',
+      }"
+    >
+      <TableContainerBody
+        v-for="(payload, index) in filteredTableBody"
+        :key="index"
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
-        :isLoading="isLoading"
-        :emptyData="{
-          title: 'No transactions yet!',
-          description:
-            'No transactions have been initiated on your account yet.',
-        }"
-      >
-        <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
-          :key="index"
-          :tableHeader="tableHeader"
-          :tableData="payload"
-        />
-      </TableContainer>
+        :tableData="payload"
+      />
+    </TableContainer>
     </template>
   </PageContentWrapper>
 </template>
@@ -93,6 +61,7 @@ import { ref, h, computed, onMounted } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
+import { DatePicker } from "@packages/uikit";
 import {
   TableContainer,
   TableContainerBody,
@@ -107,18 +76,9 @@ const { getTransactions } = usePaymentStore();
 const isLoading = ref(true);
 const selectedMethod = ref("");
 const selectedStatus = ref("");
-const activePeriod = ref("All Time");
-const showDropdown = ref(false);
+const activePeriod = ref<[Date, Date] | null>(null);
 
-const periodList = ref([
-  "Today",
-  "Last 7 days",
-  "This month",
-  "Last month",
-  "All time",
-]);
-
-const statusOptions = ["Successful", "Failed"];
+const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
 
 const tableHeader = ref<TableHeaderType[]>([
@@ -134,42 +94,37 @@ const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
 
 const getTransactionDate = (date: string) => {
-  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const normalize = (val: string) => val?.trim().toLowerCase() || "";
-
-const isWithinPeriod = (date: Date, period: string): boolean => {
-  const now = new Date();
-  const startOfToday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  );
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-  const sevenDaysAgo = new Date(now);
-  sevenDaysAgo.setDate(now.getDate() - 7);
-
-  switch (period) {
-    case "Today":
-      return date >= startOfToday;
-    case "Last 7 days":
-      return date >= sevenDaysAgo;
-    case "This month":
-      return date >= startOfMonth;
-    case "Last month":
-      return date >= startOfLastMonth && date <= endOfLastMonth;
-    case "All time":
-    default:
-      return true;
-  }
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
 };
 
-const processFilterSelection = (selectedPeriod: string) => {
-  activePeriod.value = selectedPeriod;
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999);
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
+
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
+  }
 };
 
 const fetchPaymentTransactions = async () => {
@@ -178,13 +133,13 @@ const fetchPaymentTransactions = async () => {
     payload: {},
     showAlert: false,
   });
+
   isLoading.value = false;
+
   if (response?.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
-      const chargeAmount = `Charge: ${data.currency} ${formatNumber(
-        data.charge
-      )}`;
+      const formattedAmount = `${formatNumber(data.amount)}`;
+      const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
       const customerName = data.customer
         ? `${data.customer.firstname} ${data.customer.lastname}`
         : "No customer info";
@@ -206,7 +161,7 @@ const fetchPaymentTransactions = async () => {
           date_created: getTransactionDate(data.created_at),
           raw_date: createdDate,
           customer_details: `${customerName} (${customerEmail})`,
-          amount: `${formattedAmount} (${chargeAmount})`,
+          amount: `${formattedAmount}`,
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
           reference: data.reference,
@@ -219,19 +174,22 @@ const fetchPaymentTransactions = async () => {
 
 const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
-    const method = normalize(tx.raw?.payment_details);
-    const status = normalize(tx.raw?.status);
+    const method = tx.raw?.payment_details?.toLowerCase();
+    const status = tx.raw?.status?.toLowerCase();
     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
+
     const matchesMethod = selectedMethod.value
-      ? tx.raw.payment_details.toLowerCase() ===
-        selectedMethod.value.toLowerCase()
+      ? method === selectedMethod.value.toLowerCase()
       : true;
+
     const matchesStatus = selectedStatus.value
-      ? tx.raw.status.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? status === selectedStatus.value
       : true;
+
     const matchesDate = rawDate
-      ? isWithinPeriod(rawDate, activePeriod.value)
+      ? isWithinRange(rawDate, activePeriod.value)
       : true;
+
     return matchesMethod && matchesStatus && matchesDate;
   });
 });
@@ -249,17 +207,23 @@ const exportToExcel = () => {
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-  XLSX.writeFile(workbook, "transactions.xlsx");
+  XLSX.writeFile(workbook, "Merchant_Transactions.xlsx");
 };
 
 onMounted(fetchPaymentTransactions);
 </script>
 
 <style lang="scss" scoped>
-.button-row {
-  @apply flex justify-between items-center gap-x-2;
-  .btn {
-    @apply py-2.5 px-5 h-10;
+.export-btn {
+  @apply transition-colors duration-200;
+  @media (max-width: 640px) {
+    @apply w-1/2;
+  }
+}
+
+.filter-select {
+  @media (max-width: 640px) {
+    @apply w-full;
   }
 }
 </style>
