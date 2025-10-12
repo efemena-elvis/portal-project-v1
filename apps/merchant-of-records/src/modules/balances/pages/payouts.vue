@@ -90,10 +90,10 @@ const statusOptions = ["Successful", "Pending", "Failed"];
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
-  { title: "Payout Reference", slug: "reference" },
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
+   { title: "Payout Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
