@@ -22,11 +22,20 @@
         ></div>
       </div>
 
-          <DatePicker  
-          filterSize="lg"
-          :activePeriod="activePeriod"
-          @onFilterSelected="processFilterSelection"/>
-  
+               <div class="flex items-center w-full gap-3">
+          <DatePicker
+            filterSize="lg"
+            :activePeriod="activePeriod"
+            @onFilterSelected="processFilterSelection"
+          />
+          <button
+            @click="exportToExcel"
+            class="w-full sm:w-1/2 p-4 border rounded-md font-semibold text-sm text-teal-800 hover:bg-teal-50 transition-all duration-200"
+          >
+            Export
+          </button>
+        </div>
+
     
     
     </template>
@@ -60,6 +69,7 @@ import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
 import { DatePicker } from "@packages/uikit";
+import * as XLSX from "xlsx";
 import {
   TableContainer,
   TableContainerBody,
@@ -80,7 +90,7 @@ const statusOptions = ["Successful", "Pending", "Failed"];
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
-  { title: "Payout Reference", slug: "reference_id" },
+  { title: "Payout Reference", slug: "reference" },
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
@@ -137,27 +147,54 @@ const fetchPayouts = async () => {
   isLoading.value = false;
 
   if (response.code === 200) {
-    tableBody.value = response.data.map((data: any) => ({
-      raw_date: data.created_at,
-      raw_status: data.status,
+    tableBody.value = response.data.map((data: any) => {
+      const formattedAmount = `${formatNumber(data.amount)}`
+        const createdDate = new Date(data.created_at);
+   
+return {
       date_created: getDateCreated(data.created_at),
-      reference_id: data.reference,
+      reference: data.reference,
       amount_requested: getBoldTableText(
         `${data.currency} ${formatNumber(data.amount)}`
       ),
       narration: data.narration,
       status: getStatus(data.status, data.status),
-    }));
+
+         raw: {
+          date_created: getDateCreated(data.created_at),
+         raw_date: createdDate,
+          amount: formattedAmount,
+          status: data.status ?? "-",
+          reference: data.reference ?? "-",
+        
+        },
+      }
+    });
 
     tablePaging.value = response.pagination[0];
   }
 };
 
+const exportToExcel = () => {
+  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
+  const cleanData = dataToExport.map((tx) => ({
+    "Date Created": tx.date_created,
+    "Amount": tx.amount || "-",
+    "Status": tx.status,
+    "Reference": tx.reference,
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(cleanData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Payouts");
+  XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
+};
+
 const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
-    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
+    const rawDate = tx.raw.raw_date ? new Date(tx.raw.raw_date) : null;
     const matchesStatus = selectedStatus.value
-      ? tx.raw_status?.toLowerCase() === selectedStatus.value.toLowerCase()
+      ? tx.raw?.status?.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
     const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
     return matchesStatus && matchesDate;
