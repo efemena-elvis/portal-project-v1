@@ -1,59 +1,92 @@
 <template>
   <PageContentWrapper>
-  
     <template #pageOptions>
-    <div class="flex items-center gap-4 mb-4" v-if="tableBody.length > 0 && !isLoading">
-      <div class="relative w-52">
-        <select
-          v-model="selectedMethod"
-          class="w-full p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
-        >
-          <option value="">Payment Method</option>
-          <option v-for="(method, index) in paymentMethods" :value="method" :key="index">
-            {{ method }}
-          </option>
-        </select>
-        <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-        ></div>
-      </div>
+      <div
+        class="flex sm:flex-wrap sm:flex-row-reverse items-center gap-4"
+        v-if="tableBody.length > 0 && !isLoading"
+      >
+        <div class="flex justify-between items-center gap-4 w-full">
+          <div
+            class="relative w-48 filter-select border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800"
+          >
+            <select
+              v-model="selectedMethod"
+              class="appearance-none w-full p-4 focus:outline-none bg-transparent"
+            >
+              <option value="">Payment Method</option>
+              <option
+                v-for="(method, index) in paymentMethods"
+                :value="method"
+                :key="index"
+              >
+                {{ method }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
 
-      <div class="relative w-36">
-        <select
-          v-model="selectedStatus"
-          class="w-full p-4 text-sm font-semibold text-teal-800 border rounded-md appearance-none cursor-pointer focus:outline-none"
-        >
-          <option value="">Status</option>
-          <option v-for="(status, index) in statusOptions" :value="status.toLowerCase()" :key="index">
-            {{ status }}
-          </option>
-        </select>
-        <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-        ></div>
+          <div
+            class="relative w-48 filter-select border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800"
+          >
+            <select
+              v-model="selectedStatus"
+              class="appearance-none w-full p-4 bg-transparent focus:outline-none"
+            >
+              <option value="">Status</option>
+              <option
+                v-for="(status, index) in statusOptions"
+                :value="status.toLowerCase()"
+                :key="index"
+              >
+                {{ status }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
+        </div>
+
+        <div class="flex items-center w-full gap-4">
+          <DatePicker
+            filterSize="lg"
+            :activePeriod="activePeriod"
+            @onFilterSelected="processFilterSelection"
+          />
+          <button
+            @click="exportToExcel"
+            class="export-btn w-48 sm:w-1/2 p-4 border rounded-md font-semibold text-sm text-teal-800 hover:bg-teal-50 transition-all duration-200"
+          >
+            Export
+          </button>
+        </div>
       </div>
-    </div>
-</template>
-  <template #pageContent>
-    <TableContainer
-      :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
-      :isLoading="isLoading"
-      :emptyData="{
-        title: 'No transaction yet',
-        description: 'We haven\'t received any payment on this account yet. This is where you\'ll be able to see all your collected transactions',
-      }"
-    >
-      <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
-        :key="index"
+    </template>
+
+    <template #pageContent>
+      <TableContainer
         :tableHeader="tableHeader"
-        :tableData="payload"
-      />
-    </TableContainer>
+        :tableBody="filteredTableBody"
+        :isLoading="isLoading"
+        :emptyData="{
+          title: 'No transactions yet!',
+          description:
+            'No transactions have been initiated on your account yet.',
+        }"
+      >
+        <TableContainerBody
+          v-for="(payload, index) in filteredTableBody"
+          :key="index"
+          :tableHeader="tableHeader"
+          :tableData="payload"
+        />
+      </TableContainer>
     </template>
   </PageContentWrapper>
 </template>
+
 
 <script setup lang="ts">
 import * as XLSX from "xlsx";
