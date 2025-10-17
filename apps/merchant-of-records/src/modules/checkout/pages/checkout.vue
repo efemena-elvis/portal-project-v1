@@ -71,7 +71,7 @@ import MobileMoneyForm from "../components/mobile-money-form.vue";
 import CardPaymentForm from "../components/card-payment-form.vue";
 import { useImage } from "@/shared/composables";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
-import { getCountryByCurrencyShort } from "@packages/constants";
+import { getCountryByCurrencyShort, getCountryByCode } from "@packages/constants";
 import { useEvents } from "@packages/hooks";
 
 const router = useRouter();
@@ -136,18 +136,18 @@ watch(
 
     setTimeout(() => (checkoutLoading.value = false), 500);
 
-    const { currency, country, amount, redirect_url } = transaction_details;
+    const { currency, country, country_code, amount, redirect_url } = transaction_details;
     const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
 
-    paymentCurrency.value = currency ?? "ZMW";
-    paymentCountry.value = country;
+    paymentCurrency.value = currency ?? null;
+    paymentCountry.value = country || (getCountryByCode(country_code)?.country as string);
     paymentCountryCode.value = countryPayload?.dialing_code || "260";
 
     paymentRedirectURL.value = redirect_url;
     paymentAmount.value = amount ?? 0;
   }
 );
-  
+
 fetchPaymentDetails();
 </script>
 

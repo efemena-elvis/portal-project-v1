@@ -594,6 +594,12 @@ export function getCountryByCurrencyShort(shortCode: string) {
   );
 }
 
+export function getCountryByCode(code: string) {
+  return (
+    countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) || null
+  );
+}
+
 export function getDialingCode(phone: string, fallback = "260") {
   // normalize (remove spaces, dashes, parentheses)
   const normalized = phone.replace(/[\s()-]/g, "");

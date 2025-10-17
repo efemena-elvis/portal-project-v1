@@ -5,6 +5,7 @@ export type PaymentDetails = {
   method: string;
   status: "pending" | "failed" | "success" | "successful";
   country: string;
+  country_code: string;
   currency: string;
   reference: string;
   business_id: string;

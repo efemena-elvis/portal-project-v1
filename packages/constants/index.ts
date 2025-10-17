@@ -2,6 +2,7 @@ export { default as countryCurrencies } from "./src/country-currencies";
 export {
   dialingCodeRegex,
   getDialingCode,
+  getCountryByCode,
   getCountryByCurrencyShort,
 } from "./src/country-currencies";
 export { default as zambiaProvinceList } from "./src/zambia-provinces";
