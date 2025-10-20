@@ -3,10 +3,10 @@
     <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
     
     
-     <div class="relative w-48 sm:w-1/2 border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800  ">
+     <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
         <select
           v-model="selectedStatus"
-          class=" appearance-none w-full p-4 bg-transparent focus:outline-none"
+          class="w-full p-4 bg-transparent appearance-none focus:outline-none"
         >
           <option value="">Status</option>
           <option
@@ -30,7 +30,7 @@
           />
           <button
             @click="exportToExcel"
-            class="w-full sm:w-1/2 p-4 border rounded-md font-semibold text-sm text-teal-800 hover:bg-teal-50 transition-all duration-200"
+            class="w-full p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
           >
             Export
           </button>
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted , h} from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
@@ -74,6 +74,7 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
+   TableDoubleColumn,
 } from "@packages/uikit";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
@@ -152,7 +153,12 @@ const fetchPayouts = async () => {
         const createdDate = new Date(data.created_at);
    
 return {
-      date_created: getDateCreated(data.created_at),
+      date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getDateCreated(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
       reference: data.reference,
       amount_requested: getBoldTableText(
         `${data.currency} ${formatNumber(data.amount)}`
@@ -161,7 +167,7 @@ return {
       status: getStatus(data.status, data.status),
 
          raw: {
-          date_created: getDateCreated(data.created_at),
+          date_created:`${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
          raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
