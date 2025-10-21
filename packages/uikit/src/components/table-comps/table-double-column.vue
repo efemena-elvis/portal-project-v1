@@ -41,11 +41,11 @@ defineProps({
     @apply flex flex-col justify-start items-start gap-y-[3px];
 
     .primary-column-text {
-      @apply text-grey-800/90 font-semibold text-sm;
+      @apply text-grey-800/90 font-semibold text-[13px];
     }
 
     .secondary-column-text {
-      @apply text-grey-600 text-[13px];
+      @apply text-grey-600 text-sm;
     }
   }
 }

@@ -67,7 +67,12 @@ const fetchPaymentTransactions = async () => {
   if (response?.code === 200) {
     response.data.slice(0, 5).map((data: any) => {
       tableBody.push({
-        date_created: getTransactionDate(data.created_at),
+         date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         customer_details: data.customer
           ? h(TableDoubleColumn, {
               entry: {
