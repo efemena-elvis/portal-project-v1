@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed} from "vue";
+import { ref, reactive, onMounted, computed, h} from "vue";
 import { useString, useDate, useEvents } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import { useBalanceStore } from "../store";
@@ -39,6 +39,7 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
+  TableDoubleColumn
 } from "@packages/uikit";
 
 const {
@@ -119,7 +120,12 @@ const fetchBalanceHistory = async () => {
         status: transactionFlowIcon(
           data.type === "credit" ? "receive" : "send"
         ),
-        date_created: getTransactionDate(data.balance_at),
+         date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.balance_at),
+            secondaryText: useDate.formatTime(data.balance_at),
+          },
+        }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
         balance_before: `ZMW ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(

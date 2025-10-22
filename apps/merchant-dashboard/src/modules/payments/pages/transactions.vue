@@ -2,16 +2,16 @@
   <PageContentWrapper>
     <template #pageOptions>
       <div
-        class="flex sm:flex-wrap sm:flex-row-reverse items-center gap-4"
+        class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse"
         v-if="tableBody.length > 0 && !isLoading"
       >
-        <div class="flex justify-between items-center gap-4 w-full">
+        <div class="flex items-center justify-between w-full gap-4">
           <div
-            class="relative w-48 filter-select border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800"
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
           >
             <select
               v-model="selectedMethod"
-              class="appearance-none w-full p-4 focus:outline-none bg-transparent"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
             >
               <option value="">Payment Method</option>
               <option
@@ -28,11 +28,11 @@
           </div>
 
           <div
-            class="relative w-48 filter-select border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800"
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
           >
             <select
               v-model="selectedStatus"
-              class="appearance-none w-full p-4 bg-transparent focus:outline-none"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
             >
               <option value="">Status</option>
               <option
@@ -57,7 +57,7 @@
           />
           <button
             @click="exportToExcel"
-            class="export-btn w-48 sm:w-1/2 p-4 border rounded-md font-semibold text-sm text-teal-800 hover:bg-teal-50 transition-all duration-200"
+            class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md export-btn sm:w-1/2 hover:bg-teal-50"
           >
             Export
           </button>
@@ -86,7 +86,6 @@
     </template>
   </PageContentWrapper>
 </template>
-
 
 <script setup lang="ts">
 import * as XLSX from "xlsx";
@@ -180,7 +179,12 @@ const fetchPaymentTransactions = async () => {
       const createdDate = new Date(data.created_at);
 
       return {
-        date_created: getTransactionDate(data.created_at),
+        date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         customer_details: h(TableDoubleColumn, {
           entry: { primaryText: customerName, secondaryText: customerEmail },
         }),
@@ -191,7 +195,7 @@ const fetchPaymentTransactions = async () => {
         status: getStatus(data.status, data.status),
         reference: data.reference,
         raw: {
-          date_created: getTransactionDate(data.created_at),
+          date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
           customer_details: `${customerName} (${customerEmail})`,
           amount: `${formattedAmount}`,

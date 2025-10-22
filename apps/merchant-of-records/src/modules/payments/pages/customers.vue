@@ -1,10 +1,10 @@
 <template>
   <PageContentWrapper>
        <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
-      <div class="relative w-48 sm:w-1/2 border rounded-md bg-grey-50/80 cursor-pointer text-sm font-semibold text-teal-800  ">
+      <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
         <select
           v-model="selectedStatus"
-          class=" appearance-none w-full p-4 bg-transparent focus:outline-none"
+          class="w-full p-4 bg-transparent appearance-none focus:outline-none"
         >
           <option value="">Status</option>
           <option
@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed} from "vue";
+import { ref, reactive, onMounted, computed, h} from "vue";
 import { TableHeaderType } from "@packages/models";
 import { usePaymentStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
@@ -60,6 +60,7 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
+  TableDoubleColumn
 } from "@packages/uikit";
 
 const { formatNumber, getStatus, notAvailable } = useString();
@@ -136,7 +137,12 @@ const fetchCustomers = async () => {
       const createdDate = new Date(Date.parse(data.created_at));
 
       return {
-        date_created: getDateAdded(data.created_at),
+         date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getDateAdded(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         full_name: `${data.firstname} ${data.lastname}`,
         customer_email: data.email,
         phone_number: data.phone_number

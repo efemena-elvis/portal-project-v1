@@ -119,6 +119,18 @@ checkDateHasTime(date: string) {
     return this;
   }
 
+  formatTime = (date: string) => {
+  const d = new Date(date);
+  const hours = d.getHours();
+  const minutes = d.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const formattedHours = hours % 12 || 12;
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+
+  const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
+  return timeString;
+};
+
   timeDifference() {
     const timeStamp = this.datetime_zone.getTime();
 

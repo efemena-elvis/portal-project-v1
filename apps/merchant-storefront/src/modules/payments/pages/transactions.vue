@@ -178,7 +178,12 @@ const fetchPaymentTransactions = async () => {
       const customerEmail = data.customer ? data.customer.email : "";
 
       return {
-        date_created: getTransactionDate(data.created_at),
+       date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getTransactionDate(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         customer_details: h(TableDoubleColumn, {
           entry: { primaryText: customerName, secondaryText: customerEmail },
         }),
@@ -190,7 +195,7 @@ const fetchPaymentTransactions = async () => {
         reference: data.reference,
 
         raw: {
-          date: new Date(data.created_at),
+          date: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           method: data.method,
           status: data.status,
           customer_details: `${customerName} (${customerEmail})`,
