@@ -1,113 +1,37 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Transactions">
+  <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
     <template #pageOptions>
-      <div class="button-row">
-        <div class="flex items-center gap-3 mr-12">
-          <select
-            v-model="selectedMethod"
-            class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-grey-50/80"
-          >
-            <option value="">Payment Method</option>
-            <option
-              v-for="(method, index) in paymentMethods"
-              :value="method"
-              :key="index"
-            >
-              {{ method }}
-            </option>
-          </select>
+      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
+        <div class="flex items-center justify-between w-full gap-4">
+          <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
+            <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
+              <option value="">Payment Method</option>
+              <option v-for="(method, index) in paymentMethods" :value="method" :key="index">{{ method }}</option>
+            </select>
+            <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>
+          </div>
 
-          <select
-            v-model="selectedStatus"
-            class="p-3 text-sm border rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-grey-50/80"
-          >
-            <option value="">Status</option>
-            <option
-              v-for="(status, index) in statusOptions"
-              :value="status"
-              :key="index"
-            >
-              {{ status }}
-            </option>
-          </select>
-
-          <div
-            class="flex items-center px-3 py-2 text-sm border rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-grey-50/80"
-          >
-            <input
-              type="date"
-              v-model="selectedDate"
-              class="outline-none bg-grey-50/80"
-            />
-            <div class="icon icon-calendar text-[14px]"></div>
+          <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
+            <select v-model="selectedStatus" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
+              <option value="">Status</option>
+              <option v-for="(status, index) in statusOptions" :value="status.toLowerCase()" :key="index">{{ status }}</option>
+            </select>
+            <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>
           </div>
         </div>
 
-        <button @click="exportToExcel" class="btn btn-secondary">Export</button>
+        <div class="flex items-center w-full gap-4">
+          <DatePicker filterSize="lg" :activePeriod="activePeriod" @onFilterSelected="processFilterSelection" />
+          <button @click="exportToExcel" class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md export-btn sm:w-1/2 hover:bg-teal-50">
+            Export
+          </button>
+        </div>
       </div>
     </template>
 
-    <template v-slot:pageContent>
-      <!-- CARD INFO ROW -->
-      <div class="mt-4 mb-8">
-        <MetricInfoCard
-          :metric-items="[
-            { titleText: 'Completed Transactions', valueText: '0' },
-            { titleText: 'Pending Transactions', valueText: '0' },
-            { titleText: 'Failed Transactions', valueText: '0' },
-          ]"
-        />
-      </div>
-
-      <div class="flex items-center justify-between mb-3 gap-x-4">
-        <!-- STATUS FILTER CARD -->
-        <StatusFilterCard
-          :status-items="[
-            {
-              title: 'All Transactions',
-              slug: 'all-transactions',
-              active: false,
-            },
-            {
-              title: 'Completed Transactions',
-              slug: 'completed-transactions',
-              active: false,
-            },
-            {
-              title: 'Pending Transactions',
-              slug: 'pending-transactions',
-              active: false,
-            },
-            {
-              title: 'Failed Transactions',
-              slug: 'failed-transactions',
-              active: false,
-            },
-          ]"
-        />
-
-        <DateFilterCard />
-      </div>
-
-      <TableContainer
-        :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
-        :isLoading="isLoading"
-        :emptyData="{
-          title: 'No transactions yet!',
-          description:
-            'No transactions has been initiated on your account yet. Add a product to fix that',
-        }"
-        @onActionClicked="
-          () => router.push('/products/create?redirect=transactions')
-        "
-      >
-        <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
-          :key="index"
-          :tableHeader="tableHeader"
-          :tableData="payload"
-        />
+    <template #pageContent>
+      <TableContainer :tableHeader="tableHeader" :tableBody="filteredTableBody" :isLoading="isLoading" :emptyData="{ title: 'No transactions yet!', description: 'No transactions have been initiated on your account yet.' }">
+        <TableContainerBody v-for="(payload, index) in filteredTableBody" :key="index" :tableHeader="tableHeader" :tableData="payload" />
       </TableContainer>
     </template>
   </PageContentWrapper>
@@ -115,55 +39,72 @@
 
 <script setup lang="ts">
 import * as XLSX from "xlsx";
-import { ref, h, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, h, computed, onMounted } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
+import { DatePicker } from "@packages/uikit";
+import { TableContainer, TableContainerBody, TableDoubleColumn, PageContentWrapper } from "@packages/uikit";
 
-import {
-  TableContainer,
-  TableContainerBody,
-  TableDoubleColumn,
-  PageContentWrapper,
-  MetricInfoCard,
-  StatusFilterCard,
-  DateFilterCard,
-} from "@packages/uikit";
-
-const router = useRouter();
 const { formatNumber, getStatus, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
 const isLoading = ref(true);
+const selectedMethod = ref("");
+const selectedStatus = ref("");
+const activePeriod = ref<[Date, Date] | null>(null);
+
+const statusOptions = ["Successful", "Pending", "Failed"];
+const paymentMethods = ["Card", "Mobilemoney"];
+
 const tableHeader = ref<TableHeaderType[]>([
-  { title: "Transaction Info", slug: "info" },
-  { title: "Customer Details", slug: "customer" },
-  { title: "Payment Method", slug: "payment_method" },
+  { title: "Transaction Date", slug: "date_created" },
+  { title: "Customer Details", slug: "customer_details" },
   { title: "Amount", slug: "amount" },
+  { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
-  { title: "Reference", slug: "reference" },
+  { title: "Transaction Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
+const tableBodyRaw = ref<any[]>([]);
 const tablePaging = ref<any>({});
-const selectedMethod = ref("");
-const selectedStatus = ref("");
-const selectedDate = ref("");
-
-const statusOptions = ["Successful", "Failed"];
-const paymentMethods = ["Card", "Mobilemoney"];
 
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchPaymentTransactions = async () => {
+const normalizeDate = (date: Date) => {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
+  if (!range || !range[0] || !range[1]) return true;
+  const start = normalizeDate(new Date(range[0]));
+  const end = new Date(range[1]);
+  end.setHours(23, 59, 59, 999);
+  const target = new Date(date);
+  return target >= start && target <= end;
+};
+
+const processFilterSelection = (selectedRange: [Date | string, Date | string]) => {
+  if (selectedRange && selectedRange.length === 2) {
+    const normalizedRange: [Date, Date] = [new Date(selectedRange[0]), new Date(selectedRange[1])];
+    activePeriod.value = normalizedRange;
+  } else {
+    activePeriod.value = null;
+  }
+};
+
+const fetchPaymentTransactions = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: {},
+    payload: page,
     showAlert: false,
   });
 
@@ -171,15 +112,14 @@ const fetchPaymentTransactions = async () => {
 
   if (response?.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
+      const formattedAmount = `${formatNumber(data.amount)}`;
       const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
-      const customerName = data.customer
-        ? `${data.customer.firstname} ${data.customer.lastname}`
-        : "No customer info";
+      const customerName = data.customer ? `${data.customer.firstname} ${data.customer.lastname}` : "No customer info";
       const customerEmail = data.customer ? data.customer.email : "";
+      const createdDate = new Date(data.created_at);
 
       return {
-       date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getTransactionDate(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
@@ -191,77 +131,70 @@ const fetchPaymentTransactions = async () => {
         amount: h(TableDoubleColumn, {
           entry: { primaryText: formattedAmount, secondaryText: chargeAmount },
         }),
-        payment_method: capitalizeFirstLetter(data.method),
+        payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
         reference: data.reference,
-
         raw: {
-          date: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
-          method: data.method,
-          status: data.status,
+          date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+          raw_date: createdDate,
           customer_details: `${customerName} (${customerEmail})`,
-          amount: `${formattedAmount} (${chargeAmount})`,
+          amount: `${formattedAmount}`,
+          payment_details: capitalizeFirstLetter(data.method),
+          status: data.status,
           reference: data.reference,
-          date_display: getTransactionDate(data.created_at),
         },
       };
     });
 
-     tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);
-    tablePaging.value = response.pagination[0] || {};
+    tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);
+   tablePaging.value = response.pagination[0] || {};
   }
 };
 
-
 const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
-    const matchesMethod = selectedMethod.value
-      ? tx.raw.method.toLowerCase() === selectedMethod.value.toLowerCase()
-      : true;
+    const method = tx.raw?.payment_details?.toLowerCase();
+    const status = tx.raw?.status?.toLowerCase();
+    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
-    const matchesStatus = selectedStatus.value
-      ? tx.raw.status.toLowerCase() === selectedStatus.value.toLowerCase()
-      : true;
-
-    const matchesDate = selectedDate.value
-      ? new Date(tx.raw.date).toDateString() ===
-        new Date(selectedDate.value).toDateString()
-      : true;
+    const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
+    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
 
     return matchesMethod && matchesStatus && matchesDate;
   });
 });
 
-
 const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
-
   const cleanData = dataToExport.map((tx) => ({
-    "Date Created": tx.date_display,
-    "Customer Details": tx.customer_details,
-    "Payment Method": capitalizeFirstLetter(tx.method),
-    Amount: tx.amount,
-    Status: capitalizeFirstLetter(tx.status),
+    "Date Created": tx.date_created,
+    "Customer Details": tx.customer_details || "-",
+    Amount: tx.amount || "-",
+    "Payment Method": tx.payment_details,
+    Status: tx.status,
     Reference: tx.reference,
   }));
-
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-  XLSX.writeFile(workbook, "transactions.xlsx");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
+  XLSX.writeFile(workbook, "Merchant_Transactions.xlsx");
 };
 
-onMounted(() => {
-  fetchPaymentTransactions();
-});
+onMounted(fetchPaymentTransactions);
 </script>
 
 <style lang="scss" scoped>
-.button-row {
-  @apply flex justify-end items-center gap-x-2;
+.export-btn {
+  @apply transition-colors duration-200;
+  @media (max-width: 640px) {
+    @apply w-1/2;
+  }
+}
 
-  .btn {
-    @apply py-2.5 px-5 h-10;
+.filter-select {
+  @media (max-width: 640px) {
+    @apply w-full;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Balances">
+  <PageContentWrapper :pagingData="tablePaging" pageDescription="All Balances" :fetchDataByPage="fetchBalanceHistory">
            <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
           <DatePicker  
           filterSize="lg"
@@ -104,10 +104,11 @@ const processFilterSelection = (
 };
 
 
-const fetchBalanceHistory = async () => {
+const fetchBalanceHistory = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getBalanceHistory,
-    payload: {},
+    payload: page,
     showAlert: false,
   });
 

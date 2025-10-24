@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Customers">
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Customers" :fetchDataByPage="fetchCustomers">
        <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
       <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
         <select
@@ -119,10 +119,11 @@ const processFilterSelection = (
   }
 };
 
-const fetchCustomers = async () => {
+const fetchCustomers = async (page = 1) => {
+   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getCustomers,
-    payload: {},
+    payload: page,
     showAlert: false,
   });
 

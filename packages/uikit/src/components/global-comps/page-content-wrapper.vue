@@ -21,6 +21,7 @@
       <Pagination
         :pageDescription="pageDescription"
         :pagingData="pagingData"
+         @page-change="(page) => fetchDataByPage(page)"
      
       />
     </template>
@@ -36,12 +37,14 @@ interface IPageContentType {
   pagingData?: any;
   pageDescription?: string;
   showTitle?: boolean;
+    fetchDataByPage?: (page: number) => void;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   pageDescription: "",
   pagingData: { page_count: 0 },
   showTitle: true,
+  fetchDataByPage: () => {}
 });
 
 const route = useRoute();
