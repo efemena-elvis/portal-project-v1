@@ -39,9 +39,7 @@ export const getCustomers = async (payload: number) => {
   return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload}`);
 };
 
-export const getCustomers = async (payload: number) => {
-  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload}`);
-};
+
 
 export const getMerchants = async () => {
   return await $api.fetch(paymentRoutes.getMerchants);
