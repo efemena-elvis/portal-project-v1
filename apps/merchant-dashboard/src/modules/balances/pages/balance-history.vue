@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Balances">
            <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
           <DatePicker  
           filterSize="lg"

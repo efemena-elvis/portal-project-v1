@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Transactions">
     <template #pageOptions>
       <div
         class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse"
@@ -124,6 +124,7 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
+const tablePaging = ref<any>({});
 
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -205,7 +206,9 @@ const fetchPaymentTransactions = async () => {
         },
       };
     });
+   
     tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);
+    tablePaging.value = response.pagination[0] || {};
   }
 };
 

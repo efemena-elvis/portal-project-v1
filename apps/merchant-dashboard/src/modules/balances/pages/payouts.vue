@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Payouts">
     <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
     
     

@@ -206,10 +206,10 @@ fetchProfileData();
 
 <style lang="scss" scoped>
 .profile-area {
-  @apply flex justify-between items-start gap-x-4;
+  @apply flex justify-between items-start gap-x-4 sm:flex-col;
 
   .profile-input {
-    @apply w-[48%];
+    @apply w-[48%] sm:w-full;
 
     .title-text {
       @apply mb-6 text-2xl font-semibold text-grey-900;

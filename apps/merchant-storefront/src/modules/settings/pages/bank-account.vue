@@ -234,7 +234,7 @@ fetchProfileData();
   @apply flex justify-between items-start gap-x-4;
 
   .bank-input {
-    @apply w-[48%];
+    @apply w-[48%] sm:w-full;
   }
 }
 </style>

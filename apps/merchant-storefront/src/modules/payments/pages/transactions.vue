@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Transactions">
     <template #pageOptions>
       <div class="button-row">
         <div class="flex items-center gap-3 mr-12">
@@ -147,6 +147,7 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = ref<any[]>([]);
+const tablePaging = ref<any>({});
 const selectedMethod = ref("");
 const selectedStatus = ref("");
 const selectedDate = ref("");
@@ -205,6 +206,9 @@ const fetchPaymentTransactions = async () => {
         },
       };
     });
+
+     tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);
+    tablePaging.value = response.pagination[0] || {};
   }
 };
 

@@ -326,7 +326,7 @@ onMounted(async () => {
   @apply flex justify-between items-start gap-x-4;
 
   .bank-input {
-    @apply w-[48%] md:w-full;
+    @apply w-[48%] sm:w-full;
   }
 }
 </style>

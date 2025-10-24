@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Customers">
        <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
       <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
         <select
