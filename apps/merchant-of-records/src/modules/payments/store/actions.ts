@@ -35,13 +35,11 @@ const $api = new useServiceAPI({
   },
 });
 
-export const getTransactions = async () => {
-  return await $api.fetch(paymentRoutes.getPaymentTransactions);
+export const getCustomers = async (payload: number) => {
+  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload}`);
 };
 
-export const getCustomers = async () => {
-  return await $api.fetch(paymentRoutes.getCustomers);
-};
+
 
 export const getMerchants = async () => {
   return await $api.fetch(paymentRoutes.getMerchants);
