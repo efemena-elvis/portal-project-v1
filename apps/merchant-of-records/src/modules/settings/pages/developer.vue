@@ -79,7 +79,7 @@
           Need help integrating our APIs on your platform?
         </div>
 
-        <button class="btn btn-sm btn-tertiary">Explore our APIs</button>
+        <button  @click="accessMerchantDeveloperAPI"   class="btn btn-sm btn-tertiary sm:mt-4">Explore our APIs</button>
       </div>
     </div>
   </div>
@@ -91,8 +91,9 @@ import { IInputType } from "@packages/models";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
-import { useEvents, useProfile } from "@packages/hooks";
+import { useEvents, useProfile, useString } from "@packages/hooks";
 import { TextFieldInput } from "@packages/uikit";
+
 
 type IURLType = {
   callback_url: string;
@@ -109,6 +110,8 @@ const { fetchUserProfile, updateUserProfile } = useSettingsStore();
 
 const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
+const { createAndClickAnchor } = useString();
+
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getAPIKeys = computed(() => profileUtil.getAPIKeys());
@@ -133,10 +136,16 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const getKeys = computed(() => {
-  if (getBusinessProfile.value.businessMode === "test") {
+  if (getBusinessProfile.value?.businessMode === "test") {
     return getAPIKeys.value.test;
   } else return getAPIKeys.value?.live;
 });
+
+
+const accessMerchantDeveloperAPI = () => {
+
+  return createAndClickAnchor( "#","_blank");
+};
 
 const isActionReady = computed(() => {
   return (urlPayload.value.callback_url &&
@@ -203,17 +212,17 @@ fetchProfileData();
 
 <style lang="scss" scoped>
 .developer-area {
-  @apply flex justify-between items-start gap-x-4;
+  @apply flex justify-between items-start sm:flex-col gap-x-4;
 
   .developer-input {
-    @apply w-[48%];
+    @apply w-[48%] sm:w-full;
   }
 
   .developer-display {
-    @apply w-[45%] ml-auto flex justify-end;
+    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block ;
 
     .help-area {
-      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }

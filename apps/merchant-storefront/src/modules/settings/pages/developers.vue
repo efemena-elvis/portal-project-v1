@@ -85,7 +85,7 @@
           Need help integrating our APIs on your platform?
         </div>
 
-        <button class="btn btn-sm btn-tertiary">Explore our APIs</button>
+        <button class="btn btn-sm btn-tertiary sm:mt-4">Explore our APIs</button>
       </div>
     </div>
   </div>
@@ -208,19 +208,20 @@ watch(
 fetchProfileData();
 </script>
 
+
 <style lang="scss" scoped>
 .developer-area {
-  @apply flex justify-between items-start gap-x-4;
+  @apply flex justify-between items-start sm:flex-col gap-x-4;
 
   .developer-input {
-    @apply w-[48%];
+    @apply w-[48%] sm:w-full;
   }
 
   .developer-display {
-    @apply w-[45%] ml-auto flex justify-end;
+    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block ;
 
     .help-area {
-      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }

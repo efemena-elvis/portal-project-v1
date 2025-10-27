@@ -80,7 +80,7 @@
         </div>
 
         <button
-          class="btn btn-sm btn-tertiary"
+          class="btn btn-sm btn-tertiary sm:mt-4"
           @click="accessMerchantDeveloperAPI"
         >
           Explore our APIs
@@ -95,7 +95,7 @@ import { computed, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
-import { useSettingsStore } from "@/modules/settings/store";
+import { useSettingsStore } from "@/modules/settings/store";const { createAndClickAnchor } = useString();
 import {
   useEvents,
   useProfile,
@@ -225,17 +225,17 @@ fetchProfileData();
 
 <style lang="scss" scoped>
 .developer-area {
-  @apply flex flex-row md:flex-col justify-between  items-start gap-x-4;
+  @apply flex justify-between items-start sm:flex-col gap-x-4;
 
   .developer-input {
-    @apply w-[48%] md:w-full;
+    @apply w-[48%] sm:w-full;
   }
 
   .developer-display {
-    @apply w-[45%] md:w-full md:ml-0 ml-auto flex justify-end md:justify-start;
+    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block ;
 
     .help-area {
-      @apply w-[310px] md:w-full md:mt-8 h-auto rounded-2xl p-6 text-[15px] bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }

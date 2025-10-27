@@ -19,8 +19,10 @@
     <!-- PAGINATION -->
     <template v-if="pagingData.page_count > 0">
       <Pagination
-        :pageDescription="pagingDescription"
+        :pageDescription="pageDescription"
         :pagingData="pagingData"
+         @page-change="(page) => fetchDataByPage(page)"
+     
       />
     </template>
   </div>
@@ -33,14 +35,16 @@ import Pagination from "./pagination.vue";
 
 interface IPageContentType {
   pagingData?: any;
-  pagingDescription?: string;
+  pageDescription?: string;
   showTitle?: boolean;
+    fetchDataByPage?: (page: number) => void;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
-  pagingDescription: "",
+  pageDescription: "",
   pagingData: { page_count: 0 },
   showTitle: true,
+  fetchDataByPage: () => {}
 });
 
 const route = useRoute();

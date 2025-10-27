@@ -115,6 +115,7 @@ const handleWalletEntry = async () => {
 watch(
   () => marketPayload.value.currency,
   (value) => {
+
     const selectedCountry = businessCountries.value.find(
       (country: any) => country.currency_code === value
     );
@@ -128,6 +129,7 @@ watch(
 // ON MOUNT
 onMounted(() => {
   fetchBusinessCountries();
+
 });
 </script>
 
