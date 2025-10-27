@@ -167,7 +167,7 @@
   
   <style lang="scss" scoped>
   .tax-balance-row {
-    @apply flex justify-between items-center gap-8 mb-9;
+    @apply flex items-center gap-8 mb-9 sm:flex-col;
   }
   
   .tax-table-block {

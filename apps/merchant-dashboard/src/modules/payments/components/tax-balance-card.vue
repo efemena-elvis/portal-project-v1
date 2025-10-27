@@ -71,7 +71,7 @@ const props = withDefaults(
 
 <style lang="scss" scoped>
 .tax-balance-card {
-  @apply w-[352px] h-auto flex flex-col justify-between items-start p-6 border border-grey-200/90 rounded-2xl;
+  @apply max-w-[352px] h-auto flex flex-col justify-between items-start p-6 border border-grey-200/90 rounded-2xl;
 
   .top-row {
     @apply flex justify-between items-center gap-4 mb-6;
