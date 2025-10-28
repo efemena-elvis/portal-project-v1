@@ -95,7 +95,7 @@ import { computed, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
-import { useSettingsStore } from "@/modules/settings/store";const { createAndClickAnchor } = useString();
+import { useSettingsStore } from "@/modules/settings/store";
 import {
   useEvents,
   useProfile,
