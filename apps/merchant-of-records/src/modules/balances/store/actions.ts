@@ -31,19 +31,18 @@ const $api = new useServiceAPI({
   HEADERS: {
     "public-key": publicKey.value,
     "secret-key": secretKey.value,
-    "x-api-key": "EKtNqS86B1oFgcjZFr1484SdrqXyxK12AZj1fW6",
-    "x-environments": ENVIRONMENT,
+ 
   },
 });
 
-export const getBalanceHistory = async (payload: number) => {
-  return await $api.fetch(`${balanceRoutes.getBalanceHistory}?page=${payload}`);
+export const getBalanceHistory = async (payload: any) => {
+  return await $api.fetch(`${balanceRoutes.getBalanceHistory}?page=${payload.page}`);
 };
 
 export const initiatePayout = async (payload: any) => {
   return await $api.push(balanceRoutes.initiatePayout);
 };
 
-export const fetchAllPayouts = async (payload: number) => {
-  return await $api.fetch(`${balanceRoutes.getAllPayouts}?page=${payload}`);
+export const fetchAllPayouts = async (payload: any) => {
+  return await $api.fetch(`${balanceRoutes.getAllPayouts}?page=${payload.page}`);
 };

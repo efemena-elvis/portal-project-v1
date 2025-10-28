@@ -30,16 +30,18 @@ const $api = new useServiceAPI({
   API_VERSION: MOR_API_VERSION,
   TOKEN_KEY: MOR_AUTH_TOKEN,
   HEADERS: {
-    // "public-key": publicKey.value,
-    // "secret-key": secretKey.value,
+    "public-key": publicKey.value,
+    "secret-key": secretKey.value,
   },
 });
 
-export const getCustomers = async (payload: number) => {
-  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload}`);
+export const getCustomers = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`);
 };
 
-
+export const getTransactions = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload.page}`);
+};
 
 export const getMerchants = async () => {
   return await $api.fetch(paymentRoutes.getMerchants);
