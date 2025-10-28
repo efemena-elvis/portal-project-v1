@@ -142,7 +142,7 @@ const fetchPayouts = async (page = 1) => {
    tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: fetchAllPayouts,
-    payload: page,
+    payload: {page},
     showAlert: false,
   });
 

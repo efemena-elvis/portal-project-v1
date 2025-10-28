@@ -123,7 +123,7 @@ const fetchCustomers = async (page = 1) => {
    tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getCustomers,
-    payload: page,
+    payload: {page},
     showAlert: false,
   });
 
