@@ -144,7 +144,7 @@ const getKeys = computed(() => {
 
 const accessMerchantDeveloperAPI = () => {
 
-  return createAndClickAnchor( "#","_blank");
+  return createAndClickAnchor( "https://docs.vesicash.com","_blank");
 };
 
 const isActionReady = computed(() => {

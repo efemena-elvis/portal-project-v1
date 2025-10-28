@@ -37,7 +37,7 @@ interface IPageContentType {
   pagingData?: any;
   pageDescription?: string;
   showTitle?: boolean;
-    fetchDataByPage?: (page: number) => void;
+  fetchDataByPage?: (page: number) => void;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
