@@ -18,22 +18,31 @@ const publicKey = computed(() =>
     : profileUtil.getAPIKeys().live.public
 );
 
+const secretKey = computed(() =>
+  activeMode === "test"
+    ? profileUtil.getAPIKeys().test.secret
+    : profileUtil.getAPIKeys().live.secret
+);
+
+
 const $api = new useServiceAPI({
   API_BASE_URL: APP_API_BASE_URL,
   API_VERSION: APP_API_VERSION,
   TOKEN_KEY: APP_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
+    "secret-key": secretKey.value,
+    
   },
 });
 
 
-export const getTransactions = async (payload: number) => {
-  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload}`);
+export const getTransactions = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload.page}`);
 };
 
-export const getCustomers = async (payload: number) => {
-  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload}`);
+export const getCustomers = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`);
 };
 
 export const getBanks = async (payload: any) => {
