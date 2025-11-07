@@ -128,12 +128,12 @@ const fetchBalanceHistory = async (page = 1) => {
           },
         }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `ZMW ${formatNumber(data.balance_before)}`,
+        balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
-          `ZMW ${formatNumber(data.amount)}`,
+          `${data.currency_code} ${formatNumber(data.amount)}`,
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
-        balance_after: `ZMW ${formatNumber(data.balance_after)}`,
+        balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
         reference : data.reference
       });
     });

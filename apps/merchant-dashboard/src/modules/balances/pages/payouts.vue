@@ -1,9 +1,13 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription="All Payouts" :fetchDataByPage="fetchPayouts">
+  <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Payouts"
+    :fetchDataByPage="fetchPayouts"
+  >
     <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
-    
-    
-     <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
+      <div
+        class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
+      >
         <select
           v-model="selectedStatus"
           class="w-full p-4 bg-transparent appearance-none focus:outline-none"
@@ -22,28 +26,25 @@
         ></div>
       </div>
 
-               <div class="flex items-center w-full gap-3">
-          <DatePicker
-            filterSize="lg"
-            :activePeriod="activePeriod"
-            @onFilterSelected="processFilterSelection"
-          />
-          <button
-            @click="exportToExcel"
-            class="w-full p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
-          >
-            Export
-          </button>
-        </div>
-
-    
-    
+      <div class="flex items-center w-full gap-3">
+        <DatePicker
+          filterSize="lg"
+          :activePeriod="activePeriod"
+          @onFilterSelected="processFilterSelection"
+        />
+        <button
+          @click="exportToExcel"
+          class="w-full p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
+        >
+          Export
+        </button>
+      </div>
     </template>
 
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-     :tableBody="filteredTableBody"
+        :tableBody="filteredTableBody"
         :isLoading="isLoading"
         :emptyData="{
           title: 'No payout initiated yet',
@@ -64,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted , h} from "vue";
+import { ref, computed, onMounted, h } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
@@ -74,7 +75,7 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-   TableDoubleColumn,
+  TableDoubleColumn,
 } from "@packages/uikit";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
@@ -94,7 +95,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount Requested", slug: "amount_requested" },
   { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
-   { title: "Payout Reference", slug: "reference" },
+  { title: "Payout Reference", slug: "reference" },
 ]);
 
 const tableBody = ref<any[]>([]);
@@ -116,13 +117,11 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 
   const start = normalizeDate(new Date(range[0]));
   const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999); 
+  end.setHours(23, 59, 59, 999);
 
   const target = new Date(date);
   return target >= start && target <= end;
 };
-
-
 
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
@@ -139,10 +138,10 @@ const processFilterSelection = (
 };
 
 const fetchPayouts = async (page = 1) => {
-   tablePaging.value.current_page = page;
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: fetchAllPayouts,
-    payload: {page},
+    payload: { page },
     showAlert: false,
   });
 
@@ -150,32 +149,31 @@ const fetchPayouts = async (page = 1) => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${formatNumber(data.amount)}`
-        const createdDate = new Date(data.created_at);
-   
-return {
-      date_created: h(TableDoubleColumn, {
+      const formattedAmount = `${formatNumber(data.amount)}`;
+      const createdDate = new Date(data.created_at);
+
+      return {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getDateCreated(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
           },
         }),
-      reference: data.reference,
-      amount_requested: getBoldTableText(
-        `${data.currency} ${formatNumber(data.amount)}`
-      ),
-      narration: data.narration,
-      status: getStatus(data.status, data.status),
+        reference: data.reference,
+        amount_requested: getBoldTableText(
+          `${data.currency} ${formatNumber(data.amount)}`
+        ),
+        narration: data.narration,
+        status: getStatus(data.status, data.status),
 
-         raw: {
-          date_created:`${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
-         raw_date: createdDate,
+        raw: {
+          date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+          raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
           reference: data.reference ?? "-",
-        
         },
-      }
+      };
     });
 
     tablePaging.value = response.pagination[0];
@@ -186,9 +184,9 @@ const exportToExcel = () => {
   const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
   const cleanData = dataToExport.map((tx) => ({
     "Date Created": tx.date_created,
-    "Amount": tx.amount || "-",
-    "Status": tx.status,
-    "Reference": tx.reference,
+    Amount: tx.amount || "-",
+    Status: tx.status,
+    Reference: tx.reference,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
@@ -203,7 +201,9 @@ const filteredTableBody = computed(() => {
     const matchesStatus = selectedStatus.value
       ? tx.raw?.status?.toLowerCase() === selectedStatus.value.toLowerCase()
       : true;
-    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
+    const matchesDate = rawDate
+      ? isWithinRange(rawDate, activePeriod.value)
+      : true;
     return matchesStatus && matchesDate;
   });
 });
@@ -211,10 +211,6 @@ const filteredTableBody = computed(() => {
 onMounted(() => {
   fetchPayouts();
 });
-
-
 </script>
 
-<style scoped>
-
- </style>
+<style scoped></style>

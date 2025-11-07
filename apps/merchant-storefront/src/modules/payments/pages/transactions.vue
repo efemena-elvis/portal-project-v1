@@ -104,7 +104,7 @@ const fetchPaymentTransactions = async (page = 1) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: page,
+    payload: {page},
     showAlert: false,
   });
 
@@ -112,7 +112,7 @@ const fetchPaymentTransactions = async (page = 1) => {
 
   if (response?.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${formatNumber(data.amount)}`;
+      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
       const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
       const customerName = data.customer ? `${data.customer.firstname} ${data.customer.lastname}` : "No customer info";
       const customerEmail = data.customer ? data.customer.email : "";
@@ -138,7 +138,7 @@ const fetchPaymentTransactions = async (page = 1) => {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
           customer_details: `${customerName} (${customerEmail})`,
-          amount: `${formattedAmount}`,
+          amount: formatNumber(data.amount),
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
           reference: data.reference,
