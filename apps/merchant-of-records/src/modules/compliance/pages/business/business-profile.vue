@@ -126,7 +126,7 @@ const handleBusinessProfileUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceBusinessContact",
     stopClickHandler,
-    succesMsg: "Business profile submitted",
+    successMsg: "Business profile submitted",
     errorMsg: "Business update failed",
     payloadType: "business",
   });

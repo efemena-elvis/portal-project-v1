@@ -64,26 +64,26 @@ import { IInputType } from "@packages/models";
 import { useEvents, useString, useProfile } from "@packages/hooks";
 import { ModalDialog, TextFieldInput, FileUploadInput } from "@packages/uikit";
 import { useAuthStore } from "@/modules/auth/store";
-// import { usePaymentStore } from "../store";
+import { usePaymentStore } from "../store";
 
 type IPayoutType = {
   amount: number;
-  countryId: string;
+  country_id: string;
   narration: string;
 };
 
-const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
+const emits = defineEmits(["closeTriggered", "reloadPayouts"]);
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
 
 const { capitalizeFirstLetter } = useString();
 const { processAPIRequest, pushToastAlert } = useEvents();
-// const { initiatePayout } = usePaymentStore();
+const { initiatePayout } = usePaymentStore();
 
 const payoutPayload = ref<IPayoutType>({
   amount: 0,
-  countryId: profileUtil.getUser()?.country.id || "",
+  country_id: profileUtil.getUser()?.country.id || "",
   narration: "",
 });
 
@@ -105,38 +105,38 @@ const handlePayoutInitiation = async () => {
     return;
   }
 
-  //   const response = await processAPIRequest({
-  //     action: initiatePayout,
-  //     payload: payoutPayload.value,
-  //     btnRef: initiatePayoutBtnRef,
-  //     btnText: "Confirm Request",
-  //     alertHandler: {
-  //       200: {
-  //         message: "Payout initiated successfully",
-  //         description: "You are being redirected to your payout dashboard",
-  //         type: "success",
-  //       },
+  const response = await processAPIRequest({
+    action: initiatePayout,
+    payload: payoutPayload.value,
+    btnRef: initiatePayoutBtnRef,
+    btnText: "Confirm Request",
+    alertHandler: {
+      200: {
+        message: "Payout initiated successfully",
+        description: "You are being redirected to your payout dashboard",
+        type: "success",
+      },
 
-  //       // 400: {
-  //       //   message: "Payout initiation failed",
-  //       //   description: "Please provide valid payout details.",
-  //       //   type: "error",
-  //       // },
-  //     },
-  //   });
+      400: {
+        message: "Payout initiation failed",
+        description: "Please provide valid payout details.",
+        type: "error",
+      },
+    },
+  });
 
-  //   if (response.code === 200) {
-  //     emits("reloadStorefront");
-  //     emits("closeTriggered");
-  //   }
+  if (response.code === 200) {
+    emits("reloadPayouts");
+    emits("closeTriggered");
+  }
 
-  // HANDLE ANY NON 200 ERRORS
+  //   HANDLE ANY NON 200 ERRORS
   else {
-    // pushToastAlert({
-    //   message: "Payout initiation failed",
-    //   description: capitalizeFirstLetter(response.message),
-    //   type: "error",
-    // });
+    pushToastAlert({
+      message: "Payout initiation failed",
+      description: capitalizeFirstLetter(response.message),
+      type: "error",
+    });
   }
 };
 </script>

@@ -38,9 +38,11 @@ export const getBalanceHistory = async (payload: any) => {
 };
 
 export const initiatePayout = async (payload: any) => {
-  return await $api.push(balanceRoutes.initiatePayout);
+  return await $api.push(balanceRoutes.initiatePayout, payload);
 };
 
 export const fetchAllPayouts = async (payload: any) => {
   return await $api.fetch(`${balanceRoutes.getAllPayouts}?page=${payload.page}`);
 };
+
+

@@ -169,7 +169,7 @@ const handleBankAccountUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceTerms",
     stopClickHandler,
-    succesMsg: "Bank account submitted",
+    successMsg: "Bank account submitted",
     errorMsg: "Business update failed",
     payloadType: "bank_account",
   });

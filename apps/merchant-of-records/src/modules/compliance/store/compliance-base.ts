@@ -15,6 +15,7 @@ export interface IComplianceBusiness {
 export interface IComplianceRegistration {
   doc_url: string;
   tax_doc_url: string;
+  form_a_doc_url?: string;
 }
 
 export interface IComplianceRepresentative {
@@ -108,6 +109,7 @@ export const complianceBase: IComplianceBaseType = {
   registration: {
     doc_url: "",
     tax_doc_url: "",
+    form_a_doc_url: "",
   },
 
   representatives: [

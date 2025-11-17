@@ -53,6 +53,13 @@ const complianceRouteMap = {
       description:
         "Provide your Tax Payer Identification document below to help us verify your tax registration.",
     },
+    {
+      name: "Form A/Memart",
+      route: "ComplianceFormARegistration",
+      title: "Business incorporation document",
+      description:
+        "Provide your incorporation document below to help us verify your business registration.",
+    },
   ],
 
   representative: [

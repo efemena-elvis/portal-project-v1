@@ -3,6 +3,10 @@
     :pagingData="tablePaging"
     pageDescription="All Payouts"
     :fetchDataByPage="fetchPayouts"
+    customActionBtnText="Initiate a Payout"
+    @customActionBtnClicked="toggleInitiatePayoutModal"
+    :showCustomActionBtn="tableBody.length > 0 && !isLoading"
+
   >
     <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
       <div
@@ -46,6 +50,7 @@
         :tableHeader="tableHeader"
         :tableBody="filteredTableBody"
         :isLoading="isLoading"
+        @onActionClicked="toggleInitiatePayoutModal"
         :emptyData="{
           title: 'No payout initiated yet',
           description:
@@ -62,6 +67,9 @@
       </TableContainer>
     </template>
   </PageContentWrapper>
+     <teleport to="body" v-if="showInitiatePayoutModal">
+    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" @reloadPayouts="fetchAllPayouts" />
+  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -77,16 +85,22 @@ import {
   PageContentWrapper,
   TableDoubleColumn,
 } from "@packages/uikit";
+import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
 const { fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
+const showInitiatePayoutModal = ref(false);
+
+const toggleInitiatePayoutModal = () => {
+  showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
+};
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
 
 const activePeriod = ref<[Date, Date] | null>(null);
-const showDropdown = ref(false);
+
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 

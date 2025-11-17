@@ -46,3 +46,7 @@ export const getTransactions = async (payload: any) => {
 export const getMerchants = async () => {
   return await $api.fetch(paymentRoutes.getMerchants);
 };
+
+export const initiatePayout = async (payload: any) => {
+  return await $api.push(paymentRoutes.initiatePayout, payload);
+};
