@@ -31,7 +31,7 @@
 <script setup>
 import { isVNode } from "vue";
 
-// Define props
+
 const props = defineProps({
   tableHeader: {
     type: Array,
@@ -44,13 +44,13 @@ const props = defineProps({
   onTableClicked: Function,
 });
 
-// Utility function to check if a string is HTML content
+
 const isHtmlString = (str) => {
   const pattern = /<\/?[a-z][\s\S]*>/i;
   return typeof str === "string" && pattern.test(str);
 };
 
-// Function to apply logic-based classes
+
 const renderLogicClass = (headerData, tableData) => {
   if (headerData.tableLogicClass !== undefined) {
     return headerData.tableLogicClass[tableData];
@@ -58,7 +58,7 @@ const renderLogicClass = (headerData, tableData) => {
   return "";
 };
 
-// Function to handle table row click
+
 const handleTableRowClicked = (event) => {
   if (!event.target.classList.contains("checkbox-select-input")) {
     props.onTableClicked?.(1);
@@ -67,5 +67,5 @@ const handleTableRowClicked = (event) => {
 </script>
 
 <style scoped>
-/* Add your styles here if needed */
+
 </style>

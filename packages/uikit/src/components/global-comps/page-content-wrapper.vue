@@ -25,6 +25,15 @@
      
       />
     </template>
+      <template  v-if="showCustomActionBtn">
+
+          <button
+            class="p-[1.1rem] rounded-lg btn-primary "
+            @click="$emit('customActionBtnClicked')"
+          >
+            {{ customActionBtnText }}
+          </button>
+        </template>
   </div>
 </template>
 
@@ -38,14 +47,24 @@ interface IPageContentType {
   pageDescription?: string;
   showTitle?: boolean;
   fetchDataByPage?: (page: number) => void;
+  customActionBtnText?: string;
+  showCustomActionBtn?: boolean;
+
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   pageDescription: "",
   pagingData: { page_count: 0 },
   showTitle: true,
-  fetchDataByPage: () => {}
+  fetchDataByPage: () => {},
+  customActionBtnText: "",
+  showCustomActionBtn: false
 });
+
+const emits = defineEmits([
+  "customActionBtnClicked",
+]);
+
 
 const route = useRoute();
 

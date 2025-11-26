@@ -155,7 +155,7 @@ const getBusinessPayload = computed(() => {
     return {
       ...rep,
       doc: {
-        type: repDoc.type, 
+        type: repDoc.type,
         value: repDoc.value,
         url: repDoc.url,
       },
@@ -168,7 +168,7 @@ const handleRepresentativeIdentityUpdate = async () => {
     payload: { representatives: getBusinessPayload.value },
     redirectRoute: "ComplianceTerms",
     stopClickHandler,
-    succesMsg: "Representative identity submitted",
+    successMsg: "Representative identity submitted",
     errorMsg: "Representative update failed",
     payloadType: "representatives",
   });
@@ -191,12 +191,9 @@ watch(
         };
       });
     }
-
   },
   { immediate: true }
 );
-
-
 </script>
 
 <style lang="scss" scoped>

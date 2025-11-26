@@ -104,7 +104,7 @@ const handleRegistrationConfirmUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceRegistrationTax",
     stopClickHandler,
-    succesMsg: "Registration document submitted",
+    successMsg: "Registration document submitted",
     errorMsg: "Registration update failed",
     payloadType: "registration",
   });

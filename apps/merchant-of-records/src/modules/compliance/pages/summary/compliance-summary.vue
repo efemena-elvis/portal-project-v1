@@ -184,6 +184,11 @@ const updateCompletionStatus = () => {
           ? true
           : false;
         break;
+      case "registration_form_a":
+        section.completed = complianceRegistration.value?.form_a_doc_url
+          ? true
+          : false;
+        break;
 
       case "representative_profile":
         section.completed =
@@ -280,6 +285,7 @@ watch(
   },
   { immediate: true }
 );
+
 </script>
 
 <style lang="scss" scoped>
