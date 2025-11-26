@@ -39,7 +39,7 @@ export const getBalanceHistory = async (payload: any) => {
   return await $api.fetch(`${balanceRoutes.getBalanceHistory}?page=${payload.page}`);
 };
 
-export const getTransactionStats = async (payload: any) => {
+export const getTransactionStats = async () => {
   return await $api.fetch(balanceRoutes.getTransactionStats)
 };
 
@@ -48,6 +48,10 @@ export const initiatePayout = async (payload: any) => {
   return await $api.push(balanceRoutes.initiatePayout);
 };
 
-export const fetchAllPayouts = async (payload: any) => {
+export const getPayouts = async (payload: any) => {
   return await $api.fetch(`${balanceRoutes.getAllPayouts}?page=${payload.page}`);
+};
+
+export const fetchAllPayouts = async () => {
+  return await $api.fetch(`${balanceRoutes.getAllPayouts}?limit=100000`);
 };

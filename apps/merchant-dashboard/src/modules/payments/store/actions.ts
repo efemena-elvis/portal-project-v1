@@ -41,6 +41,10 @@ export const getTransactions = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload.page}`);
 };
 
+export const getAllTransactions = async () => {
+  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?limit=100000`);
+};
+
 export const getCustomers = async (payload: any) => {
   return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`);
 };

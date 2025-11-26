@@ -88,7 +88,7 @@ import {
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
-const { fetchAllPayouts } = useBalanceStore();
+const { getPayouts, fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
 const showInitiatePayoutModal = ref(false);
 
@@ -154,7 +154,7 @@ const processFilterSelection = (
 const fetchPayouts = async (page = 1) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: fetchAllPayouts,
+    action: getPayouts,
     payload: { page },
     showAlert: false,
   });
@@ -194,9 +194,56 @@ const fetchPayouts = async (page = 1) => {
   }
 };
 
-const exportToExcel = () => {
-  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
-  const cleanData = dataToExport.map((tx) => ({
+const fetchAllPayoutPages = async () => {
+  let page = 1;
+  let all: any[] = [];
+  let totalPages = 1;
+
+  do {
+    const response = await processAPIRequest({
+      action: fetchAllPayouts,
+      payload: { page },
+      showAlert: false,
+    });
+
+    if (response?.code !== 200) break;
+
+    const mapped = response.data.map((data: any) => {
+
+      return {
+        date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        raw_date: new Date(data.created_at),
+        amount: `${formatNumber(data.amount)}`,
+        status: data.status ?? "-",
+        reference: data.reference ?? "-",
+      };
+    });
+
+    all.push(...mapped);
+
+    totalPages = response.pagination[0]?.total_pages ?? 1;
+    page++;
+
+  } while (page <= totalPages);
+
+  return all;
+};
+
+const exportToExcel = async () => {
+  const allPayouts = await fetchAllPayoutPages();
+
+  const filtered = allPayouts.filter((tx) => {
+    const status = tx.status.toLowerCase();
+    const date = tx.raw_date ? new Date(tx.raw_date) : null;
+
+    
+    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
+
+    return  matchesStatus && matchesDate;
+  });
+
+  const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
@@ -208,6 +255,7 @@ const exportToExcel = () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Payouts");
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
+
 
 const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {

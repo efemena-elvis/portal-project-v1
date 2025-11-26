@@ -107,9 +107,10 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
+import { da } from "date-fns/locale";
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
-const { fetchAllPayouts } = useBalanceStore();
+const { getPayouts, fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
@@ -216,9 +217,58 @@ const fetchPayouts = async (page = 1) => {
   }
 };
 
-const exportToExcel = () => {
-  const dataToExport = filteredTableBody.value.map((tx) => tx.raw);
-  const cleanData = dataToExport.map((tx) => ({
+const fetchAllPayoutPages = async () => {
+  let page = 1;
+  let all: any[] = [];
+  let totalPages = 1;
+
+  do {
+    const response = await processAPIRequest({
+      action: fetchAllPayouts,
+      payload: { page },
+      showAlert: false,
+    });
+
+    if (response?.code !== 200) break;
+
+    const mapped = response.data.map((data: any) => {
+
+      return {
+        date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
+        raw_date: new Date(data.created_at),
+        amount: `${formatNumber(data.amount)}`,
+        status: data.status ?? "-",
+        reference: data.reference ?? "-",
+        currency: data.currency
+      };
+    });
+
+    all.push(...mapped);
+
+    totalPages = response.pagination[0]?.total_pages ?? 1;
+    page++;
+
+  } while (page <= totalPages);
+
+  return all;
+};
+
+const exportToExcel = async () => {
+  const allPayouts = await fetchAllPayoutPages();
+
+  const filtered = allPayouts.filter((tx) => {
+    const status = tx.status.toLowerCase();
+    const date = tx.raw_date ? new Date(tx.raw_date) : null;
+    const currency = tx.currency.toLowerCase();
+    
+    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
+    const matchesCurrency = selectedCurrency.value ? currency === selectedCurrency.value.toLowerCase() : true;
+
+    return  matchesStatus && matchesDate && matchesCurrency;
+  });
+
+  const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
