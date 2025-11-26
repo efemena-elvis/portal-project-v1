@@ -20,7 +20,7 @@
         <label class="form-label-basic">Business tax identification</label>
         <FileUploadInput
           showSkip
-          skipRoute="ComplianceRepresentativeProfile"
+          skipRoute="ComplianceFormARegistration"
           :hasDocumentUploaded="!!uploadedDocument"
           :uploadedDocumentContent="getUploadedDocumentContent"
           :uploadAction="uploadFile"
@@ -74,9 +74,9 @@ const getBusinessPayload = computed(() => {
 const handleRegistrationConfirmUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
     payload: getBusinessPayload.value,
-    redirectRoute: "ComplianceRepresentativeProfile",
+    redirectRoute: "ComplianceFormARegistration",
     stopClickHandler,
-    succesMsg: "Registration tax document submitted",
+    successMsg: "Registration tax document submitted",
     errorMsg: "Registration update failed",
     payloadType: "registration",
   });

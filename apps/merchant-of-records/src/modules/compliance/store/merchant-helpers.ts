@@ -17,7 +17,7 @@ export function setDeepValue<T extends object>(
   current[keys[keys.length - 1]] = value;
 }
 
-// Function to get state deep values
+
 export function getDeepValue<T extends object, R = any>(
   obj: T,
   path: string

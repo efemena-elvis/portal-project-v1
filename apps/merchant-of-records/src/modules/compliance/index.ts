@@ -114,6 +114,23 @@ const overviewRoutes: IRouteType[] = [
           },
         },
       },
+      // *********** REGISTRATION FORM A COMPLIANCE *********** //
+      {
+        path: "registration-form-a",
+        name: "ComplianceFormARegistration",
+        component: () =>
+          import(
+            /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/registration/registration-form-a.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Compliance",
+          pageMeta: {
+            title: "Registration-Form-A",
+            description: "Vesicash MoR registration form A compliance",
+          },
+        },
+      },
 
       // *********** REPRESENTATIVE COMPLIANCE *********** //
       {

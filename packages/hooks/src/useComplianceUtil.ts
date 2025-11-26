@@ -31,7 +31,7 @@ export default class ComplianceUtil<TStore extends Store> {
   }
 
   private get storeRefs(): ComplianceSubsetRefs {
-    const refs = storeToRefs(this.store); // keep the full Pinia store here
+    const refs = storeToRefs(this.store);
 
     const {
       getComplianceBusiness,
@@ -40,7 +40,7 @@ export default class ComplianceUtil<TStore extends Store> {
       getComplianceBankAccount,
       getComplianceBusinessSignatory,
       getComplianceAgreement,
-    } = refs as Partial<ComplianceSubsetRefs>; // narrow down here
+    } = refs as Partial<ComplianceSubsetRefs>;
 
     return {
       getComplianceBusiness: getComplianceBusiness!,
@@ -52,50 +52,51 @@ export default class ComplianceUtil<TStore extends Store> {
     };
   }
 
-private getRequestPayload({
-  businessPayload = {},
-  registrationPayload = {},
-  representativePayload = {},
-  bankPayload = {},
-  signatoryPayload = {},
-  termsPayload = {},
-}: any) {
-  const {
-    getComplianceBusiness,
-    getComplianceRegistration,
-    getComplianceRepresentative,
-    getComplianceBankAccount,
-    getComplianceBusinessSignatory,
-    getComplianceAgreement,
-  } = this.storeRefs;
+  private getRequestPayload({
+    businessPayload = {},
+    registrationPayload = {},
+    representativePayload = {},
+    bankPayload = {},
+    signatoryPayload = {},
+    termsPayload = {},
+  }: any) {
+    const {
+      getComplianceBusiness,
+      getComplianceRegistration,
+      getComplianceRepresentative,
+      getComplianceBankAccount,
+      getComplianceBusinessSignatory,
+      getComplianceAgreement,
+    } = this.storeRefs;
 
-  return {
-    business: { ...getComplianceBusiness.value, ...businessPayload },
-    registration: {
-      ...getComplianceRegistration.value,
-      ...registrationPayload,
-    },
-representatives:
-  Array.isArray(representativePayload.representatives) &&
-  representativePayload.representatives.length > 0
-    ? representativePayload.representatives.map((rep: any, index: number) => ({
-        ...(getComplianceRepresentative.value?.[index] || {}),
-        ...rep,
-      }))
-    : getComplianceRepresentative.value || [],
+    return {
+      business: { ...getComplianceBusiness.value, ...businessPayload },
+      registration: {
+        ...getComplianceRegistration.value,
+        ...registrationPayload,
+      },
+      representatives:
+        Array.isArray(representativePayload.representatives) &&
+        representativePayload.representatives.length > 0
+          ? representativePayload.representatives.map(
+              (rep: any, index: number) => ({
+                ...(getComplianceRepresentative.value?.[index] || {}),
+                ...rep,
+              })
+            )
+          : getComplianceRepresentative.value || [],
 
-
-    bank_account: {
-      ...getComplianceBankAccount.value,
-      ...bankPayload,
-    },
-    business_signatory: {
-      ...getComplianceBusinessSignatory.value,
-      ...signatoryPayload,
-    },
-    terms: { ...getComplianceAgreement.value, ...termsPayload },
-  };
-}
+      bank_account: {
+        ...getComplianceBankAccount.value,
+        ...bankPayload,
+      },
+      business_signatory: {
+        ...getComplianceBusinessSignatory.value,
+        ...signatoryPayload,
+      },
+      terms: { ...getComplianceAgreement.value, ...termsPayload },
+    };
+  }
 
   private getRequestAlertHandler(successMsg: string, errorMsg: string) {
     return {
@@ -151,7 +152,7 @@ representatives:
     payload,
     redirectRoute,
     stopClickHandler,
-    succesMsg,
+    successMsg,
     errorMsg,
     payloadType,
   }: any) {
@@ -162,7 +163,7 @@ representatives:
     const response = await this.processAPIRequest({
       action: (this.store as unknown as ComplianceSubsetStore).uploadCompliance,
       payload: requestPayload,
-      alertHandler: this.getRequestAlertHandler(succesMsg, errorMsg),
+      alertHandler: this.getRequestAlertHandler(successMsg, errorMsg),
     });
 
     this.processComplianceRedirect({
