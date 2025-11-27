@@ -129,8 +129,8 @@ const currencyOptions = ["GHS", "TZS", "ZMW"];
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
   { title: "Amount Requested", slug: "amount_requested" },
-  { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
+    { title: "Reason", slug: "reason_for_failure" },
   { title: "Payout Reference", slug: "reference" },
   
 ]);
@@ -200,14 +200,15 @@ const fetchPayouts = async (page = 1) => {
         amount_requested: getBoldTableText(
           `${data.currency} ${formatNumber(data.amount)}`
         ),
-        narration: data.narration,
+       
         status: getStatus(data.status, data.status),
-
+ reason_for_failure: data.reason_for_failure ?? "-",
         raw: {
           date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
+           reason_for_failure: data.reason_for_failure ?? "-",
           reference: data.reference ?? "-",
         },
       };
@@ -238,6 +239,7 @@ const fetchAllPayoutPages = async () => {
         raw_date: new Date(data.created_at),
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
+         reason_for_failure: data.reason_for_failure ?? "-",
         reference: data.reference ?? "-",
         currency: data.currency
       };
@@ -259,7 +261,7 @@ const exportToExcel = async () => {
   const filtered = allPayouts.filter((tx) => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
-    const currency = tx.currency.toLowerCase();
+    const currency = tx.currency;
     
     const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
@@ -272,6 +274,7 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
+    Reason: tx.reason_for_failure,
     Reference: tx.reference,
   }));
 

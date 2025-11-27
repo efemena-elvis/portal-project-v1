@@ -97,7 +97,7 @@ import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { IInputType } from "@packages/models";
 import { TextFieldInput, SelectFieldInput } from "@packages/uikit";
-import { useEvents } from "@packages/hooks";
+import { useEvents, useString } from "@packages/hooks";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import merchantCountries from "@/shared/utilities/merchant-countries";
 import { useAuthStore } from "@/modules/auth/store";
@@ -120,7 +120,8 @@ const router = useRouter();
 
 const { signupUser } = useAuthStore();
 const { getBusinessCountries } = useGlobalStore();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { capitalizeFirstLetter } = useString();
 
 const signupBtnRef = ref(null);
 
@@ -207,10 +208,10 @@ const handleUserSignup = async () => {
         type: "success",
       },
 
-      400: {
-        message: "Account creation failed",
-        type: "error",
-      },
+      // 400: {
+      //   message: "Email already exists.",
+      //   type: "error",
+      // },
     },
   });
 
@@ -224,6 +225,14 @@ const handleUserSignup = async () => {
 
       localStorage.clear();
     }, 2000);
+  }
+
+  else if(response){
+    pushToastAlert({
+      message: "Account creation failed",
+      description: capitalizeFirstLetter(response.error.message),
+      type: "error",
+    });
   }
 };
 

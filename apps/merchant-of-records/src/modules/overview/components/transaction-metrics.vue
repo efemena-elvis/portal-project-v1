@@ -43,7 +43,7 @@ const props = defineProps<{
 
 <style lang="scss" scoped>
 .transaction-metrics {
-  @apply w-full grid grid-cols-2 gap-8;
+  @apply w-full grid grid-cols-3 ;
 
   .transaction-data {
     @apply flex flex-col justify-start items-start gap-2;

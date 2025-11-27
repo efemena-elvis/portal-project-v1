@@ -61,10 +61,10 @@ const props = withDefaults(
   }
 
   .data-row {
-    @apply flex justify-start items-center;
+    @apply flex justify-start items-center flex-wrap gap-6;
 
     .data-item {
-      @apply flex flex-col justify-start items-start gap-1 px-5 py-1 border-r border-r-grey-300/50 first-of-type:pl-0 last-of-type:pr-0 last-of-type:border-r-0;
+      @apply flex flex-col justify-start items-start gap-1 pr-5 py-1 border-r border-r-grey-300/50 first-of-type:pl-0 last-of-type:pr-0 last-of-type:border-r-0;
 
       .data-title-row {
         @apply flex justify-start items-center gap-2 mb-3;
