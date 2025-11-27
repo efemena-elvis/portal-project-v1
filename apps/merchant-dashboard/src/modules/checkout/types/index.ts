@@ -2,7 +2,7 @@ export type PaymentDetails = {
   id: string;
   amount: number;
   type: "payment";
-  method: string;
+  method: "card" | "mobilemoney";
   status: "pending" | "failed" | "success" | "successful";
   currency: string;
   reference: string;
@@ -31,3 +31,31 @@ export type MobileMoneyPaymentRequest = {
   email: string;
   method: "mobilemoney";
 };
+
+export type CardPaymentRequest = {
+  phone_number: string;
+  email: string;
+  customer_first_name: string;
+  customer_last_name: string;
+  isSubscription?: boolean;
+  ip_address?: string;
+};
+
+export interface CardPaymentResponse {
+  device_storage_token: {
+    methodPostData: string;
+    methodUrl: string;
+    domainName: string;
+    html: string;
+    customizedHtml: {
+      "3ds2": {
+        acsUrl: string;
+        cReq: string;
+      };
+    };
+  };
+  message: string;
+  method: string;
+  operator: string | null;
+  payment_status: string;
+}

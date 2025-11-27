@@ -52,17 +52,14 @@
       >
         <div
           :class="[
-            'rounded-lg h-[69px] border-2 grid items-center px-4 transition-colors',
-            active_method === item.name
+            'rounded-lg h-[69px] border-2 grid items-center px-4 transition-colors cursor-pointer',
+            active_method === item.slug
               ? 'border-teal-700 hover:border-teal-500 bg-teal-700 text-white'
               : 'border-white hover:border-teal-300 bg-white text-grey-700',
-            item.name !== 'Mobile Money'
-              ? 'cursor-not-allowed opacity-45 hidden'
-              : 'cursor-pointer',
           ]"
           v-for="item in payment_methods"
           :key="item.name"
-          @click="active_method = 'Mobile Money'"
+          @click="active_method = item.slug"
         >
           <!-- <div class="size-[24px] border"></div> -->
           <div class="text-sm font-medium text-center uppercase">
@@ -71,7 +68,11 @@
         </div>
       </div>
 
-      <form class="p-6 bg-white rounded-lg" @submit.prevent="handlePayment">
+      <form
+        class="p-6 bg-white rounded-lg"
+        @submit.prevent="handlePayment"
+        v-if="active_method === 'momo'"
+      >
         <div class="grid grid-cols-2 sm:grid-cols-1 gap-2">
           <TextFieldInput
             :labelId="'customer-first-name'"
@@ -137,6 +138,12 @@
         </button>
       </form>
 
+      <CardForm
+        v-else
+        :customer_details="customerDetails"
+        :reference="reference"
+      />
+
       <div class="flex justify-center items-center mt-6">
         <div class="flex gap-x-1 items-center">
           <div>Powered by</div>
@@ -164,24 +171,29 @@ import {
   dialingCodeRegex,
   getDialingCode,
 } from "@packages/constants/src/country-currencies";
+import CardForm from "./card-form.vue";
 const { renderImg } = useImage();
 const { formatNumber } = useString();
 
-const active_method = ref("Mobile Money");
-const payment_methods = [
+const { method = "card" } = defineProps<{ method?: "momo" | "card" }>();
+
+const active_method = ref(method);
+const payment_methods = ref([
   {
     name: "Card",
+    slug: "card",
   },
   {
     name: "Mobile Money",
+    slug: "momo",
   },
-  {
-    name: "Bank transfer",
-  },
-  {
-    name: "USSD",
-  },
-];
+  // {
+  //   name: "Bank transfer",
+  // },
+  // {
+  //   name: "USSD",
+  // },
+] as const);
 
 const mobile_country_code = ref("260");
 const email = ref("");
@@ -189,6 +201,16 @@ const first_name = ref("");
 const last_name = ref("");
 const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
+
+const customerDetails = computed(() => {
+  return {
+    phone_number: store?.payment_details?.phone_number || "0905456905",
+    email: store.payment_details?.email || "alexpaycustomer@pay.com",
+    customer_first_name:
+      store.payment_details?.customer_first_name || "AlexPay",
+    customer_last_name: store.payment_details?.customer_last_name || "Customer",
+  };
+});
 
 watch(
   () => store.payment_details,
@@ -199,7 +221,9 @@ watch(
       email: _email,
       customer_first_name,
       customer_last_name,
+      method,
     } = details;
+    active_method.value = method === "card" ? "card" : "momo";
     email.value = _email ?? "";
     first_name.value = customer_first_name;
     last_name.value = customer_last_name;

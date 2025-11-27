@@ -41,6 +41,7 @@
             @paste="handleFormInput"
             @change="handleFormInput"
             @keydown.enter="handleFormInput"
+            :name="labelId"
           />
 
           <!-- INPUT SUFFIX -->
@@ -105,6 +106,7 @@
         @paste="handleFormInput"
         @change="handleFormInput"
         @keydown.enter="handleFormInput"
+        :name="labelId"
       ></textarea>
     </div>
 
@@ -138,6 +140,7 @@ const props = withDefaults(defineProps<ITextInputField>(), {
   copiedText: "Copied successfully",
   placeTextCenter: false,
   hasBottomPadding: true,
+  name:'nfm____'
 });
 
 // Set a default value for errorHandler if it's not provided

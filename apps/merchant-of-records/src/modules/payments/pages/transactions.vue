@@ -18,8 +18,7 @@
             </select>
             <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>
           </div>
-        </div>
-
+          
            <div
         class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
       >
@@ -40,6 +39,8 @@
           class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
         ></div>
       </div>
+
+        </div>
 
         <div class="flex items-center w-full gap-4">
           <DatePicker filterSize="lg" :activePeriod="activePeriod" @onFilterSelected="processFilterSelection" />
@@ -158,7 +159,7 @@ const fetchPaymentTransactions = async (page = 1) => {
         }),
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
-        reason: data.reason_for_failure || "-",
+        reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
@@ -222,7 +223,7 @@ const filteredTableBody = computed(() => {
   return tableBody.value.filter((tx) => {
     const method = tx.raw?.payment_details?.toLowerCase();
     const status = tx.raw?.status?.toLowerCase();
-    const currency = tx.raw?.currency?.toLowerCase();
+    const currency = tx.raw?.currency;
     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
     const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
@@ -231,7 +232,6 @@ const filteredTableBody = computed(() => {
      const matchesCurrency = selectedCurrency.value
       ? currency === selectedCurrency.value
       : true;
-
     return matchesMethod && matchesStatus && matchesDate && matchesCurrency;
   });
 });
@@ -271,8 +271,6 @@ const exportToExcel = async () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
   XLSX.writeFile(workbook, "All_Merchant_Transactions.xlsx");
 };
-
-
 
 onMounted(fetchPaymentTransactions);
 </script>

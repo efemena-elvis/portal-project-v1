@@ -247,7 +247,7 @@ onMounted(() => {
 }
 
 .overflow-row {
-  @apply flex justify-start items-center gap-8 mb-9;
+  @apply flex justify-start items-center gap-8 mb-9 flex-wrap;
 }
 
 .tax-row {

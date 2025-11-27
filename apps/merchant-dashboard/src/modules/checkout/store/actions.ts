@@ -3,7 +3,12 @@ import { checkoutRoutes } from "./checkout-routes";
 import constants from "@/shared/utilities/constants";
 import { useAuthStore } from "@/modules/auth/store";
 import { computed } from "vue";
-import { MobileMoneyPaymentRequest, PaymentDetails } from "../types";
+import {
+  CardPaymentRequest,
+  CardPaymentResponse,
+  MobileMoneyPaymentRequest,
+  PaymentDetails,
+} from "../types";
 
 const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN } = constants;
 
@@ -49,5 +54,28 @@ export const makeMobileMoneyPayment = async ({
   return await $api.push<string>(
     checkoutRoutes.make_momo_payment(reference),
     request
+  );
+};
+
+export const makeCardPayment = async ({
+  reference,
+  request,
+}: {
+  reference: string;
+  request: CardPaymentRequest;
+}) => {
+  const ip_response = await fetchIpAddress();
+  return await $api.push<CardPaymentResponse>(
+    checkoutRoutes.make_card_payment(reference),
+    {
+      ...request,
+      ip_address: ip_response.data?.ip_address,
+    }
+  );
+};
+
+export const fetchIpAddress = async () => {
+  return await $api.fetch<{ ip_address: string }>(
+    checkoutRoutes.fetch_ip_address
   );
 };
