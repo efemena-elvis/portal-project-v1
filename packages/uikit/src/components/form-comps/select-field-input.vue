@@ -21,6 +21,7 @@
         :required="isRequired"
         :disabled="isDisabled"
         @change="handleFormInput"
+        :name="labelId"
       >
         <option value="" disabled selected hidden>
           {{ inputPlaceholder }}
