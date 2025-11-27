@@ -107,8 +107,8 @@ const statusOptions = ["Successful", "Pending", "Failed"];
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
   { title: "Amount Requested", slug: "amount_requested" },
-  { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
+  { title: "Reason", slug: "reason_for_failure" },
   { title: "Payout Reference", slug: "reference" },
 ]);
 
@@ -177,8 +177,9 @@ const fetchPayouts = async (page = 1) => {
         amount_requested: getBoldTableText(
           `${data.currency} ${formatNumber(data.amount)}`
         ),
-        narration: data.narration,
+   
         status: getStatus(data.status, data.status),
+        reason_for_failure: data.reason_for_failure ?? "-",
 
         raw: {
           date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
@@ -215,6 +216,7 @@ const fetchAllPayoutPages = async () => {
         raw_date: new Date(data.created_at),
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
+        reason_for_failure: data.reason_for_failure ?? "-",
         reference: data.reference ?? "-",
       };
     });
@@ -235,7 +237,6 @@ const exportToExcel = async () => {
   const filtered = allPayouts.filter((tx) => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
-
     
     const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
@@ -248,6 +249,7 @@ const exportToExcel = async () => {
     Amount: tx.amount || "-",
     Status: tx.status,
     Reference: tx.reference,
+    Reason: tx.reason_for_failure ?? "-"
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
