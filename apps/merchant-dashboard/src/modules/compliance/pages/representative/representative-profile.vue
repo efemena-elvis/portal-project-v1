@@ -20,11 +20,9 @@
             {{ rep.business_role.join(", ") }}
           </span>
           <div
-            class="text-red-600 absolute -top-4 -right-2 border text-[16px] bg-red-50 rounded-full cursor-pointer min-w-8 min-h-8 flex justify-center items-center  icon icon-times"
+            class="text-red-600 absolute -top-4 -right-2 border text-[16px] bg-red-50 rounded-full cursor-pointer min-w-8 min-h-8 flex justify-center items-center icon icon-times"
             @click="removeRepresentative(index)"
-          >
-          
-          </div>
+          ></div>
         </div>
 
         <button
@@ -52,8 +50,8 @@
       @onSelectionChange="handleBusinessRoleChange"
     />
 
-    <TextFieldInput 
-   v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
+    <TextFieldInput
+      v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="legalFullName"
       labelTitle="Legal Full Name"
       :labelCompact="false"
@@ -68,8 +66,8 @@
       }"
     />
 
-    <TextFieldInput 
-     v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
+    <TextFieldInput
+      v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="dateOfBirth"
       labelTitle="Date of Birth"
       :labelCompact="false"
@@ -87,7 +85,7 @@
     />
 
     <SelectFieldInput
-        v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
+      v-if="addNewRepresentative || isEditing || businessPayload.length === 0"
       labelId="nationality"
       labelTitle="Nationality"
       :labelCompact="false"
@@ -98,7 +96,7 @@
       @onSelectionChange="(val) => (currentRep.nationality = val)"
     />
 
-    <button 
+    <button
       type="button"
       @click="handleAddNewRepresentative"
       class="btn btn-primary-outline mt-12 !w-[170px] text-[14px]"
@@ -122,7 +120,6 @@ import { useComplianceUtil, useStorage } from "@packages/hooks";
 import { ComplianceWrapper } from "@/modules/compliance/components";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { countryCurrencies } from "@packages/constants";
-
 
 type IBusinessType = {
   legal_full_name: string;
@@ -222,7 +219,8 @@ const getBusinessPayload = computed(() =>
 );
 
 const commitCurrentEditIfValid = () => {
-  if ((!isEditing.value && !addNewRepresentative.value) || !currentRep.value) return false;
+  if ((!isEditing.value && !addNewRepresentative.value) || !currentRep.value)
+    return false;
 
   const rep = {
     legal_full_name: (currentRep.value.legal_full_name || "").trim(),
@@ -257,21 +255,18 @@ const commitCurrentEditIfValid = () => {
   return true;
 };
 
-
 const handleRepresentativeProfileUpdate = async () => {
-
   try {
     commitCurrentEditIfValid();
   } catch (err) {
     console.warn("Failed to auto-commit representative edit:", err);
   }
 
-
   await complianceUtil.handleComplianceRequest({
     payload: { representatives: getBusinessPayload.value },
     redirectRoute: "ComplianceRepresentativeIdentity",
     stopClickHandler,
-    succesMsg: "Representative profile submitted",
+    successMsg: "Representative profile submitted",
     errorMsg: "Representative update failed",
     payloadType: "representatives",
   });

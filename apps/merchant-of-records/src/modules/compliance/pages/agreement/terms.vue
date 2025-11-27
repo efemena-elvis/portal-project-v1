@@ -121,7 +121,7 @@ const handleMerchantAgreementUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceSummary",
     stopClickHandler,
-    succesMsg: "Merchant agreement submitted",
+    successMsg: "Merchant agreement submitted",
     errorMsg: "Merchant agreement update failed",
     payloadType: "terms",
   });

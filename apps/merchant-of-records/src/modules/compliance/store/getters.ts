@@ -45,5 +45,3 @@ export const getMerchantData = <R = any>(
   return getDeepValue<IMerchantBaseType, R>(merchant, path);
 };
 
-// const legalName = getMerchantData("_initial_mid_3540", "profile.legal_name");
-// console.log("Legal Name:", legalName);

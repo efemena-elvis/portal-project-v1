@@ -8,14 +8,9 @@
               ? '/aggregator-merchant/business-profile'
               : '/market/wallet-entry'
           "
-          class="btn btn-primary  hover:text-white"
+          class="btn btn-primary hover:text-white"
         >
-      
-          {{
-            morAccountType === "aggregator"
-              ? "+ Add merchants"
-              : "Expand"
-          }}
+          {{ morAccountType === "aggregator" ? "+ Add merchants" : "Expand" }}
         </router-link>
       </div>
     </template>
@@ -48,7 +43,7 @@
           </div>
 
           <div class="tax-row--right">
-            <TransactionMetrics />
+            <TransactionMetrics  :transactionStats="transactionStats" :currency="getLocalCurrencyCode"/>
           </div>
         </div>
       </template>
@@ -77,6 +72,7 @@ import {
 } from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import { useBalanceStore } from "@/modules/balances/store";
 
 interface IWalletBalance {
   countryFlag: string;
@@ -98,11 +94,13 @@ const profileUtil = new useProfile(authStore);
 
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
+const {getTransactionStats} = useBalanceStore()
 
 const { processAPIRequest } = useEvents();
 
 const walletBalance = ref<IWalletBalance[]>([]);
 const taxBalance = ref<ITaxBalance[]>([]);
+const transactionStats = ref<any>({});
 
 const morAccountType = computed(() => {
   const userProfile = profileUtil?.getUser();
@@ -223,7 +221,22 @@ const fetchAllWallets = async () => {
   }
 };
 
-onMounted(() => fetchAllWallets());
+const fetchTransactionStats = async () => {
+  const response = await processAPIRequest({
+    action: getTransactionStats,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+    transactionStats.value = response.data;
+  }
+};
+
+onMounted(() => {
+  fetchAllWallets();
+  fetchTransactionStats();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -238,14 +251,14 @@ onMounted(() => fetchAllWallets());
 }
 
 .tax-row {
-  @apply flex justify-between items-center gap-8 mb-9;
+  @apply flex justify-between items-center gap-8 mb-9 sm:flex-col;
 
   &--left {
-    @apply w-1/2;
+    @apply w-1/2 sm:w-full;
   }
 
   &--right {
-    @apply w-1/2;
+    @apply w-1/2 sm:w-full;
   }
 }
 </style>

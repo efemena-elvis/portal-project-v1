@@ -184,7 +184,7 @@ const handleBankAccountUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceTerms",
     stopClickHandler,
-    succesMsg: "Bank account submitted",
+    successMsg: "Bank account submitted",
     errorMsg: "Business update failed",
     payloadType: "bank_account",
   });
@@ -210,7 +210,6 @@ watch(
   (newValue) => {
     if (newValue) {
       bankCurrency.value = newValue.currency;
-    
 
       businessPayload.value = Object.fromEntries(
         Object.entries(newValue).map(([key, val]) => [key, String(val ?? "")])

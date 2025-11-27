@@ -3,7 +3,7 @@
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'ComplianceBusinessVerification' })"
+    @onBackClick="router.push({ name: 'ComplianceRegistrationTax' })"
     @onContinueClick="handleRegistrationConfirmUpdate"
   >
     <UploadGuidelines
@@ -17,12 +17,10 @@
     <!-- DOCUMENT FIELD UPLOAD -->
     <div class="mb-14">
       <div class="form-block">
-        <label class="form-label-basic"
-          >Certificate of business incorporation</label
-        >
+        <label class="form-label-basic">Form A or Memart</label>
         <FileUploadInput
           showSkip
-          skipRoute="ComplianceRegistrationTax"
+          skipRoute="ComplianceRepresentativeProfile"
           :hasDocumentUploaded="!!uploadedDocument"
           :uploadedDocumentContent="getUploadedDocumentContent"
           :uploadAction="uploadFile"
@@ -55,8 +53,8 @@ const stopClickHandler = ref<boolean>(false);
 const uploadedDocument = ref<string>("");
 
 const uploadedDocumentContent = ref<{ name: string; link: string }>({
-  name: "Certificate of incorporation",
-  link: getComplianceRegistration.value?.doc_url || "",
+  name: "Form A/Memart",
+  link: getComplianceRegistration.value?.form_a_doc_url || "",
 });
 
 const getUploadedDocumentContent = computed(() => {
@@ -69,14 +67,14 @@ const isActionReady = computed(() => {
 
 const getBusinessPayload = computed(() => {
   return {
-    doc_url: uploadedDocument.value,
+    form_a_doc_url: uploadedDocument.value,
   };
 });
 
 const handleRegistrationConfirmUpdate = async () => {
   await complianceUtil.handleComplianceRequest({
     payload: getBusinessPayload.value,
-    redirectRoute: "ComplianceRegistrationTax",
+    redirectRoute: "ComplianceRepresentativeProfile",
     stopClickHandler,
     successMsg: "Registration document submitted",
     errorMsg: "Registration update failed",
@@ -88,11 +86,11 @@ watch(
   getComplianceRegistration,
   (newValue) => {
     if (newValue) {
-      uploadedDocument.value = newValue.doc_url || "";
+      uploadedDocument.value = newValue.form_a_doc_url || "";
 
       uploadedDocumentContent.value = {
-        name: "Certificate of incorporation",
-        link: newValue.doc_url,
+        name: "Form A/Memart",
+        link: newValue.form_a_doc_url || "",
       };
     }
   },

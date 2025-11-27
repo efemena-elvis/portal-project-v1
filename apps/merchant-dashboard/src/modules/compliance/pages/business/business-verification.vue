@@ -132,7 +132,7 @@ const handleBusinessConfirmUpdate = async () => {
     payload: getBusinessPayload.value,
     redirectRoute: "ComplianceRegistrationDocuments",
     stopClickHandler,
-    succesMsg: "Business address document submitted",
+    successMsg: "Business address document submitted",
     errorMsg: "Business update failed",
     payloadType: "business",
   });
