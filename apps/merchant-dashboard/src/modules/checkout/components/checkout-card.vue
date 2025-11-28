@@ -195,7 +195,7 @@ const payment_methods = ref([
   // },
 ] as const);
 
-const mobile_country_code = ref("260");
+const mobile_country_code = ref("233"); // Ghana dialing code
 const email = ref("");
 const first_name = ref("");
 const last_name = ref("");
@@ -204,7 +204,7 @@ const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
 
 const customerDetails = computed(() => {
   return {
-    phone_number: store?.payment_details?.phone_number || "0905456905",
+    phone_number: store?.payment_details?.phone_number || "+233-alexpay",
     email: store.payment_details?.email || "alexpaycustomer@pay.com",
     customer_first_name:
       store.payment_details?.customer_first_name || "AlexPay",
