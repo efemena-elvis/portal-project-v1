@@ -1,4 +1,4 @@
-<template>
+Not working: <template>
   <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
     <template #pageOptions>
       <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
@@ -221,6 +221,8 @@ const fetchAllTransactions = async () => {
 };
 
 const filteredTableBody = computed(() => {
+    
+
   return tableBody.value.filter((tx) => {
     const method = tx.raw?.payment_details?.toLowerCase();
     const status = tx.raw?.status?.toLowerCase();
@@ -261,11 +263,12 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
     Amount: tx.amount,
+    Currency: tx.currency,
     "Payment Method": tx.payment_details,
     Status: tx.status,
     Reason: tx.reason,
     Reference: tx.reference,
-    Currency: tx.currency,
+    
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

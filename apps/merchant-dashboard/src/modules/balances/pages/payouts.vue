@@ -222,6 +222,7 @@ const fetchAllPayoutPages = async () => {
         status: data.status ?? "-",
         reason_for_failure: data.reason_for_failure ?? "-",
         reference: data.reference ?? "-",
+        currency: data.currency
       };
     });
 
@@ -251,6 +252,7 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
+    Currency: tx.currency,
     Status: tx.status,
     Reference: tx.reference,
     Reason: tx.reason_for_failure ?? "-"

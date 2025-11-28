@@ -279,9 +279,10 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
+    Currency: tx.currency,
     Reason: tx.reason_for_failure,
     Reference: tx.reference,
-    Currency: tx.currency,
+   
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
