@@ -3,7 +3,7 @@
     showActionRow
     :isPrimaryActionDisabled="isActionReady"
     :stopClickHandler="stopClickHandler"
-    @onBackClick="router.push({ name: 'ComplianceRepresentative' })"
+    @onBackClick="router.push({ name: 'ComplianceRepresentativeProfile' })"
     @onContinueClick="handleMerchantAgreementUpdate"
   >
     <!-- AGREEMENT ALERT -->

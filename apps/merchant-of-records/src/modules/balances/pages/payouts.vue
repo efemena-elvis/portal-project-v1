@@ -8,7 +8,9 @@
     :showCustomActionBtn="tableBody.length > 0 && !isLoading"
 
   >
-    <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
+    <template #pageOptions >
+       <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
+        <div class="flex items-center justify-between w-full gap-4">
       <div
         class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
       >
@@ -49,8 +51,8 @@
           class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
         ></div>
       </div>
-
-      <div class="flex items-center w-full gap-3">
+</div>
+      <div class="flex items-center w-full gap-4">
         <DatePicker
           filterSize="lg"
           :activePeriod="activePeriod"
@@ -58,11 +60,13 @@
         />
         <button
           @click="exportToExcel"
-          class="w-full p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
+          class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
         >
           Export
         </button>
       </div>
+      </div>
+     
     </template>
 
     <template v-slot:pageContent>
@@ -107,7 +111,7 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
-import { da } from "date-fns/locale";
+
 
 const { getBoldTableText, formatNumber, getStatus } = useString();
 const { getPayouts, fetchAllPayouts } = useBalanceStore();
@@ -177,7 +181,7 @@ const processFilterSelection = (
 const fetchPayouts = async (page = 1) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: fetchAllPayouts,
+    action: getPayouts,
     payload: { page },
     showAlert: false,
   });
@@ -210,6 +214,7 @@ const fetchPayouts = async (page = 1) => {
           status: data.status ?? "-",
            reason_for_failure: data.reason_for_failure ?? "-",
           reference: data.reference ?? "-",
+          currency: data.currency
         },
       };
     });
@@ -265,7 +270,7 @@ const exportToExcel = async () => {
     
     const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
-    const matchesCurrency = selectedCurrency.value ? currency === selectedCurrency.value.toLowerCase() : true;
+    const matchesCurrency = selectedCurrency.value ? currency === selectedCurrency.value : true;
 
     return  matchesStatus && matchesDate && matchesCurrency;
   });
@@ -274,8 +279,10 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
+    Currency: tx.currency,
     Reason: tx.reason_for_failure,
     Reference: tx.reference,
+   
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
@@ -292,7 +299,7 @@ const filteredTableBody = computed(() => {
       : true;
 
     const matchesCurrency = selectedCurrency.value
-      ? tx.raw?.currency?.toLowerCase() === selectedCurrency.value.toLowerCase()
+      ? tx.raw?.currency === selectedCurrency.value
       : true;
 
     const matchesDate = rawDate

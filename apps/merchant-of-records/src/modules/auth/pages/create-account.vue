@@ -208,10 +208,7 @@ const handleUserSignup = async () => {
         type: "success",
       },
 
-      // 400: {
-      //   message: "Email already exists.",
-      //   type: "error",
-      // },
+     
     },
   });
 
@@ -227,7 +224,7 @@ const handleUserSignup = async () => {
     }, 2000);
   }
 
-  else if(response){
+  else {
     pushToastAlert({
       message: "Account creation failed",
       description: capitalizeFirstLetter(response.error.message),
