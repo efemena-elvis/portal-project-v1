@@ -181,6 +181,7 @@ const fetchAllTransactions = async () => {
         status: data.status,
         reason: data.reason_for_failure || "-",
         reference: data.reference,
+        currency: data.currency
       };
     });
 
@@ -229,6 +230,7 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
     Amount: tx.amount,
+    Currency: tx.currency,
     "Payment Method": tx.payment_details,
     Status: tx.status,
     Reason: tx.reason,

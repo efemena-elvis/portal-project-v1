@@ -1,5 +1,9 @@
 <template>
-  <form class="p-6 bg-white rounded-lg" @submit="handleSubmission">
+  <form
+    class="p-6 bg-white rounded-lg"
+    @submit="handleSubmission"
+    v-if="customerForm"
+  >
     <TextFieldInput
       :labelId="'card_number'"
       :labelTitle="'Card Number'"
@@ -53,6 +57,42 @@
       Pay
     </button>
   </form>
+  <form
+    class="p-6 bg-white rounded-lg"
+    @submit.prevent="handleCustomerDetailsCollection"
+    v-else
+  >
+    <div class="grid grid-cols-2 sm:grid-cols-1 gap-2">
+      <TextFieldInput
+        :labelId="'customer_first_name'"
+        :labelTitle="'First Name'"
+        :labelCompact="false"
+        :inputType="IInputType.Text"
+        :inputPlaceholder="'Enter First Name'"
+        isRequired
+      />
+      <TextFieldInput
+        :labelId="'customer_last_name'"
+        :labelTitle="'Last Name'"
+        :labelCompact="false"
+        :inputType="IInputType.Text"
+        :inputPlaceholder="'Enter Last Name'"
+        isRequired
+      />
+    </div>
+    <TextFieldInput
+      :labelId="'email'"
+      :labelTitle="'Email'"
+      :labelCompact="false"
+      :inputType="IInputType.Email"
+      :inputPlaceholder="'Enter Email'"
+      isRequired
+    />
+
+    <button class="btn btn-primary w-full btn-sm" type="submit">
+      Continue
+    </button>
+  </form>
 </template>
 
 <script lang="ts" setup>
@@ -70,6 +110,12 @@ import { ref } from "vue";
 
 const store = useCheckoutStore();
 const { makeCardPayment } = store;
+const customerForm = ref<{
+  customer_first_name: string;
+  customer_last_name: string;
+  email: string;
+  phone_number: string;
+} | null>(null);
 
 const { processAPIRequest, clickHandler } = useEvents();
 const { customer_details, reference } = defineProps<{
@@ -106,6 +152,22 @@ const yearOptions = Array.from({ length: 12 }, (_, i) => {
 
 const paymentButtonRef = ref(null);
 
+const handleCustomerDetailsCollection = (event: Event) => {
+  event.preventDefault();
+  const form = event.target as HTMLFormElement;
+  const formData = new FormData(form);
+  const formValues = Object.fromEntries(formData.entries()) as {
+    customer_first_name: string;
+    customer_last_name: string;
+    email: string;
+    phone_number: string;
+  };
+  customerForm.value = {
+    ...formValues,
+    phone_number: customer_details.phone_number || "0000000000",
+  };
+};
+
 const handleSubmission = async (event: Event) => {
   event.preventDefault();
   const form = event.target as HTMLFormElement;
@@ -118,7 +180,13 @@ const handleSubmission = async (event: Event) => {
   };
   const browerChecks = generateBrowserChecks();
   const request = {
-    ...customer_details,
+    ...(customerForm.value
+      ? {
+          ...customerForm.value,
+        }
+      : {
+          ...customer_details,
+        }),
     card_number: formValues.card_number,
     card_expiry_date: `${formValues.expiry_month}${formValues.expiry_year}`,
     card_cvv: formValues.card_cvv,
@@ -142,8 +210,8 @@ const handleSubmission = async (event: Event) => {
       },
 
       200: {
-        message: "Processing Payment",
-        description: "Your payment is being processed",
+        message: "3DS Challenge Required",
+        description: "You need to complete a 3DS Challenge",
         type: "success",
       },
 
@@ -158,28 +226,33 @@ const handleSubmission = async (event: Event) => {
     },
   });
 
-  clickHandler(paymentButtonRef);
-  const device_storage_token = response
-    ? response.data?.device_storage_token
-    : null;
-  if (device_storage_token) {
-    const { methodPostData, methodUrl } = device_storage_token;
-    perform3DSMethod(methodUrl, methodPostData);
-    await new Promise((res) => {
-      setTimeout(() => {
-        res("ready");
-      }, 2500);
-    });
-    const challenge_response = await makeCardPayment({ reference, request });
-    clickHandler(paymentButtonRef, "Pay", false);
-    const challenge_details = challenge_response.data?.device_storage_token;
-    if (challenge_details) {
-      const {
-        customizedHtml: {
-          "3ds2": { acsUrl, cReq },
-        },
-      } = challenge_details;
-      start3DSChallenge(acsUrl, cReq);
+  if ([200, 201].includes(response && response.code ? response.code : 0)) {
+    clickHandler(paymentButtonRef);
+    const device_storage_token = response
+      ? response.data?.device_storage_token
+      : null;
+
+    if (device_storage_token) {
+      const { methodPostData, methodUrl } = device_storage_token;
+      perform3DSMethod(methodUrl, methodPostData);
+      await new Promise((res) => {
+        setTimeout(() => {
+          res("ready");
+        }, 2500);
+      });
+      const challenge_response = await makeCardPayment({ reference, request });
+      clickHandler(paymentButtonRef, "Pay", false);
+      const challenge_details = challenge_response.data?.device_storage_token;
+      if (challenge_details) {
+        const {
+          customizedHtml: {
+            "3ds2": { acsUrl, cReq },
+          },
+        } = challenge_details;
+        start3DSChallenge(acsUrl, cReq);
+      }
+    } else {
+      clickHandler(paymentButtonRef, "Pay", false);
     }
   }
 };

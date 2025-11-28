@@ -6,7 +6,7 @@
     @onBackClick="router.push({ name: 'ComplianceRepresentativeProfile' })"
     @onContinueClick="handleMerchantAgreementUpdate"
   >
-    <!-- AGREEMENT ALERT -->
+  <!-- AGREEMENT ALERT -->
     <div class="agreement-alert">
       <div class="icon icon-info-circle"></div>
 
