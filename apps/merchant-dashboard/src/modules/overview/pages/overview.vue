@@ -22,7 +22,7 @@
 import { ref, computed, onMounted } from "vue";
 import { countryCurrencies } from "@packages/constants";
 import { PageContentWrapper } from "@packages/uikit";
-import { useProfile, useEvents } from "@packages/hooks";
+import { useProfile, useEvents, useAppVariant } from "@packages/hooks";
 import { storeToRefs } from "pinia";
 import { OverviewCard, TransactionTable } from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
@@ -45,6 +45,7 @@ interface ITaxBalance {
 const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
 const profileUtil = new useProfile(authStore);
+const appVariant = ref<string>(useAppVariant());
 
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
@@ -59,9 +60,19 @@ const getLocalCurrencyCode = computed(() => {
 });
 
 const loadLocalCountryCurrency = () => {
-  const localCountryPayload = countryCurrencies.find(
-    (country) => country.currency.short === getLocalCurrencyCode.value
-  );
+  let localCountryPayload;
+
+  if (appVariant.value === "alexpay") {
+    localCountryPayload = countryCurrencies.find(
+      (country) => country.currency.short === "GHS"
+    );
+  } else {
+    localCountryPayload = countryCurrencies.find(
+      (country) => country.currency.short === "ZMW"
+    );
+  }
+
+
 
   walletBalance.value = [
     {
@@ -72,7 +83,8 @@ const loadLocalCountryCurrency = () => {
       amount: 0,
     },
   ];
-};
+
+  }
 
 const fetchAllWallets = async () => {
   if (getAllWallets?.value?.walletBalance.length === 0) {

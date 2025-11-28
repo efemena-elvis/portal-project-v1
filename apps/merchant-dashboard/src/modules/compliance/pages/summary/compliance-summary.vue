@@ -158,11 +158,7 @@ const updateCompletionStatus = () => {
 
       case "business_address":
         section.completed =
-          complianceBusiness.value?.first_address &&
-          complianceBusiness.value?.city &&
-          complianceBusiness.value?.state
-            ? true
-            : false;
+          true
         break;
 
       case "business_verification":

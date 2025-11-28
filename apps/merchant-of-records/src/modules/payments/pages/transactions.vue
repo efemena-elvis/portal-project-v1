@@ -206,6 +206,7 @@ const fetchAllTransactions = async () => {
         status: data.status,
         reason: data.reason_for_failure || "-",
         reference: data.reference,
+        currency: data.currency,
       };
     });
 
@@ -249,7 +250,7 @@ const exportToExcel = async () => {
     const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
     const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
     const matchesCurrency = selectedCurrency.value
-      ? tx.currency.toLowerCase() === selectedCurrency.value.toLowerCase()
+      ? tx.currency === selectedCurrency.value
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 
@@ -264,6 +265,7 @@ const exportToExcel = async () => {
     Status: tx.status,
     Reason: tx.reason,
     Reference: tx.reference,
+    Currency: tx.currency,
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

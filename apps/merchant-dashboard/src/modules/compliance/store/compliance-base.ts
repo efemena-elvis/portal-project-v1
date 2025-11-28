@@ -5,9 +5,9 @@ export interface IComplianceBusiness {
   email: string;
   phone_number: string;
   website?: string | null;
-  first_address: string;
-  city: string;
-  state: string;
+  first_address?: string;
+  city?: string;
+  state?: string;
   doc_type: string;
   doc_url: string;
 }
