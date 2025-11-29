@@ -31,10 +31,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, h} from "vue";
-import { useString, useDate, useEvents } from "@packages/hooks";
+import { useString, useDate, useEvents, useAppVariant } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import { useBalanceStore } from "../store";
 import { DatePicker } from "@packages/uikit";
+
 import {
   TableContainer,
   TableContainerBody,
@@ -44,13 +45,13 @@ import {
 
 const {
   formatNumber,
-  getStatus,
   getBoldTableText,
   capitalizeFirstLetter,
   transactionFlowIcon,
 } = useString();
 const { getBalanceHistory } = useBalanceStore();
 const { processAPIRequest } = useEvents();
+const appVariant = ref<string>(useAppVariant());
 
 const isLoading = ref(true);
 const activePeriod = ref<[Date, Date] | null>(null);
@@ -88,7 +89,6 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   return target >= start && target <= end;
 };
 
-
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
 ) => {
@@ -103,6 +103,9 @@ const processFilterSelection = (
   }
 };
 
+const getCurrency = computed(() => {
+  return appVariant.value === "alexpay" ? "GHS" : "ZMW";
+});
 
 const fetchBalanceHistory = async (page = 1) => {
   tablePaging.value.current_page = page;
@@ -128,12 +131,12 @@ const fetchBalanceHistory = async (page = 1) => {
           },
         }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `ZMW ${formatNumber(data.balance_before)}`,
+        balance_before: `${getCurrency.value} ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
-          `ZMW ${formatNumber(data.amount)}`,
+          `${getCurrency.value} ${formatNumber(data.amount)}`,
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
-        balance_after: `ZMW ${formatNumber(data.balance_after)}`,
+        balance_after: `${getCurrency.value} ${formatNumber(data.balance_after)}`,
         reference : data.reference
       });
     });
