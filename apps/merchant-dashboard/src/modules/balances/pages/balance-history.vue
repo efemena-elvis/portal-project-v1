@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, h} from "vue";
-import { useString, useDate, useEvents, useAppVariant } from "@packages/hooks";
+import { useString, useDate, useEvents } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import { useBalanceStore } from "../store";
 import { DatePicker } from "@packages/uikit";
@@ -51,7 +51,7 @@ const {
 } = useString();
 const { getBalanceHistory } = useBalanceStore();
 const { processAPIRequest } = useEvents();
-const appVariant = ref<string>(useAppVariant());
+
 
 const isLoading = ref(true);
 const activePeriod = ref<[Date, Date] | null>(null);
@@ -103,9 +103,6 @@ const processFilterSelection = (
   }
 };
 
-const getCurrency = computed(() => {
-  return appVariant.value === "alexpay" ? "GHS" : "ZMW";
-});
 
 const fetchBalanceHistory = async (page = 1) => {
   tablePaging.value.current_page = page;
@@ -131,12 +128,12 @@ const fetchBalanceHistory = async (page = 1) => {
           },
         }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `${getCurrency.value} ${formatNumber(data.balance_before)}`,
+        balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
-          `${getCurrency.value} ${formatNumber(data.amount)}`,
+          `${data.currency_code} ${formatNumber(data.amount)}`,
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
-        balance_after: `${getCurrency.value} ${formatNumber(data.balance_after)}`,
+        balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
         reference : data.reference
       });
     });
@@ -149,9 +146,7 @@ const filteredTableBody = computed(() => {
   return tableBody.filter((tx) => {
     const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
     const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-    
-  
-      
+   
     return matchesDate ;
   });
 });
