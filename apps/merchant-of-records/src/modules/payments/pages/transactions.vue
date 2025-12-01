@@ -1,7 +1,7 @@
 Not working: <template>
   <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
     <template #pageOptions>
-      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
+      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse relative top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
         <div class="flex items-center justify-between w-full gap-4">
           <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
             <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">

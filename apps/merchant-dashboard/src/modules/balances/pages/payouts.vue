@@ -9,7 +9,7 @@
 
   >
     <template #pageOptions >
-      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
+      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse relative top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
 
          <div class="flex items-center justify-between w-full gap-4">
       <div
