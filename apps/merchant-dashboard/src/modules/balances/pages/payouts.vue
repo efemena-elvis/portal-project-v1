@@ -3,7 +3,7 @@
     :pagingData="tablePaging"
     pageDescription="All Payouts"
     :fetchDataByPage="fetchPayouts"
-    customActionBtnText="Initiate a Payout"
+  
     @customActionBtnClicked="toggleInitiatePayoutModal"
     :showCustomActionBtn="tableBody.length > 0 && !isLoading"
 
@@ -59,7 +59,7 @@
           title: 'No payout initiated yet',
           description:
             'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your initiated payout transactions.',
-          actionText: 'Initiate a Payout',
+     
         }"
       >
         <TableContainerBody

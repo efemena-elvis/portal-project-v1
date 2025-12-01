@@ -287,7 +287,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto bg-neutral-10  ;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto  bg-neutral-10  ;
 
   &--left {
     @apply flex justify-start items-center gap-x-2.5 w-1/2 sm:w-full sm:flex-wrap sm:gap-x-3 sm:gap-y-2;

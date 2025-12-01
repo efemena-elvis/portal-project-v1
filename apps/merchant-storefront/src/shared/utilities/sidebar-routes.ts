@@ -43,13 +43,13 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "payments",
     },
 
-    {
-      link: "/balance-history",
-      title: "Balance history",
-      icon: "icon-empty-wallet",
-      active: true,
-      category: "payments",
-    },
+    // {
+    //   link: "/balance-history",
+    //   title: "Balance history",
+    //   icon: "icon-empty-wallet",
+    //   active: true,
+    //   category: "payments",
+    // },
     {
       link: "/payouts",
       title: "Payouts",

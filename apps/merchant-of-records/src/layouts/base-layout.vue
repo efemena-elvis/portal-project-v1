@@ -152,7 +152,7 @@ setPageBackgroundColor("#ffffff");
   }
 
   .main-content-area {
-    @apply relative w-[82%] xl:w-[80%] lg:w-[76%] mdLg:w-full left-[18%] xl:left-[20%] lg:left-[24%] mdLg:left-0;
+    @apply relative w-[82%] xl:w-[80%] lg:w-[76%] mdLg:w-full left-[18%] xl:left-[20%] lg:left-[24%] mdLg:left-0 sm:mt-6;
 
     .topbar-area {
       @apply fixed top-0 w-[82%] xl:w-[80%] lg:w-[76%] mdLg:w-full;
