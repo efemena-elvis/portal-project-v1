@@ -9,7 +9,7 @@
 
   >
     <template #pageOptions >
-       <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse relative top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
+       <div class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
         <div class="flex items-center justify-between w-full gap-4">
       <div
         class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
@@ -113,7 +113,7 @@ import {
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
 
 
-const { getBoldTableText, formatNumber, getStatus } = useString();
+const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } = useString();
 const { getPayouts, fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
 
@@ -212,7 +212,7 @@ const fetchPayouts = async (page = 1) => {
           raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
-           reason_for_failure: data.reason_for_failure ?? "-",
+           reason_for_failure: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
           reference: data.reference ?? "-",
           currency: data.currency
         },
@@ -244,7 +244,7 @@ const fetchAllPayoutPages = async () => {
         raw_date: new Date(data.created_at),
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
-         reason_for_failure: data.reason_for_failure ?? "-",
+         reason_for_failure: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference ?? "-",
         currency: data.currency
       };

@@ -1,7 +1,7 @@
 <template>
   <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
     <template #pageOptions>
-      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse relative top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
+      <div class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-2 sm:static" v-if="tableBody.length > 0 && !isLoading">
         <div class="flex items-center justify-between w-full gap-4">
           <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
             <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
@@ -135,7 +135,7 @@ const fetchPaymentTransactions = async (page = 1) => {
         }),
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
-        reason: data.reason_for_failure || "-",
+        reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
@@ -179,7 +179,7 @@ const fetchAllTransactions = async () => {
         amount: formatNumber(data.amount),
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
-        reason: data.reason_for_failure || "-",
+        reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
         reference: data.reference,
         currency: data.currency
       };
