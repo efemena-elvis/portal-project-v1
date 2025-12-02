@@ -36,13 +36,13 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "payments",
       type: "merchant",
     },
-    // {
-    //   link: "/refunds",
-    //   title: "Refunds",
-    //   icon: "icon-send",
-    //   active: true,
-    //   category: "payments",
-    // },
+    {
+      link: "/refunds",
+      title: "Refunds",
+      icon: "icon-send",
+      active: true,
+      category: "payments",
+    },
     // {
     //   link: "/balance-history",
     //   title: "Balance history",
