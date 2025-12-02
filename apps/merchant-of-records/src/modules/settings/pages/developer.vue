@@ -196,7 +196,7 @@ watch(
   getProfileDeveloper,
   (newValue) => {
     if (newValue) {
-      console.log(newValue);
+      // console.log(newValue);
 
       urlPayload.value = {
         callback_url: newValue.callback_url || "",

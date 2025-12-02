@@ -60,3 +60,11 @@ export const getBanks = async (payload: any) => {
     },
   });
 };
+
+export const getRefunds = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`);
+};
+
+export const fetchAllRefunds = async () => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?limit=100000`);
+};

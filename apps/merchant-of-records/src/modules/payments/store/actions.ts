@@ -54,3 +54,12 @@ export const getMerchants = async () => {
 export const initiatePayout = async (payload: any) => {
   return await $api.push(paymentRoutes.initiatePayout, payload);
 };
+
+
+export const getRefunds = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`);
+};
+
+export const fetchAllRefunds = async () => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?limit=100000`);
+};

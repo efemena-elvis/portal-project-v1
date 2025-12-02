@@ -3,65 +3,69 @@
     :pagingData="tablePaging"
     pageDescription="All Payouts"
     :fetchDataByPage="fetchPayouts"
-    customActionBtnText="Initiate a Payout"
     @customActionBtnClicked="toggleInitiatePayoutModal"
-    :showCustomActionBtn="tableBody.length > 0 && !isLoading"
-
+    :showCustomActionBtn="false"
   >
-    <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
+    <template #pageOptions>
       <div
-        class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
+        class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-3 sm:static"
+        v-if="tableBody.length > 0 && !isLoading"
       >
-        <select
-          v-model="selectedStatus"
-          class="w-full p-4 bg-transparent appearance-none focus:outline-none"
-        >
-          <option value="">Status</option>
-          <option
-            v-for="(status, index) in statusOptions"
-            :value="status.toLowerCase()"
-            :key="index"
+        <div class="flex items-center justify-between w-full gap-4">
+          <div
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
           >
-            {{ status }}
-          </option>
-        </select>
-        <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-        ></div>
-      </div>
-      <div
-        class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
-      >
-        <select
-          v-model="selectedCurrency"
-          class="w-full p-4 bg-transparent appearance-none focus:outline-none"
-        >
-          <option value="">Currency</option>
-          <option
-            v-for="(currency, index) in currencyOptions"
-            :value="currency"
-            :key="index"
+            <select
+              v-model="selectedStatus"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
+            >
+              <option value="">Status</option>
+              <option
+                v-for="(status, index) in statusOptions"
+                :value="status.toLowerCase()"
+                :key="index"
+              >
+                {{ status }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
+          <div
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
           >
-            {{ currency }}
-          </option>
-        </select>
-        <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-        ></div>
-      </div>
-
-      <div class="flex items-center w-full gap-3">
-        <DatePicker
-          filterSize="lg"
-          :activePeriod="activePeriod"
-          @onFilterSelected="processFilterSelection"
-        />
-        <button
-          @click="exportToExcel"
-          class="w-full p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
-        >
-          Export
-        </button>
+            <select
+              v-model="selectedCurrency"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
+            >
+              <option value="">Currency</option>
+              <option
+                v-for="(currency, index) in currencyOptions"
+                :value="currency"
+                :key="index"
+              >
+                {{ currency }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
+        </div>
+        <div class="flex items-center w-full gap-4">
+          <DatePicker
+            filterSize="lg"
+            :activePeriod="activePeriod"
+            @onFilterSelected="processFilterSelection"
+          />
+          <button
+            @click="exportToExcel"
+            class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md sm:w-1/2 hover:bg-teal-50"
+          >
+            Export
+          </button>
+        </div>
       </div>
     </template>
 
@@ -75,7 +79,6 @@
           title: 'No payout initiated yet',
           description:
             'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your initiated payout transactions.',
-          actionText: 'Initiate a Payout',
         }"
       >
         <TableContainerBody
@@ -86,11 +89,13 @@
         />
       </TableContainer>
     </template>
-    
   </PageContentWrapper>
-   <teleport to="body" v-if="showInitiatePayoutModal">
-    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" @reloadPayouts="fetchAllPayouts" />
-  </teleport>
+  <!-- <teleport to="body" v-if="showInitiatePayoutModal">
+    <InitiatePayoutModal
+      @closeTriggered="toggleInitiatePayoutModal"
+      @reloadPayouts="fetchAllPayouts"
+    />
+  </teleport> -->
 </template>
 
 <script setup lang="ts">
@@ -107,9 +112,9 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 import InitiatePayoutModal from "@/modules/payments/modals/initiate-payout-modal.vue";
-import { da } from "date-fns/locale";
 
-const { getBoldTableText, formatNumber, getStatus } = useString();
+const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } =
+  useString();
 const { getPayouts, fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
 
@@ -129,10 +134,9 @@ const currencyOptions = ["GHS", "TZS", "ZMW"];
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
   { title: "Amount Requested", slug: "amount_requested" },
-  { title: "Payout Narration", slug: "narration" },
   { title: "Status", slug: "status" },
+  { title: "Reason", slug: "reason_for_failure" },
   { title: "Payout Reference", slug: "reference" },
-  
 ]);
 
 const tableBody = ref<any[]>([]);
@@ -177,7 +181,7 @@ const processFilterSelection = (
 const fetchPayouts = async (page = 1) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: fetchAllPayouts,
+    action: getPayouts,
     payload: { page },
     showAlert: false,
   });
@@ -200,15 +204,23 @@ const fetchPayouts = async (page = 1) => {
         amount_requested: getBoldTableText(
           `${data.currency} ${formatNumber(data.amount)}`
         ),
-        narration: data.narration,
+
         status: getStatus(data.status, data.status),
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
 
         raw: {
           date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
+          reason_for_failure: capitalizeFirstLetter(
+            (data.reason_for_failure || "-").toString().toLowerCase()
+          ),
+
           reference: data.reference ?? "-",
+          currency: data.currency,
         },
       };
     });
@@ -232,14 +244,17 @@ const fetchAllPayoutPages = async () => {
     if (response?.code !== 200) break;
 
     const mapped = response.data.map((data: any) => {
-
       return {
         date_created: `${getDateCreated(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
         raw_date: new Date(data.created_at),
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
+
         reference: data.reference ?? "-",
-        currency: data.currency
+        currency: data.currency,
       };
     });
 
@@ -247,7 +262,6 @@ const fetchAllPayoutPages = async () => {
 
     totalPages = response.pagination[0]?.total_pages ?? 1;
     page++;
-
   } while (page <= totalPages);
 
   return all;
@@ -259,19 +273,25 @@ const exportToExcel = async () => {
   const filtered = allPayouts.filter((tx) => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
-    const currency = tx.currency.toLowerCase();
-    
-    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
-    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
-    const matchesCurrency = selectedCurrency.value ? currency === selectedCurrency.value.toLowerCase() : true;
+    const currency = tx.currency;
 
-    return  matchesStatus && matchesDate && matchesCurrency;
+    const matchesStatus = selectedStatus.value
+      ? status === selectedStatus.value
+      : true;
+    const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
+    const matchesCurrency = selectedCurrency.value
+      ? currency === selectedCurrency.value
+      : true;
+
+    return matchesStatus && matchesDate && matchesCurrency;
   });
 
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     Amount: tx.amount || "-",
     Status: tx.status,
+    Currency: tx.currency,
+    Reason: tx.reason_for_failure,
     Reference: tx.reference,
   }));
 
@@ -289,7 +309,7 @@ const filteredTableBody = computed(() => {
       : true;
 
     const matchesCurrency = selectedCurrency.value
-      ? tx.raw?.currency?.toLowerCase() === selectedCurrency.value.toLowerCase()
+      ? tx.raw?.currency === selectedCurrency.value
       : true;
 
     const matchesDate = rawDate
@@ -302,7 +322,6 @@ const filteredTableBody = computed(() => {
 onMounted(() => {
   fetchPayouts();
 });
-
 </script>
 
 <style scoped></style>

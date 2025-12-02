@@ -35,6 +35,7 @@ import { useString, useDate, useEvents } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import { useBalanceStore } from "../store";
 import { DatePicker } from "@packages/uikit";
+
 import {
   TableContainer,
   TableContainerBody,
@@ -44,13 +45,13 @@ import {
 
 const {
   formatNumber,
-  getStatus,
   getBoldTableText,
   capitalizeFirstLetter,
   transactionFlowIcon,
 } = useString();
 const { getBalanceHistory } = useBalanceStore();
 const { processAPIRequest } = useEvents();
+
 
 const isLoading = ref(true);
 const activePeriod = ref<[Date, Date] | null>(null);
@@ -87,7 +88,6 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   const target = new Date(date);
   return target >= start && target <= end;
 };
-
 
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
@@ -128,12 +128,12 @@ const fetchBalanceHistory = async (page = 1) => {
           },
         }),
         summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `ZMW ${formatNumber(data.balance_before)}`,
+        balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
-          `ZMW ${formatNumber(data.amount)}`,
+          `${data.currency_code} ${formatNumber(data.amount)}`,
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
-        balance_after: `ZMW ${formatNumber(data.balance_after)}`,
+        balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
         reference : data.reference
       });
     });
@@ -146,9 +146,7 @@ const filteredTableBody = computed(() => {
   return tableBody.filter((tx) => {
     const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
     const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-    
-  
-      
+   
     return matchesDate ;
   });
 });

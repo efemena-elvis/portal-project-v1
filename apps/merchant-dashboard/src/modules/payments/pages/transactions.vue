@@ -6,7 +6,7 @@
   >
     <template #pageOptions>
       <div
-        class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse"
+        class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static"
         v-if="tableBody.length > 0 && !isLoading"
       >
         <div class="flex items-center justify-between w-full gap-4">
@@ -137,7 +137,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount", slug: "amount" },
   { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
-  { title: "Reason", slug: "reason" },
+  { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
 ]);
 
@@ -215,7 +215,10 @@ const fetchPaymentTransactions = async (filters: string) => {
         }),
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
-        reason: data.reason_for_failure || "-",
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
+
         reference: data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
@@ -261,8 +264,12 @@ const fetchAllTransactions = async () => {
         amount: formatNumber(data.amount),
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
-        reason: data.reason_for_failure || "-",
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
+
         reference: data.reference,
+        currency: data.currency,
       };
     });
 
@@ -320,6 +327,7 @@ const exportToExcel = async () => {
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
     Amount: tx.amount,
+    Currency: tx.currency,
     "Payment Method": tx.payment_details,
     Status: tx.status,
     Reason: tx.reason,

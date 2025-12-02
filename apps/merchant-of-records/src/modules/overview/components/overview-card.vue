@@ -39,7 +39,7 @@ const props = defineProps({
 
 <style lang="scss" scoped>
 .overview-card {
-  @apply w-[256px] h-[120px] rounded-xl bg-teal-900/95 px-6 py-5 flex flex-col justify-between items-start gap-y-4;
+  @apply w-[210px] sm:w-[170px] h-[140px] rounded-xl bg-teal-900/95 px-6 py-5 flex flex-col justify-between items-start gap-y-4;
 
   .top-row {
     @apply flex justify-start items-center gap-x-2;

@@ -55,10 +55,11 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchPaymentTransactions = async () => {
+const fetchPaymentTransactions = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 
