@@ -21,24 +21,19 @@ const dateRange = ref<[Date, Date] | null>(null);
 interface IFilterType {
   filterSize: string;
   activePeriod: [Date, Date] | null;
- 
 }
 
 const props = withDefaults(defineProps<IFilterType>(), {
   filterSize: "sm",
   activePeriod: null,
- 
 });
 
 const emits = defineEmits(["onFilterSelected"]);
-
-
 
 const handleDateChange = (value: [Date, Date] | null) => {
   dateRange.value = value;
 
   if (value && value.length === 2) {
-   
     emits("onFilterSelected", value);
   } else {
     emits("onFilterSelected", null);
@@ -50,13 +45,11 @@ const dialogRef = ref<HTMLElement | null>(null);
 const togglerRef = ref<HTMLElement | null>(null);
 
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
-
-
 </script>
 
 <style lang="scss" scoped>
 .overview-filter {
-  @apply relative  min-w-max sm:w-1/2 md:w-full  ;
+  @apply relative  min-w-max sm:w-1/2 md:w-full;
 
   :deep(.dp__input) {
     @apply p-4  border border-gray-300  rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none;
@@ -65,7 +58,6 @@ const toggleDropdown = (state: boolean) => (showDropdown.value = state);
   :deep(.dp__input::placeholder) {
     @apply text-teal-800 relative left-6 font-bold;
   }
-
 
   :deep(.dp__menu) {
     @apply border border-gray-200 shadow-lg rounded-lg bg-white text-gray-800;
@@ -89,4 +81,3 @@ const toggleDropdown = (state: boolean) => (showDropdown.value = state);
   }
 }
 </style>
-

@@ -21,19 +21,17 @@
       <Pagination
         :pageDescription="pageDescription"
         :pagingData="pagingData"
-         @page-change="(page) => fetchDataByPage(page)"
-     
+        @page-change="(page) => handlePageChange(page)"
       />
     </template>
-      <template  v-if="showCustomActionBtn">
-
-          <button
-            class="p-[1.1rem] rounded-lg btn-primary "
-            @click="$emit('customActionBtnClicked')"
-          >
-            {{ customActionBtnText }}
-          </button>
-        </template>
+    <template v-if="showCustomActionBtn">
+      <button
+        class="p-[1.1rem] rounded-lg btn-primary"
+        @click="$emit('customActionBtnClicked')"
+      >
+        {{ customActionBtnText }}
+      </button>
+    </template>
   </div>
 </template>
 
@@ -49,7 +47,6 @@ interface IPageContentType {
   fetchDataByPage?: (page: number) => void;
   customActionBtnText?: string;
   showCustomActionBtn?: boolean;
-
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -58,13 +55,15 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   showTitle: true,
   fetchDataByPage: () => {},
   customActionBtnText: "",
-  showCustomActionBtn: false
+  showCustomActionBtn: false,
 });
 
-const emits = defineEmits([
-  "customActionBtnClicked",
-]);
+const emits = defineEmits(["customActionBtnClicked", "updatePage"]);
 
+const handlePageChange = (page: number) => {
+  props.fetchDataByPage && props.fetchDataByPage(page);
+  emits("updatePage", page);
+};
 
 const route = useRoute();
 
