@@ -59,7 +59,7 @@ const toggleDropdown = (state: boolean) => (showDropdown.value = state);
   @apply relative  min-w-max sm:w-1/2 md:w-full  ;
 
   :deep(.dp__input) {
-    @apply p-4  border border-gray-300  rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none;
+    @apply p-4  border border-gray-300  rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none w-[170px]  py-4 px-6;
   }
 
   :deep(.dp__input::placeholder) {

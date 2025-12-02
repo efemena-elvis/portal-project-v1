@@ -57,20 +57,20 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "payments",
       type: "aggregator"
     },
-    // {
-    //   link: "/refunds",
-    //   title: "Refunds",
-    //   icon: "icon-send",
-    //   active: true,
-    //   category: "payments",
-    // },
     {
-      link: "/balance-history",
-      title: "Balance history",
-      icon: "icon-empty-wallet",
+      link: "/refunds",
+      title: "Refunds",
+      icon: "icon-send",
       active: true,
-      category: "balances",
+      category: "payments",
     },
+    // {
+    //   link: "/balance-history",
+    //   title: "Balance history",
+    //   icon: "icon-empty-wallet",
+    //   active: true,
+    //   category: "balances",
+    // },
     {
       link: "/payouts",
       title: "Payouts",
