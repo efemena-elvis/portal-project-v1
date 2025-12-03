@@ -1,7 +1,7 @@
-Not working: <template>
+<template>
   <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
     <template #pageOptions>
-      <div class="flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse" v-if="tableBody.length > 0 && !isLoading">
+      <div class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static" v-if="tableBody.length > 0 && !isLoading">
         <div class="flex items-center justify-between w-full gap-4">
           <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
             <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
@@ -88,7 +88,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount", slug: "amount" },
   { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
-   { title: "Reason", slug: "reason" },
+   { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
   
 ]);
@@ -100,7 +100,7 @@ const tablePaging = ref<any>({});
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
-};
+ };
 
 const normalizeDate = (date: Date) => {
   const d = new Date(date);
@@ -159,7 +159,10 @@ const fetchPaymentTransactions = async (page = 1) => {
         }),
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
-        reason: capitalizeFirstLetter(data.reason_for_failure.toLowerCase() || "-"),
+       reason_for_failure: capitalizeFirstLetter(
+  (data.reason_for_failure || "-").toString().toLowerCase()
+),
+
         reference: data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
@@ -204,7 +207,10 @@ const fetchAllTransactions = async () => {
         amount: formatNumber(data.amount),
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
-        reason: data.reason_for_failure || "-",
+        reason_for_failure: capitalizeFirstLetter(
+  (data.reason_for_failure || "-").toString().toLowerCase()
+),
+
         reference: data.reference,
         currency: data.currency,
       };

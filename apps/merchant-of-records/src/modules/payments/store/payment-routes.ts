@@ -3,4 +3,5 @@ export const paymentRoutes = {
   getCustomers: "customers",
   getMerchants: "aggregator/list-merchant",
   initiatePayout: "payouts/request",
+  getAllRefunds: "refunds",
 };

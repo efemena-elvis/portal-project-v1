@@ -40,6 +40,17 @@
           :isDisabled="true"
         />
 
+           <!-- <SelectFieldInput
+        labelId="businessCountry"
+        labelTitle="Business location"
+        :labelCompact="false"
+        inputPlaceholder="Select country of business registeration"
+        :inputValue="businessPayload.business_location"
+        :selectData="validCountries"
+        isRequired
+        @onSelectionChange="businessPayload.business_location = $event"
+      /> -->
+
         <SelectFieldInput
           labelId="businessTimezone"
           labelTitle="Business Timezone"
@@ -106,6 +117,7 @@ import { useGlobalStore } from "@/modules/global/store";
 import { useSettingsStore } from "@/modules/settings/store";
 import { countryTimezones } from "@packages/constants";
 import { useProfile, useEvents } from "@packages/hooks";
+import merchantCountries from "@/shared/utilities/merchant-countries";
 import {
   TextFieldInput,
   FileUploadInput,
@@ -113,6 +125,7 @@ import {
 } from "@packages/uikit";
 import ChangePasswordModal from "@/modules/settings/modals/change-password-modal.vue";
 import { storeToRefs } from "pinia";
+import { onMounted } from "vue";
 
 type IProfileType = {
   email_address: string;
@@ -133,9 +146,17 @@ const {
 
 const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
+const { getBusinessCountries } = useGlobalStore();
 
 const businessLogo = ref<string>("");
 const showChangePasswordModal = ref<boolean>(false);
+
+const validCountries = ref<{ value: string; name: string }[]>([
+  {
+    value: "98e7ad5b-d718-41d1-ab38-10a245ff4279",
+    name: "Nigeria",
+  },
+]);
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUserProfile = computed(() => profileUtil.getUser());
@@ -164,6 +185,40 @@ const getPayload = computed(() => {
 const toggleChangePasswordModal = () => {
   showChangePasswordModal.value = !showChangePasswordModal.value;
 };
+
+// const fetchCountries = async () => {
+//   const response = await processAPIRequest({
+//     action: getBusinessCountries,
+//     payload: {},
+//   });
+
+//   if (response.code === 200) {
+   
+//     const merchantCountryCodes = new Set(
+//       merchantCountries.map((merchant) => merchant.code.toLowerCase())
+//     );
+
+   
+//     const filteredCountries = response.data
+//       .filter((country: any) =>
+//         merchantCountryCodes.has(country.country_code.toLowerCase())
+//       )
+//       .map((country: any) => ({
+//         name: country.name,
+//         value: country.id,
+//       }))
+//       .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+//     const getNigeria = filteredCountries.find(
+//       (country: any) => country.name === "Nigeria"
+//     );
+
+//     validCountries.value = filteredCountries;
+//     businessPayload.value.business_location = getNigeria.value;
+//   }
+// };
+
+
 
 // Fetch all profile data
 const fetchProfileData = async () => {
@@ -201,7 +256,11 @@ watch(
   { immediate: true }
 );
 
-fetchProfileData();
+onMounted(() => {
+  // fetchCountries();
+  fetchProfileData();
+});
+
 </script>
 
 <style lang="scss" scoped>

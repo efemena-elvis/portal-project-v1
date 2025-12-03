@@ -55,3 +55,5 @@ export const getPayouts = async (payload: any) => {
 export const fetchAllPayouts = async () => {
   return await $api.fetch(`${balanceRoutes.getAllPayouts}?limit=100000`);
 };
+
+

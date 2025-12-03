@@ -5,7 +5,8 @@ import { useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
 import { computed } from "vue";
 
-const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN, PROD_BASE_URL } = constants;
+const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN, PROD_BASE_URL } =
+  constants;
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -24,7 +25,6 @@ const secretKey = computed(() =>
     : profileUtil.getAPIKeys().live.secret
 );
 
-
 const $api = new useServiceAPI({
   API_BASE_URL: APP_API_BASE_URL,
   API_VERSION: APP_API_VERSION,
@@ -32,17 +32,19 @@ const $api = new useServiceAPI({
   HEADERS: {
     "public-key": publicKey.value,
     "secret-key": secretKey.value,
-    
   },
 });
 
-
 export const getTransactions = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?page=${payload.page}`);
+  return await $api.fetch(
+    `${paymentRoutes.getPaymentTransactions}${payload.filters ? payload.filters : `?page=${payload.page}`}`
+  );
 };
 
 export const getAllTransactions = async () => {
-  return await $api.fetch(`${paymentRoutes.getPaymentTransactions}?limit=100000`);
+  return await $api.fetch(
+    `${paymentRoutes.getPaymentTransactions}?limit=100000`
+  );
 };
 
 export const getCustomers = async (payload: any) => {
@@ -57,4 +59,12 @@ export const getBanks = async (payload: any) => {
       Authorization: `Bearer ${APP_AUTH_TOKEN}`,
     },
   });
+};
+
+export const getRefunds = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`);
+};
+
+export const fetchAllRefunds = async () => {
+  return await $api.fetch(`${paymentRoutes.getAllRefunds}?limit=100000`);
 };

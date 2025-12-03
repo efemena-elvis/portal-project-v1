@@ -43,7 +43,7 @@
           </div>
 
           <div class="tax-row--right">
-            <TransactionMetrics  :transactionStats="transactionStats" :currency="getLocalCurrencyCode"/>
+            <TransactionMetrics  :transactionStats="transactionStats"/>
           </div>
         </div>
       </template>
