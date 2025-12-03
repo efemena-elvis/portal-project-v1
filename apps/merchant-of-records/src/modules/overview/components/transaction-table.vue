@@ -55,19 +55,20 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const fetchPaymentTransactions = async () => {
+const fetchPaymentTransactions = async (page = 1) => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: {},
+    payload: { page },
     showAlert: false,
   });
 
   isLoading.value = false;
 
   if (response?.code === 200) {
-    response.data.map((data: any) => {
+    response.data.slice(0, 5).map((data: any) => {
       tableBody.push({
-        date_created: h(TableDoubleColumn, {
+         date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getTransactionDate(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),

@@ -3,9 +3,7 @@
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
       <div class="overflow-row">
-        <OverviewCard
-          :wallet="walletBalance"
-        />
+        <OverviewCard :wallet="walletBalance" />
       </div>
 
       <!-- TRANSACTION ROW -->
@@ -52,17 +50,16 @@ const { getAllWallets } = storeToRefs(overviewStore);
 
 const { processAPIRequest } = useEvents();
 
-const walletBalance = ref<IWalletBalance[] | IWalletBalance | undefined>(undefined);
+const walletBalance = ref<IWalletBalance[] | IWalletBalance | undefined>(
+  undefined
+);
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
   return userProfile?.country?.currency_code;
 });
 
-// console.log(countryCurrencies)
 const loadLocalCountryCurrency = () => {
-
-
   if (appVariant.value === "alexpay") {
     localCountryPayload.value = countryCurrencies.find(
       (country) => country.currency.short === "GHS"
@@ -73,25 +70,17 @@ const loadLocalCountryCurrency = () => {
     );
   }
 
-   console.log("Local country payload:", localCountryPayload.value);
-
-  walletBalance.value =  {
-      countryFlag: localCountryPayload.value?.flag ?? "",
-      description: localCountryPayload.value?.currency.description ?? "",
-      currencyShort: localCountryPayload.value?.currency.short ?? "",
-      currencySign: localCountryPayload.value?.currency.sign ?? "",
-      amount: 0,
-    }
-  
-  }
-
+  walletBalance.value = {
+    countryFlag: localCountryPayload.value?.flag ?? "",
+    description: localCountryPayload.value?.currency.description ?? "",
+    currencyShort: localCountryPayload.value?.currency.short ?? "",
+    currencySign: localCountryPayload.value?.currency.sign ?? "",
+    amount: 0,
+  };
+};
 
 const fetchAllWallets = async () => {
-  if (!getAllWallets?.value?.walletBalance) {
-    loadLocalCountryCurrency();
-  } else {
-    walletBalance.value = getAllWallets.value.walletBalance;
-  }
+  loadLocalCountryCurrency();
 
   const response = await processAPIRequest({
     action: getWallets,
@@ -100,28 +89,21 @@ const fetchAllWallets = async () => {
 
   if (response?.code === 200) {
     const localWallet = response.data.find(
-      (wallet: any) => wallet.country.currency_code === getLocalCurrencyCode.value
+      (wallet: any) =>
+        wallet.country.currency_code === getLocalCurrencyCode.value
     );
-  console.log(localCountryPayload.value);
+
     if (localWallet) {
       walletBalance.value = {
-      countryFlag: localCountryPayload.value?.flag ?? "",
-        description: localWallet?.country_name ?? "",
+        countryFlag: localCountryPayload.value?.flag ?? "",
+        description: localWallet?.country.name ?? "",
         currencyShort: localCountryPayload.value?.currency.short ?? "",
-        currencySign: localWallet?.country.currency_code ?? "",
-        amount: localWallet?.balance ?? 0
-      }
-
+        currencySign: localCountryPayload.value?.currency.sign ?? "",
+        amount: localWallet?.balance ?? 0,
+      };
     }
-
-
   }
-
-
-}; 
-
-
-
+};
 
 onMounted(() => fetchAllWallets());
 </script>

@@ -1,16 +1,20 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription="All Balances" :fetchDataByPage="fetchBalanceHistory">
-           <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
-          <DatePicker  
-          filterSize="lg"
-          :activePeriod="activePeriod"
-          @onFilterSelected="processFilterSelection"/>
-    
+  <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Balances"
+    @updatePage="(currentPage) => (page = currentPage)"
+  >
+    <template #pageOptions v-if="!isLoading">
+      <DatePicker
+        filterSize="lg"
+        :activePeriod="activePeriod"
+        @onFilterSelected="processFilterSelection"
+      />
     </template>
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
+        :tableBody="tableBody"
         :isLoading="isLoading"
         :emptyData="{
           title: 'No balance history yet',
@@ -19,7 +23,7 @@
         }"
       >
         <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
+          v-for="(payload, index) in tableBody"
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
@@ -30,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, h} from "vue";
+import { ref, reactive, onMounted, computed, h } from "vue";
 import { useString, useDate, useEvents } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import { useBalanceStore } from "../store";
@@ -40,8 +44,9 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-  TableDoubleColumn
+  TableDoubleColumn,
 } from "@packages/uikit";
+import { watch } from "vue";
 
 const {
   formatNumber,
@@ -51,7 +56,6 @@ const {
 } = useString();
 const { getBalanceHistory } = useBalanceStore();
 const { processAPIRequest } = useEvents();
-
 
 const isLoading = ref(true);
 const activePeriod = ref<[Date, Date] | null>(null);
@@ -66,28 +70,19 @@ const tableHeader = ref<TableHeaderType[]>([
 const tableBody = reactive<any[]>([]);
 
 const tablePaging = ref<any>({});
+const page = ref<number>(1);
+
+const filters = computed(
+  () =>
+    `?page=${page.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const normalizeDate = (date: Date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
 
-const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
-  if (!range || !range[0] || !range[1]) return true;
-
-  const start = normalizeDate(new Date(range[0]));
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999); 
-
-  const target = new Date(date);
-  return target >= start && target <= end;
-};
 
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
@@ -103,12 +98,12 @@ const processFilterSelection = (
   }
 };
 
-
-const fetchBalanceHistory = async (page = 1) => {
+const fetchBalanceHistory = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getBalanceHistory,
-    payload: {page},
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -117,11 +112,11 @@ const fetchBalanceHistory = async (page = 1) => {
   if (response.code === 200) {
     response.data.map((data: any) => {
       tableBody.push({
-        raw_date: data.balance_at, 
+        raw_date: data.balance_at,
         status: transactionFlowIcon(
           data.type === "credit" ? "receive" : "send"
         ),
-         date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getTransactionDate(data.balance_at),
             secondaryText: useDate.formatTime(data.balance_at),
@@ -134,7 +129,7 @@ const fetchBalanceHistory = async (page = 1) => {
           data.type === "credit" ? "text-green-600" : "text-red-600"
         ),
         balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
-        reference : data.reference
+        reference: data.reference,
       });
     });
 
@@ -142,16 +137,13 @@ const fetchBalanceHistory = async (page = 1) => {
   }
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.filter((tx) => {
-    const rawDate = tx.raw_date ? new Date(tx.raw_date) : null;
-    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-   
-    return matchesDate ;
-  });
+watch(activePeriod, () => {
+  page.value = 1;
 });
 
-onMounted(() => {
-  fetchBalanceHistory();
+watch(filters, (newFilters) => {
+  fetchBalanceHistory(newFilters);
 });
+
+onMounted(fetchBalanceHistory);
 </script>

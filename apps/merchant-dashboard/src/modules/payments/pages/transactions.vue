@@ -176,7 +176,7 @@ const fetchPaymentTransactions = async (filters: string) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: { filters },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -273,26 +273,6 @@ const fetchAllTransactions = async () => {
 
   return all;
 };
-
-// const filteredTableBody = computed(() => {
-//   return tableBody.value.filter((tx) => {
-//     const method = tx.raw?.payment_details?.toLowerCase();
-//     const status = tx.raw?.status?.toLowerCase();
-//     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
-
-//     const matchesMethod = selectedMethod.value
-//       ? method === selectedMethod.value.toLowerCase()
-//       : true;
-//     const matchesStatus = selectedStatus.value
-//       ? status === selectedStatus.value
-//       : true;
-//     const matchesDate = rawDate
-//       ? isWithinRange(rawDate, activePeriod.value)
-//       : true;
-
-//     return matchesMethod && matchesStatus && matchesDate;
-//   });
-// });
 
 const exportToExcel = async () => {
   const allTransactions = await fetchAllTransactions();
