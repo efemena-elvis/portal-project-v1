@@ -16,7 +16,7 @@
       >
         {{ transactionStat.currency
         }} {{
-          formatNumber(transactionStat?.successful_transactions_value ?? 0)
+          formatNumber(transactionStat?.successful_transactions_value ?? 0) 
         }}
       </div>
     </div>

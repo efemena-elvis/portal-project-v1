@@ -22,7 +22,7 @@ const publicKey = computed(() =>
     : profileUtil.getAPIKeys().live.public
 );
 
-const privateKey = computed(() =>
+const secretKey = computed(() =>
   activeMode === "test"
     ? profileUtil.getAPIKeys().test.secret
     : profileUtil.getAPIKeys().live.secret
@@ -34,7 +34,7 @@ const $api = new useServiceAPI({
   TOKEN_KEY: APP_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
-    "private-key": privateKey.value,
+    "secret-key": secretKey.value,
   },
 });
 

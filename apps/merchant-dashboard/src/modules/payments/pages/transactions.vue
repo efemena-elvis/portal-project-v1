@@ -7,7 +7,7 @@
     <template #pageOptions>
       <div
         class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static"
-        v-if="tableBody.length > 0 && !isLoading"
+        v-if="!isLoading"
       >
         <div class="flex items-center justify-between w-full gap-4">
           <div
@@ -119,14 +119,6 @@ const filters = computed(
   () =>
     `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
 );
-
-watch([selectedMethod, selectedStatus, activePeriod], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchPaymentTransactions(newFilters);
-});
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
@@ -282,32 +274,32 @@ const fetchAllTransactions = async () => {
   return all;
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const method = tx.raw?.payment_details?.toLowerCase();
-    const status = tx.raw?.status?.toLowerCase();
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
+// const filteredTableBody = computed(() => {
+//   return tableBody.value.filter((tx) => {
+//     const method = tx.raw?.payment_details?.toLowerCase();
+//     const status = tx.raw?.status?.toLowerCase();
+//     const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
 
-    const matchesMethod = selectedMethod.value
-      ? method === selectedMethod.value.toLowerCase()
-      : true;
-    const matchesStatus = selectedStatus.value
-      ? status === selectedStatus.value
-      : true;
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
+//     const matchesMethod = selectedMethod.value
+//       ? method === selectedMethod.value.toLowerCase()
+//       : true;
+//     const matchesStatus = selectedStatus.value
+//       ? status === selectedStatus.value
+//       : true;
+//     const matchesDate = rawDate
+//       ? isWithinRange(rawDate, activePeriod.value)
+//       : true;
 
-    return matchesMethod && matchesStatus && matchesDate;
-  });
-});
+//     return matchesMethod && matchesStatus && matchesDate;
+//   });
+// });
 
 const exportToExcel = async () => {
   const allTransactions = await fetchAllTransactions();
 
   if (!allTransactions || allTransactions.length === 0) return;
 
-  const filtered = allTransactions.filter((tx) => {
+    const filtered = allTransactions.filter((tx) => {
     const method = tx.payment_details.toLowerCase();
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
@@ -330,7 +322,7 @@ const exportToExcel = async () => {
     Currency: tx.currency,
     "Payment Method": tx.payment_details,
     Status: tx.status,
-    Reason: tx.reason,
+    Reason: tx.reason_for_failure,
     Reference: tx.reference,
   }));
 
@@ -339,6 +331,14 @@ const exportToExcel = async () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
   XLSX.writeFile(workbook, "All_Merchant_Transactions.xlsx");
 };
+
+watch([selectedMethod, selectedStatus, activePeriod], () => {
+  page.value = 1;
+});
+
+watch(filters, (newFilters) => {
+  fetchPaymentTransactions(newFilters);
+});
 
 onMounted(() => fetchPaymentTransactions(filters.value));
 </script>
