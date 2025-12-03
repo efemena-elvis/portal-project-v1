@@ -44,7 +44,6 @@ interface IPageContentType {
   pagingData?: any;
   pageDescription?: string;
   showTitle?: boolean;
-  fetchDataByPage?: (page: number) => void;
   customActionBtnText?: string;
   showCustomActionBtn?: boolean;
 }
@@ -53,7 +52,6 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   pageDescription: "",
   pagingData: { page_count: 0 },
   showTitle: true,
-  fetchDataByPage: () => {},
   customActionBtnText: "",
   showCustomActionBtn: false,
 });
@@ -61,7 +59,6 @@ const props = withDefaults(defineProps<IPageContentType>(), {
 const emits = defineEmits(["customActionBtnClicked", "updatePage"]);
 
 const handlePageChange = (page: number) => {
-  props.fetchDataByPage && props.fetchDataByPage(page);
   emits("updatePage", page);
 };
 

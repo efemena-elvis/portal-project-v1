@@ -2,7 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Refunds"
-    @updatePage="(page) => fetchRefunds(page)"
+     @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
   >
     <template #pageOptions>
