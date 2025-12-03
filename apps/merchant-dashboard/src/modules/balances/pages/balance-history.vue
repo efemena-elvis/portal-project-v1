@@ -67,7 +67,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Balance After", slug: "balance_after" },
 ]);
 
-const tableBody = reactive<any[]>([]);
+const tableBody = ref<any[]>([]);
 
 const tablePaging = ref<any>({});
 const page = ref<number>(1);
@@ -108,28 +108,29 @@ const fetchBalanceHistory = async (filters: string) => {
   isLoading.value = false;
 
   if (response.code === 200) {
-    response.data.map((data: any) => {
-      tableBody.push({
-        raw_date: data.balance_at,
-        status: transactionFlowIcon(
-          data.type === "credit" ? "receive" : "send"
-        ),
-        date_created: h(TableDoubleColumn, {
-          entry: {
-            primaryText: getTransactionDate(data.balance_at),
-            secondaryText: useDate.formatTime(data.balance_at),
-          },
-        }),
-        summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
-        balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
-        change: getBoldTableText(
-          `${data.currency_code} ${formatNumber(data.amount)}`,
-          data.type === "credit" ? "text-green-600" : "text-red-600"
-        ),
-        balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
-        reference: data.reference,
-      });
-    });
+  tableBody.value = response.data.map((data: any) => {
+  return {
+    raw_date: data.balance_at,
+    status: transactionFlowIcon(
+      data.type === "credit" ? "receive" : "send"
+    ),
+    date_created: h(TableDoubleColumn, {
+      entry: {
+        primaryText: getTransactionDate(data.balance_at),
+        secondaryText: useDate.formatTime(data.balance_at),
+      },
+    }),
+    summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
+    balance_before: `${data.currency_code} ${formatNumber(data.balance_before)}`,
+    change: getBoldTableText(
+      `${data.currency_code} ${formatNumber(data.amount)}`,
+      data.type === "credit" ? "text-green-600" : "text-red-600"
+    ),
+    balance_after: `${data.currency_code} ${formatNumber(data.balance_after)}`,
+    reference: data.reference,
+  };
+});
+
 
     tablePaging.value = response.pagination[0];
   }
