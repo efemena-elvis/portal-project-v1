@@ -2,7 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Customers"
-    @updatePage="(page) => fetchCustomers(page)"
+   @updatePage="(currentPage) => (page = currentPage)"
   >
     <template #pageOptions v-if="!isLoading">
       <div
