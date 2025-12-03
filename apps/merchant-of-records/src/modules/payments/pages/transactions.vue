@@ -100,7 +100,7 @@ const tablePaging = ref<any>({});
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
-};
+ };
 
 const normalizeDate = (date: Date) => {
   const d = new Date(date);
