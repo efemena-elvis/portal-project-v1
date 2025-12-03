@@ -177,7 +177,7 @@ const fetchRefunds = async (filters: string) => {
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getRefunds,
-     payload: { filters,page: page.value },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -287,7 +287,6 @@ const exportToExcel = async () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Refunds");
   XLSX.writeFile(workbook, "Merchant_Refunds.xlsx");
 };
-
 
 watch([selectedStatus, activePeriod], () => {
   page.value = 1;

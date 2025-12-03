@@ -116,8 +116,7 @@ const activePeriod = ref<[Date, Date] | null>(null);
 const page = ref(1);
 
 const filters = computed(
-  () =>
-    `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+  () => `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
 );
 
 const statusOptions = ["Successful", "Pending", "Failed"];
@@ -320,7 +319,7 @@ watch(filters, (newFilters) => {
   fetchPaymentTransactions(newFilters);
 });
 
-onMounted(() => fetchPaymentTransactions(filters.value));
+onMounted(fetchPaymentTransactions);
 </script>
 
 <style lang="scss" scoped>

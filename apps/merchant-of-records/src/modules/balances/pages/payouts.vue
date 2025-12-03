@@ -307,7 +307,6 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
 
-
 watch([selectedStatus, selectedCurrency, activePeriod], () => {
   page.value = 1;
 });

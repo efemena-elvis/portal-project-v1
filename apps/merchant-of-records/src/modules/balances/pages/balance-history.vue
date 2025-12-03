@@ -82,7 +82,6 @@ const getTransactionDate = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-
 const processFilterSelection = (
   selectedRange: [Date | string, Date | string]
 ) => {
