@@ -78,7 +78,7 @@ const filters = computed(
 );
 
 const getTransactionDate = (date: string) => {
-  let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  let { w2, sm3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 

@@ -15,10 +15,10 @@
           <option value="">Status</option>
           <option
             v-for="(status, index) in statusOptions"
-            :value="status.toLowerCase()"
+            :value="status.value.toLowerCase()"
             :key="index"
           >
-            {{ status }}
+            {{ status.key }}
           </option>
         </select>
         <div
@@ -83,7 +83,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Phone Number", slug: "phone_number" },
   { title: "Status", slug: "status" },
 ]);
-const statusOptions = ["Active", "Blacklisted"];
+const statusOptions = [{key:"Active", value:"false"}, {key:"Blacklisted", value:"true"}];
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
@@ -91,7 +91,7 @@ const page = ref<number>(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
 );
 
 const getDateAdded = (date: string) => {
@@ -156,7 +156,7 @@ const fetchCustomers = async (filters: string) => {
       };
     });
 
-    tablePaging.value = response.pagination[0] || {};
+    tablePaging.value = response.pagination[0];
   }
 };
 

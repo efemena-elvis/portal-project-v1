@@ -315,7 +315,7 @@ const exportToExcel = async () => {
       ? status === selectedStatus.value
       : true;
     const matchesCurrency = selectedCurrency.value
-      ? tx.currency === selectedCurrency.value
+      ? tx.currency.toLowerCase() === selectedCurrency.value.toLowerCase()
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 

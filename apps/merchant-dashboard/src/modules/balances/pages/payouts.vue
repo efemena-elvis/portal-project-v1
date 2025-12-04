@@ -31,26 +31,7 @@
               class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
             ></div>
           </div>
-          <div
-            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
-          >
-            <select
-              v-model="selectedCurrency"
-              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
-            >
-              <option value="">Currency</option>
-              <option
-                v-for="(currency, index) in currencyOptions"
-                :value="currency"
-                :key="index"
-              >
-                {{ currency }}
-              </option>
-            </select>
-            <div
-              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-            ></div>
-          </div>
+          
         </div>
         <div class="flex items-center w-full gap-4">
           <DatePicker
@@ -119,7 +100,7 @@ const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
-const selectedCurrency = ref("");
+
 const showInitiatePayoutModal = ref(false);
 
 const toggleInitiatePayoutModal = () => {
@@ -128,7 +109,7 @@ const toggleInitiatePayoutModal = () => {
 const activePeriod = ref<[Date, Date] | null>(null);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
-const currencyOptions = ["GHS", "TZS", "ZMW"];
+
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
@@ -144,7 +125,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
 );
 
 const getDateCreated = (date: string) => {
@@ -279,17 +260,15 @@ const exportToExcel = async () => {
   const filtered = allPayouts.filter((tx) => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
-    const currency = tx.currency;
+
 
     const matchesStatus = selectedStatus.value
       ? status === selectedStatus.value
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
-    const matchesCurrency = selectedCurrency.value
-      ? currency === selectedCurrency.value
-      : true;
 
-    return matchesStatus && matchesDate && matchesCurrency;
+
+    return matchesStatus && matchesDate
   });
 
   const cleanData = filtered.map((tx) => ({
@@ -307,7 +286,7 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
 
-watch([selectedStatus, selectedCurrency, activePeriod], () => {
+watch([selectedStatus, activePeriod], () => {
   page.value = 1;
 });
 
