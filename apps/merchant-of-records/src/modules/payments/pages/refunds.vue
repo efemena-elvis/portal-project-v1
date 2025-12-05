@@ -275,11 +275,11 @@ const exportToExcel = async () => {
 
   const cleanData = filtered.map((tx) => ({
     "Date Initiated": tx.date_initiated,
-    Amount: tx.refund_amount || "-",
     Currency: tx.currency || "-",
+    Amount: tx.refund_amount || "-",
     Status: tx.refund_status,
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
+    Reason: tx.reason_for_failure || "-",
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

@@ -141,6 +141,8 @@ const fetchPaymentTransactions = async (page = 1) => {
           amount: formatNumber(data.amount),
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
+          reason_for_failure: data.reason_for_failure || "-",
+          currency: data.currency,
           reference: data.reference,
         },
       };
@@ -170,9 +172,11 @@ const exportToExcel = () => {
   const cleanData = dataToExport.map((tx) => ({
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details || "-",
+    Currency: tx.currency,
     Amount: tx.amount || "-",
     "Payment Method": tx.payment_details,
     Status: tx.status,
+    Reason: tx.reason_for_failure || "-",
     Reference: tx.reference,
   }));
   const worksheet = XLSX.utils.json_to_sheet(cleanData);

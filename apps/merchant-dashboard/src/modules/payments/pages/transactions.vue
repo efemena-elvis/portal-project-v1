@@ -297,11 +297,11 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
-    Amount: tx.amount,
     Currency: tx.currency,
+    Amount: tx.amount,
     "Payment Method": tx.payment_details,
     Status: tx.status,
-    Reason: tx.reason_for_failure,
+    Reason: tx.reason_for_failure || "-",
     Reference: tx.reference,
   }));
 
