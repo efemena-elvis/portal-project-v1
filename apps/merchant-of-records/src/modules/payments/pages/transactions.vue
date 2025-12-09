@@ -106,10 +106,17 @@
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
+          :on-table-clicked="() => openTransactionLog(payload)"
         />
       </TableContainer>
     </template>
   </PageContentWrapper>
+   <teleport to="body" v-if="showTransactionDetailsModal">
+    <TransactionDetailsModal
+      @closeTriggered="toggleTransactionDetailsModal"
+      :transaction="selectedTransaction"
+    />
+  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -119,12 +126,14 @@ import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { DatePicker } from "@packages/uikit";
-import {
+import TransactionDetailsModal from "@/modules/payments/modals/transaction-details-modal.vue";
+import {  
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
   PageContentWrapper,
 } from "@packages/uikit";
+
 
 const { formatNumber, getStatus, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
@@ -135,6 +144,8 @@ const selectedMethod = ref("");
 const selectedStatus = ref("");
 const selectedCurrency = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
+const selectedTransaction = ref(null);
+const showTransactionDetailsModal = ref(false);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
@@ -149,6 +160,8 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
 ]);
+
+
 
 const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
@@ -192,6 +205,17 @@ const processFilterSelection = (
   } else {
     activePeriod.value = null;
   }
+};
+
+
+
+const openTransactionLog = (row: any) => {
+  selectedTransaction.value = row.raw;
+  toggleTransactionDetailsModal();
+};
+
+const toggleTransactionDetailsModal = () => {
+  showTransactionDetailsModal.value = !showTransactionDetailsModal.value;
 };
 
 const fetchPaymentTransactions = async (filters: string) => {

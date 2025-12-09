@@ -35,6 +35,11 @@ const $api = new useServiceAPI({
   },
 });
 
+export const getSingleTransaction = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getTransactionByRef}/${payload.ref}`)
+};
+
+
 export const getTransactions = async (payload: any) => {
   return await $api.fetch(
     `${paymentRoutes.getPaymentTransactions}${payload.filters ? payload.filters : `?page=${payload.page}`}`
