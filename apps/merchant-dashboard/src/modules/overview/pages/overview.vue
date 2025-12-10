@@ -4,8 +4,11 @@
       <!-- OVERFLOW ROW -->
       <div class="overflow-row">
         <OverviewCard :wallet="walletBalance" />
+          <div class="tax-row--right">
+        <TransactionMetrics :transactionStats="transactionStats" />
       </div>
-
+      </div>
+    
       <!-- TRANSACTION ROW -->
       <div class="transaction-row">
         <TransactionTable />
@@ -20,10 +23,14 @@ import { countryCurrencies } from "@packages/constants";
 import { PageContentWrapper } from "@packages/uikit";
 import { useProfile, useEvents, useAppVariant } from "@packages/hooks";
 import { storeToRefs } from "pinia";
-import { OverviewCard, TransactionTable } from "@/modules/overview/components";
+import {
+  OverviewCard,
+  TransactionTable,
+  TransactionMetrics,
+} from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
-import { get } from "http";
+import { useBalanceStore } from "@/modules/balances/store";
 
 interface IWalletBalance {
   countryFlag: string;
@@ -44,9 +51,11 @@ const overviewStore = useOverviewStore();
 const profileUtil = new useProfile(authStore);
 const appVariant = ref<string>(useAppVariant());
 const localCountryPayload = ref<any>(null);
+const transactionStats = ref<any>({});
 
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
+const {getTransactionStats} = useBalanceStore()
 
 const { processAPIRequest } = useEvents();
 
@@ -105,7 +114,23 @@ const fetchAllWallets = async () => {
   }
 };
 
-onMounted(() => fetchAllWallets());
+const fetchTransactionStats = async () => {
+  const response = await processAPIRequest({
+    action: getTransactionStats,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+    transactionStats.value = response.data;
+  }
+};
+
+
+onMounted(() => {
+  fetchAllWallets();
+  fetchTransactionStats();
+});
 </script>
 
 <style lang="scss" scoped>
