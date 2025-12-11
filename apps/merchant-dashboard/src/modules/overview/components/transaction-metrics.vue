@@ -11,7 +11,7 @@
       <div class="title-text">Successful Transactions</div>
       <div class="value-text">
         {{ getCurrency }}
-        {{ formatNumber(transactionStats?.successful_transactions_value ?? 0) }}
+        {{ formatNumber(transactionStats?.successful_transactions_value ?? 0) || 0 }}
       </div>
     </div>
 
@@ -20,7 +20,7 @@
       <div class="value-text">
         <span
           >{{ getCurrency }}
-          {{ formatNumber(transactionStats?.total_payouts_value ?? 0) }}</span
+          {{ formatNumber(transactionStats?.total_payouts_value || 0)}}</span
         >
       </div>
     </div>

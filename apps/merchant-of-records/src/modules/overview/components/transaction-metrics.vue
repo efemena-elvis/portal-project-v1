@@ -52,7 +52,7 @@ interface ITransactionStats {
 }
 
 const props = defineProps<{
-  transactionStats: ITransactionStats | null;
+  transactionStats: ITransactionStats ;
 }>();
 </script>
 

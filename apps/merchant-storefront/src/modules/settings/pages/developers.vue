@@ -1,5 +1,8 @@
 <template>
-   <div class="mb-6 text-[18px]">
+   <template v-if="isLoading">
+        <ComplianceSkeleton />
+      </template>
+   <div class="mb-6 text-[18px]" v-else>
     <p class="font-semibold">Manage your API configurations</p>
     <span class="mt-1 text-[14px] text-grey-500">
     Easily configure and manage your API settings to ensure seamless integration with your services.
@@ -10,7 +13,7 @@
       <div class="input-form mb-7">
         <TextFieldInput
           labelId="textSecretKey"
-          labelTitle="Test Secret Key"
+          :labelTitle="getBusinessMode === `test` ? 'Test Secret Key' : 'Live Secret Key'"
           :labelCompact="false"
           :inputType="IInputType.Password"
           :inputValue="getKeys.secret"
@@ -24,7 +27,7 @@
 
         <TextFieldInput
           labelId="textPublicKey"
-          labelTitle="Test Public Key"
+          :labelTitle="getBusinessMode === `test` ? 'Test Public Key' : 'Live Public Key'"
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="getKeys.public"
@@ -38,7 +41,7 @@
 
         <TextFieldInput
           labelId="textCallbackURL"
-          labelTitle="Test Callback URL"
+          :labelTitle="getBusinessMode === `test` ? 'Test Callback URL' : 'Live Callback URL'"
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Callback URL"
@@ -52,7 +55,7 @@
 
         <TextFieldInput
           labelId="textWebhookURL"
-          labelTitle="Test Webhook URL"
+          :labelTitle="getBusinessMode === `test` ? 'Test Webhook URL' : 'Live Webhook URL'"
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Webhook URL"
@@ -94,7 +97,7 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents, useProfile } from "@packages/hooks";
-import { TextFieldInput } from "@packages/uikit";
+import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
 
 type IURLType = {
   callback_url: string;
@@ -123,11 +126,12 @@ const {
 } = storeToRefs(useSettingsStore());
 
 const urlPayload = ref<IURLType>({
-  callback_url: getProfileDeveloper.value?.callback_url || "",
-  webhook_url: getProfileDeveloper.value?.webhook_url || "",
+  callback_url: "",
+  webhook_url: "",
 });
 
 const updateKeysBtnRef = ref<HTMLButtonElement | null>(null);
+const isLoading = ref<boolean>(false);
 
 const payloadValidity = ref<IInputValidity>({
   callback_url: false,
@@ -135,10 +139,14 @@ const payloadValidity = ref<IInputValidity>({
 });
 
 const getKeys = computed(() => {
-  // if (getBusinessProfile.value.businessMode === "test") {
-  //   return getAPIKeys.value.test;
-  // } else return getAPIKeys.value?.live;
-  return getAPIKeys.value?.live;
+  if (getBusinessProfile.value?.businessMode === "test") {
+    return getAPIKeys.value.test;
+  } else return getAPIKeys.value?.live;
+ 
+});
+
+const getBusinessMode = computed(() => {
+  return getBusinessProfile.value?.businessMode || "test";
 });
 
 const isActionReady = computed(() => {
@@ -180,27 +188,35 @@ const updateProfileAPIKeys = async () => {
 
 // Fetch all profile data
 const fetchProfileData = async () => {
-  const response = await processAPIRequest({
+  isLoading.value = true;
+
+  await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,
   });
+
+
+  const developer = getProfileDeveloper.value;
+  if (developer) {
+    urlPayload.value = { ...developer }; 
+  }
+
+  isLoading.value = false;
 };
+
 
 watch(
   getProfileDeveloper,
   (newValue) => {
     if (newValue) {
-      console.log(newValue);
-
       urlPayload.value = {
         callback_url: newValue.callback_url || "",
         webhook_url: newValue.webhook_url || "",
       };
     }
   },
-  { immediate: true }
+  { immediate: true}
 );
-
 fetchProfileData();
 </script>
 

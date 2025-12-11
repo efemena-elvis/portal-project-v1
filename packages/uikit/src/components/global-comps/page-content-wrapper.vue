@@ -69,7 +69,6 @@ const route = useRoute();
 
 const pageTitle = ref<string>("");
 
-// UPDATE PAGE TITLE AND DESCRIPTION
 const updatePageMeta = () => {
   const { title } = route.meta?.pageMeta as {
     title: string;
