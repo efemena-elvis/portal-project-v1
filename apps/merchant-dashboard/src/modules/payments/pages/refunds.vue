@@ -2,6 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Refunds"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
   >

@@ -3,6 +3,7 @@
     :pagingData="tablePaging"
     pageDescription="All Payouts"
     @updatePage="(currentPage) => (page = currentPage)"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     :showCustomActionBtn="false"
   >
     <template #pageOptions>

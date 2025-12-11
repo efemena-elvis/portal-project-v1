@@ -4,6 +4,7 @@
     pageDescription="All Payouts"
     @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
   >
     <template #pageOptions>
       <div

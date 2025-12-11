@@ -2,6 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Transactions"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
   >
     <template #pageOptions>

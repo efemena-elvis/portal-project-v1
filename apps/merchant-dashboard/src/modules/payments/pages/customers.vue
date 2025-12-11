@@ -2,6 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Customers"
+    :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
    @updatePage="(currentPage) => (page = currentPage)"
   >
     <template #pageOptions v-if="!isLoading">

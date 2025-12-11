@@ -2,6 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Balances"
+    :pageKeys="{ green: 'Inflow', red: 'Outflow' }"
     @updatePage="(currentPage) => (page = currentPage)"
   >
     <template #pageOptions v-if="!isLoading">
@@ -60,6 +61,8 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref(true);
 const activePeriod = ref<[Date, Date] | null>(null);
 const tableHeader = ref<TableHeaderType[]>([
+
+  { title: "", slug: "status" },
   { title: "Date Created", slug: "date_created" },
   { title: "Transaction Summary", slug: "summary" },
   { title: "Balance Before", slug: "balance_before" },

@@ -22,6 +22,7 @@
         :pageDescription="pageDescription"
         :pagingData="pagingData"
         @page-change="(page) => handlePageChange(page)"
+        :pageKeys="pageKeys"
       />
     </template>
     <template v-if="showCustomActionBtn">
@@ -46,6 +47,7 @@ interface IPageContentType {
   showTitle?: boolean;
   customActionBtnText?: string;
   showCustomActionBtn?: boolean;
+  pageKeys?: any;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
@@ -54,6 +56,7 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   showTitle: true,
   customActionBtnText: "",
   showCustomActionBtn: false,
+  pageKeys: {},
 });
 
 const emits = defineEmits(["customActionBtnClicked", "updatePage"]);
