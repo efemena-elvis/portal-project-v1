@@ -22,6 +22,7 @@
         :pageDescription="pageDescription"
         :pagingData="pagingData"
         @page-change="(page) => handlePageChange(page)"
+        :pageKeys="pageKeys"
       />
     </template>
     <template v-if="showCustomActionBtn">
@@ -44,24 +45,23 @@ interface IPageContentType {
   pagingData?: any;
   pageDescription?: string;
   showTitle?: boolean;
-  fetchDataByPage?: (page: number) => void;
   customActionBtnText?: string;
   showCustomActionBtn?: boolean;
+  pageKeys?: any;
 }
 
 const props = withDefaults(defineProps<IPageContentType>(), {
   pageDescription: "",
   pagingData: { page_count: 0 },
   showTitle: true,
-  fetchDataByPage: () => {},
   customActionBtnText: "",
   showCustomActionBtn: false,
+  pageKeys: {},
 });
 
 const emits = defineEmits(["customActionBtnClicked", "updatePage"]);
 
 const handlePageChange = (page: number) => {
-  props.fetchDataByPage && props.fetchDataByPage(page);
   emits("updatePage", page);
 };
 
@@ -69,7 +69,6 @@ const route = useRoute();
 
 const pageTitle = ref<string>("");
 
-// UPDATE PAGE TITLE AND DESCRIPTION
 const updatePageMeta = () => {
   const { title } = route.meta?.pageMeta as {
     title: string;

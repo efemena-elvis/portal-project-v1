@@ -35,6 +35,11 @@ const $api = new useServiceAPI({
   },
 });
 
+export const getSingleTransaction = async (payload: any) => {
+  return await $api.fetch(`${paymentRoutes.getTransactionByRef}/${payload.ref}`)
+};
+
+
 export const getTransactions = async (payload: any) => {
   return await $api.fetch(
     `${paymentRoutes.getPaymentTransactions}${payload.filters ? payload.filters : `?page=${payload.page}`}`
@@ -48,7 +53,7 @@ export const getAllTransactions = async () => {
 };
 
 export const getCustomers = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getCustomers}?page=${payload.page}`);
+  return await $api.fetch(`${paymentRoutes.getCustomers}${payload.filters ? payload.filters : `?page=${payload.page}`}`);
 };
 
 export const getBanks = async (payload: any) => {
@@ -62,7 +67,9 @@ export const getBanks = async (payload: any) => {
 };
 
 export const getRefunds = async (payload: any) => {
-  return await $api.fetch(`${paymentRoutes.getAllRefunds}?page=${payload.page}`);
+  return await $api.fetch(
+    `${paymentRoutes.getAllRefunds}${payload.filters ? payload.filters : `?page=${payload.page}`}`
+  );
 };
 
 export const fetchAllRefunds = async () => {

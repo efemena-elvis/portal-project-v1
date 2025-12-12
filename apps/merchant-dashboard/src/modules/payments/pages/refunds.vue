@@ -2,13 +2,14 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Refunds"
-    :fetchDataByPage="fetchRefunds"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+    @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
   >
     <template #pageOptions>
       <div
         class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-3 sm:static"
-        v-if="tableBody.length > 0 && !isLoading"
+        v-if="!isLoading"
       >
         <div class="flex items-center justify-between w-full gap-4">
           <div
@@ -31,7 +32,6 @@
               class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
             ></div>
           </div>
-      
         </div>
         <div class="flex items-center w-full gap-4">
           <DatePicker
@@ -52,7 +52,7 @@
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
+        :tableBody="tableBody"
         :isLoading="isLoading"
         :emptyData="{
           title: 'No refunds initiated yet',
@@ -61,7 +61,7 @@
         }"
       >
         <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
+          v-for="(payload, index) in tableBody"
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
@@ -69,11 +69,10 @@
       </TableContainer>
     </template>
   </PageContentWrapper>
-
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from "vue";
+import { ref, computed, onMounted, h, watch } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { TableHeaderType } from "@packages/models";
@@ -86,7 +85,6 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 
-
 const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } =
   useString();
 const { getRefunds, fetchAllRefunds } = usePaymentStore();
@@ -95,12 +93,9 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref(true);
 const selectedStatus = ref("");
 
-
-
 const activePeriod = ref<[Date, Date] | null>(null);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
-
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_initiated" },
@@ -114,6 +109,12 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const page = ref(1);
+
+const filters = computed(
+  () =>
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
 
 const getDateCreated = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -151,11 +152,12 @@ const processFilterSelection = (
   }
 };
 
-const fetchRefunds = async (page = 1) => {
+const fetchRefunds = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getRefunds,
-    payload: { page },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -198,7 +200,6 @@ const fetchRefunds = async (page = 1) => {
   }
 };
 
-
 const fetchAllRefundPages = async () => {
   let page = 1;
   let all: any[] = [];
@@ -219,6 +220,7 @@ const fetchAllRefundPages = async () => {
         raw_date: new Date(data.created_at),
         refund_amount: `${formatNumber(data.amount)}`,
         refund_status: data.status ?? "-",
+        currency: data.currency ?? "-",
         reason_for_failure: capitalizeFirstLetter(
           (data.reason_for_failure || "-").toString().toLowerCase()
         ),
@@ -254,11 +256,11 @@ const exportToExcel = async () => {
 
   const cleanData = filtered.map((tx) => ({
     "Date Initiated": tx.date_initiated,
+    Currency: tx.currency,
     Amount: tx.refund_amount || "-",
     Status: tx.refund_status,
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
-    
+    Reason: tx.reason_for_failure || "-",
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
@@ -267,29 +269,15 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Refunds.xlsx");
 };
 
-
-
-const filteredTableBody = computed(() =>
-  tableBody.value.filter((tx) => {
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw?.raw_date) : null;
-    const matchesStatus = selectedStatus.value
-      ? tx.raw?.refund_status.toLowerCase() ===
-        selectedStatus.value.toLowerCase()
-      : true;
-
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-
-    return matchesStatus && matchesDate;
-  })
-);
-
-
-onMounted(() => {
-  fetchRefunds();
+watch([selectedStatus, activePeriod], () => {
+  page.value = 1;
 });
+
+watch(filters, (newFilters) => {
+  fetchRefunds(newFilters);
+});
+
+onMounted(fetchRefunds);
 </script>
 
 <style scoped></style>

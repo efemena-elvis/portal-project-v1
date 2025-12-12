@@ -5,6 +5,23 @@
         {{ pageDescription }}
         <span class="font-medium">({{ pagingData?.page_count || 0 }})</span>
       </div>
+
+       <div class="page-keys">
+        <div class="page-key-item" v-if="pageKeys.green">
+          <div class="bg-green-400 status-key"></div>
+          <div class="status-text">{{ pageKeys.green }}</div>
+        </div>
+
+        <div class="page-key-item" v-if="pageKeys.yellow">
+          <div class="bg-yellow-400 status-key"></div>
+          <div class="status-text">{{ pageKeys.yellow }}</div>
+        </div>
+
+        <div class="page-key-item" v-if="pageKeys.red">
+          <div class="bg-red-400 status-key"></div>
+          <div class="status-text">{{ pageKeys.red }}</div>
+        </div>
+      </div>
     </div>
 
     <div class="right" v-if="pagingData.total_pages_count > 1">
@@ -43,6 +60,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script lang="ts" setup>
@@ -57,6 +75,7 @@ interface IPaging {
 interface IPaginationType {
   pageDescription: string;
   pagingData: IPaging;
+  pageKeys?: any;
 }
 
 const props = defineProps<IPaginationType>();
@@ -92,6 +111,8 @@ const goToNextPage = () => {
     emit("page-change", props.pagingData.current_page + 1);
   }
 };
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -104,13 +125,29 @@ const goToNextPage = () => {
     .page-description {
       @apply text-grey-600/90 text-[15px];
     }
+
+    .page-keys {
+      @apply flex justify-start items-center gap-x-3.5;
+
+      .page-key-item {
+        @apply flex justify-start items-center gap-x-1.5;
+
+        .status-key {
+          @apply h-2 w-2 min-h-2 min-w-2 rounded-full;
+        }
+
+        .status-text {
+          @apply text-xs text-grey-500/90;
+        }
+      }
+    }
   }
 
   .right {
     @apply relative flex justify-end items-center gap-x-1.5;
 
     .nav {
-      @apply h-10 w-[78px] flex justify-center items-center gap-x-1 rounded-lg cursor-pointer text-grey-500 transition duration-300 ease-in-out hover:text-green-600;
+      @apply h-10 w-[78px] flex justify-center items-center gap-x-1 rounded-lg cursor-pointer text-grey-500 transition duration-300 ease-in-out hover:text-green-600 first-of-type:pl-3.5 last-of-type:pr-3.5;
 
       .icon {
         @apply text-xl relative font-medium;
@@ -121,7 +158,13 @@ const goToNextPage = () => {
       }
 
       &.disabled {
-        @apply cursor-not-allowed text-grey-400 pointer-events-none;
+        @apply cursor-not-allowed text-grey-400;
+      }
+
+      &:hover {
+        &.disabled {
+          background: unset;
+        }
       }
     }
 
@@ -129,7 +172,7 @@ const goToNextPage = () => {
       @apply flex justify-center items-center gap-x-2 text-sm text-grey-800;
 
       .form-control {
-        @apply w-[42px] h-[21px] py-[16px] px-2 text-center;
+        @apply w-[42px] h-[21px] min-w-[42px] min-h-[21px] py-[16px] px-2 text-center;
       }
 
       .page-btn {

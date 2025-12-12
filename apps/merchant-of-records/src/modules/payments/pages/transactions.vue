@@ -1,50 +1,90 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription="All Transactions" :fetchDataByPage="fetchPaymentTransactions">
+  <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Transactions"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+    @updatePage="(currentPage) => (page = currentPage)"
+  >
     <template #pageOptions>
-      <div class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static" v-if="tableBody.length > 0 && !isLoading">
-        <div class="flex items-center justify-between w-full gap-4">
-          <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
-            <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
-              <option value="">Payment Method</option>
-              <option v-for="(method, index) in paymentMethods" :value="method" :key="index">{{ method }}</option>
-            </select>
-            <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>
-          </div>
-
-          <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
-            <select v-model="selectedStatus" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
-              <option value="">Status</option>
-              <option v-for="(status, index) in statusOptions" :value="status.toLowerCase()" :key="index">{{ status }}</option>
-            </select>
-            <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>
-          </div>
-          
-           <div
-        class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
+      <div
+        class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static"
+        v-if="!isLoading"
       >
-        <select
-          v-model="selectedCurrency"
-          class="w-full p-4 bg-transparent appearance-none focus:outline-none"
-        >
-          <option value="">Currency</option>
-          <option
-            v-for="(currency, index) in currencyOptions"
-            :value="currency"
-            :key="index"
+        <div class="flex items-center justify-between w-full gap-4">
+          <div
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
           >
-            {{ currency }}
-          </option>
-        </select>
-        <div
-          class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-        ></div>
-      </div>
+            <select
+              v-model="selectedMethod"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
+            >
+              <option value="">Payment Method</option>
+              <option
+                v-for="(method, index) in paymentMethods"
+                :value="method.toLowerCase()"
+                :key="index"
+              >
+                {{ method }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
 
+          <div
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
+          >
+            <select
+              v-model="selectedStatus"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
+            >
+              <option value="">Status</option>
+              <option
+                v-for="(status, index) in statusOptions"
+                :value="status.toLowerCase()"
+                :key="index"
+              >
+                {{ status }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
+
+          <div
+            class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80"
+          >
+            <select
+              v-model="selectedCurrency"
+              class="w-full p-4 bg-transparent appearance-none focus:outline-none"
+            >
+              <option value="">Currency</option>
+              <option
+                v-for="(currency, index) in currencyOptions"
+                :value="currency"
+                :key="index"
+              >
+                {{ currency }}
+              </option>
+            </select>
+            <div
+              class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
+            ></div>
+          </div>
         </div>
 
         <div class="flex items-center w-full gap-4">
-          <DatePicker filterSize="lg" :activePeriod="activePeriod" @onFilterSelected="processFilterSelection" />
-          <button @click="exportToExcel" class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md export-btn sm:w-1/2 hover:bg-teal-50">
+          <DatePicker
+            filterSize="lg"
+            :activePeriod="activePeriod"
+            @onFilterSelected="processFilterSelection"
+          />
+          <button
+            @click="exportToExcel"
+            class="w-48 p-4 text-sm font-semibold text-teal-800 transition-all duration-200 border rounded-md export-btn sm:w-1/2 hover:bg-teal-50"
+          >
             Export
           </button>
         </div>
@@ -52,21 +92,49 @@
     </template>
 
     <template #pageContent>
-      <TableContainer :tableHeader="tableHeader" :tableBody="filteredTableBody" :isLoading="isLoading" :emptyData="{ title: 'No transactions yet!', description: 'No transactions have been initiated on your account yet.' }">
-        <TableContainerBody v-for="(payload, index) in filteredTableBody" :key="index" :tableHeader="tableHeader" :tableData="payload" />
+      <TableContainer
+        :tableHeader="tableHeader"
+        :tableBody="tableBody"
+        :isLoading="isLoading"
+        :emptyData="{
+          title: 'No transactions yet!',
+          description:
+            'No transactions have been initiated on your account yet.',
+        }"
+      >
+        <TableContainerBody
+          v-for="(payload, index) in tableBody"
+          :key="index"
+          :tableHeader="tableHeader"
+          :tableData="payload"
+          :on-table-clicked="() => openTransactionLog(payload)"
+        />
       </TableContainer>
     </template>
   </PageContentWrapper>
+   <teleport to="body" v-if="showTransactionDetailsModal">
+    <TransactionDetailsModal
+      @closeTriggered="toggleTransactionDetailsModal"
+      :transaction="selectedTransaction"
+    />
+  </teleport>
 </template>
 
 <script setup lang="ts">
 import * as XLSX from "xlsx";
-import { ref, h, computed, onMounted } from "vue";
+import { ref, h, computed, onMounted, watch } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { DatePicker } from "@packages/uikit";
-import { TableContainer, TableContainerBody, TableDoubleColumn, PageContentWrapper } from "@packages/uikit";
+import TransactionDetailsModal from "@/modules/payments/modals/transaction-details-modal.vue";
+import {  
+  TableContainer,
+  TableContainerBody,
+  TableDoubleColumn,
+  PageContentWrapper,
+} from "@packages/uikit";
+
 
 const { formatNumber, getStatus, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
@@ -77,6 +145,8 @@ const selectedMethod = ref("");
 const selectedStatus = ref("");
 const selectedCurrency = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
+const selectedTransaction = ref(null);
+const showTransactionDetailsModal = ref(false);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
@@ -88,19 +158,26 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount", slug: "amount" },
   { title: "Payment Method", slug: "payment_details" },
   { title: "Status", slug: "status" },
-   { title: "Reason", slug: "reason_for_failure" },
+  { title: "Reason", slug: "reason_for_failure" },
   { title: "Transaction Reference", slug: "reference" },
-  
 ]);
+
+
 
 const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const page = ref(1);
+
+const filters = computed(
+  () =>
+    `?page=${page.value}&method=${selectedMethod.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
 
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
- };
+};
 
 const normalizeDate = (date: Date) => {
   const d = new Date(date);
@@ -117,20 +194,37 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
   return target >= start && target <= end;
 };
 
-const processFilterSelection = (selectedRange: [Date | string, Date | string]) => {
+const processFilterSelection = (
+  selectedRange: [Date | string, Date | string]
+) => {
   if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [new Date(selectedRange[0]), new Date(selectedRange[1])];
+    const normalizedRange: [Date, Date] = [
+      new Date(selectedRange[0]),
+      new Date(selectedRange[1]),
+    ];
     activePeriod.value = normalizedRange;
   } else {
     activePeriod.value = null;
   }
 };
 
-const fetchPaymentTransactions = async (page = 1) => {
+
+
+const openTransactionLog = (row: any) => {
+  selectedTransaction.value = row.raw;
+  toggleTransactionDetailsModal();
+};
+
+const toggleTransactionDetailsModal = () => {
+  showTransactionDetailsModal.value = !showTransactionDetailsModal.value;
+};
+
+const fetchPaymentTransactions = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: {page},
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -140,7 +234,9 @@ const fetchPaymentTransactions = async (page = 1) => {
     tableBody.value = response.data.map((data: any) => {
       const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
       const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
-      const customerName = data.customer ? `${data.customer.firstname} ${data.customer.lastname}` : "No customer info";
+      const customerName = data.customer
+        ? `${data.customer.firstname} ${data.customer.lastname}`
+        : "No customer info";
       const customerEmail = data.customer ? data.customer.email : "";
       const createdDate = new Date(data.created_at);
 
@@ -159,9 +255,9 @@ const fetchPaymentTransactions = async (page = 1) => {
         }),
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
-       reason_for_failure: capitalizeFirstLetter(
-  (data.reason_for_failure || "-").toString().toLowerCase()
-),
+        reason_for_failure: capitalizeFirstLetter(
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
 
         reference: data.reference,
         raw: {
@@ -178,7 +274,7 @@ const fetchPaymentTransactions = async (page = 1) => {
     });
 
     tableBodyRaw.value = tableBody.value.map((tx) => tx.raw);
-   tablePaging.value = response.pagination[0] || {};
+    tablePaging.value = response.pagination[0] || {};
   }
 };
 
@@ -197,7 +293,9 @@ const fetchAllTransactions = async () => {
     if (response?.code !== 200) break;
 
     const mapped = response.data.map((data: any) => {
-      const customerName = data.customer ? `${data.customer.firstname} ${data.customer.lastname}` : "No customer info";
+      const customerName = data.customer
+        ? `${data.customer.firstname} ${data.customer.lastname}`
+        : "No customer info";
       const customerEmail = data.customer ? data.customer.email : "";
 
       return {
@@ -208,8 +306,8 @@ const fetchAllTransactions = async () => {
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
         reason_for_failure: capitalizeFirstLetter(
-  (data.reason_for_failure || "-").toString().toLowerCase()
-),
+          (data.reason_for_failure || "-").toString().toLowerCase()
+        ),
 
         reference: data.reference,
         currency: data.currency,
@@ -220,30 +318,10 @@ const fetchAllTransactions = async () => {
 
     totalPages = response.pagination[0]?.total_pages ?? 1;
     page++;
-
   } while (page <= totalPages);
 
   return all;
 };
-
-const filteredTableBody = computed(() => {
-    
-
-  return tableBody.value.filter((tx) => {
-    const method = tx.raw?.payment_details?.toLowerCase();
-    const status = tx.raw?.status?.toLowerCase();
-    const currency = tx.raw?.currency;
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
-
-    const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
-    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
-    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-     const matchesCurrency = selectedCurrency.value
-      ? currency === selectedCurrency.value
-      : true;
-    return matchesMethod && matchesStatus && matchesDate && matchesCurrency;
-  });
-});
 
 const exportToExcel = async () => {
   const allTransactions = await fetchAllTransactions();
@@ -255,10 +333,14 @@ const exportToExcel = async () => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
 
-    const matchesMethod = selectedMethod.value ? method === selectedMethod.value.toLowerCase() : true;
-    const matchesStatus = selectedStatus.value ? status === selectedStatus.value : true;
+    const matchesMethod = selectedMethod.value
+      ? method === selectedMethod.value.toLowerCase()
+      : true;
+    const matchesStatus = selectedStatus.value
+      ? status === selectedStatus.value
+      : true;
     const matchesCurrency = selectedCurrency.value
-      ? tx.currency === selectedCurrency.value
+      ? tx.currency.toLowerCase() === selectedCurrency.value.toLowerCase()
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 
@@ -268,13 +350,12 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
-    Amount: tx.amount,
     Currency: tx.currency,
+    Amount: tx.amount,
     "Payment Method": tx.payment_details,
     Status: tx.status,
-    Reason: tx.reason,
+    Reason: tx.reason_for_failure || "-",
     Reference: tx.reference,
-    
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
@@ -282,6 +363,14 @@ const exportToExcel = async () => {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
   XLSX.writeFile(workbook, "All_Merchant_Transactions.xlsx");
 };
+
+watch([selectedMethod, selectedStatus, selectedCurrency, activePeriod], () => {
+  page.value = 1;
+});
+
+watch(filters, (newFilters) => {
+  fetchPaymentTransactions(newFilters);
+});
 
 onMounted(fetchPaymentTransactions);
 </script>

@@ -2,14 +2,14 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Payouts"
-    :fetchDataByPage="fetchPayouts"
-    @customActionBtnClicked="toggleInitiatePayoutModal"
+    @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
   >
     <template #pageOptions>
       <div
         class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-3 sm:static"
-        v-if="tableBody.length > 0 && !isLoading"
+        v-if="!isLoading"
       >
         <div class="flex items-center justify-between w-full gap-4">
           <div
@@ -32,8 +32,9 @@
               class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
             ></div>
           </div>
+          
         </div>
-        <div class="flex items-center w-full gap-3">
+        <div class="flex items-center w-full gap-4">
           <DatePicker
             filterSize="lg"
             :activePeriod="activePeriod"
@@ -52,7 +53,7 @@
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
+        :tableBody="tableBody"
         :isLoading="isLoading"
         @onActionClicked="toggleInitiatePayoutModal"
         :emptyData="{
@@ -62,7 +63,7 @@
         }"
       >
         <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
+          v-for="(payload, index) in tableBody"
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
@@ -71,12 +72,15 @@
     </template>
   </PageContentWrapper>
   <!-- <teleport to="body" v-if="showInitiatePayoutModal">
-    <InitiatePayoutModal @closeTriggered="toggleInitiatePayoutModal" @reloadPayouts="fetchAllPayouts" />
+    <InitiatePayoutModal
+      @closeTriggered="toggleInitiatePayoutModal"
+      @reloadPayouts="fetchAllPayouts"
+    />
   </teleport> -->
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from "vue";
+import { ref, computed, onMounted, h, watch } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
@@ -94,18 +98,19 @@ const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } =
   useString();
 const { getPayouts, fetchAllPayouts } = useBalanceStore();
 const { processAPIRequest } = useEvents();
+
+const isLoading = ref(true);
+const selectedStatus = ref("");
+
 const showInitiatePayoutModal = ref(false);
 
 const toggleInitiatePayoutModal = () => {
   showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
 };
-
-const isLoading = ref(true);
-const selectedStatus = ref("");
-
 const activePeriod = ref<[Date, Date] | null>(null);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
+
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
@@ -117,6 +122,12 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const page = ref(1);
+
+const filters = computed(
+  () =>
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
 
 const getDateCreated = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -154,11 +165,12 @@ const processFilterSelection = (
   }
 };
 
-const fetchPayouts = async (page = 1) => {
+const fetchPayouts = async (filters: string) => {
+  isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getPayouts,
-    payload: { page },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -166,7 +178,7 @@ const fetchPayouts = async (page = 1) => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${formatNumber(data.amount)}`;
+      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
       const createdDate = new Date(data.created_at);
 
       return {
@@ -191,7 +203,12 @@ const fetchPayouts = async (page = 1) => {
           raw_date: createdDate,
           amount: formattedAmount,
           status: data.status ?? "-",
+          reason_for_failure: capitalizeFirstLetter(
+            (data.reason_for_failure || "-").toString().toLowerCase()
+          ),
+
           reference: data.reference ?? "-",
+          currency: data.currency,
         },
       };
     });
@@ -245,21 +262,23 @@ const exportToExcel = async () => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
 
+
     const matchesStatus = selectedStatus.value
       ? status === selectedStatus.value
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 
-    return matchesStatus && matchesDate;
+
+    return matchesStatus && matchesDate
   });
 
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
-    Amount: tx.amount || "-",
     Currency: tx.currency,
+    Amount: tx.amount || "-",
     Status: tx.status,
+    Reason: tx.reason_for_failure || "-",
     Reference: tx.reference,
-    Reason: tx.reason_for_failure ?? "-",
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(cleanData);
@@ -268,22 +287,15 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "Merchant_Payouts.xlsx");
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const rawDate = tx.raw.raw_date ? new Date(tx.raw.raw_date) : null;
-    const matchesStatus = selectedStatus.value
-      ? tx.raw?.status?.toLowerCase() === selectedStatus.value.toLowerCase()
-      : true;
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-    return matchesStatus && matchesDate;
-  });
+watch([selectedStatus, activePeriod], () => {
+  page.value = 1;
 });
 
-onMounted(() => {
-  fetchPayouts();
+watch(filters, (newFilters) => {
+  fetchPayouts(newFilters);
 });
+
+onMounted(fetchPayouts);
 </script>
 
 <style scoped></style>

@@ -3,13 +3,12 @@
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
       <div class="overflow-row">
-        <OverviewCard
-          v-for="(wallet, index) in walletBalance"
-          :key="index"
-          :wallet="wallet"
-        />
+        <OverviewCard :wallet="walletBalance" />
+          <div class="tax-row--right">
+        <TransactionMetrics :transactionStats="transactionStats" />
       </div>
-
+      </div>
+    
       <!-- TRANSACTION ROW -->
       <div class="transaction-row">
         <TransactionTable />
@@ -24,9 +23,14 @@ import { countryCurrencies } from "@packages/constants";
 import { PageContentWrapper } from "@packages/uikit";
 import { useProfile, useEvents, useAppVariant } from "@packages/hooks";
 import { storeToRefs } from "pinia";
-import { OverviewCard, TransactionTable } from "@/modules/overview/components";
+import {
+  OverviewCard,
+  TransactionTable,
+  TransactionMetrics,
+} from "@/modules/overview/components";
 import { useAuthStore } from "@/modules/auth/store";
 import { useOverviewStore } from "@/modules/overview/store";
+import { useBalanceStore } from "@/modules/balances/store";
 
 interface IWalletBalance {
   countryFlag: string;
@@ -46,13 +50,18 @@ const authStore = useAuthStore();
 const overviewStore = useOverviewStore();
 const profileUtil = new useProfile(authStore);
 const appVariant = ref<string>(useAppVariant());
+const localCountryPayload = ref<any>(null);
+const transactionStats = ref<any>({});
 
 const { getWallets, updateWalletState } = overviewStore;
 const { getAllWallets } = storeToRefs(overviewStore);
+const {getTransactionStats} = useBalanceStore()
 
 const { processAPIRequest } = useEvents();
 
-const walletBalance = ref<IWalletBalance[]>([]);
+const walletBalance = ref<IWalletBalance[] | IWalletBalance | undefined>(
+  undefined
+);
 
 const getLocalCurrencyCode = computed(() => {
   const userProfile = profileUtil.getUser();
@@ -60,38 +69,27 @@ const getLocalCurrencyCode = computed(() => {
 });
 
 const loadLocalCountryCurrency = () => {
-  let localCountryPayload;
-
   if (appVariant.value === "alexpay") {
-    localCountryPayload = countryCurrencies.find(
+    localCountryPayload.value = countryCurrencies.find(
       (country) => country.currency.short === "GHS"
     );
   } else {
-    localCountryPayload = countryCurrencies.find(
+    localCountryPayload.value = countryCurrencies.find(
       (country) => country.currency.short === "ZMW"
     );
   }
 
-
-
-  walletBalance.value = [
-    {
-      countryFlag: localCountryPayload?.flag ?? "",
-      description: localCountryPayload?.currency.description ?? "",
-      currencyShort: localCountryPayload?.currency.short ?? "",
-      currencySign: localCountryPayload?.currency.sign ?? "",
-      amount: 0,
-    },
-  ];
-
-  }
+  walletBalance.value = {
+    countryFlag: localCountryPayload.value?.flag ?? "",
+    description: localCountryPayload.value?.currency.description ?? "",
+    currencyShort: localCountryPayload.value?.currency.short ?? "",
+    currencySign: localCountryPayload.value?.currency.sign ?? "",
+    amount: 0,
+  };
+};
 
 const fetchAllWallets = async () => {
-  if (getAllWallets?.value?.walletBalance.length === 0) {
-    loadLocalCountryCurrency();
-  } else {
-    walletBalance.value = getAllWallets.value.walletBalance;
-  }
+  loadLocalCountryCurrency();
 
   const response = await processAPIRequest({
     action: getWallets,
@@ -99,60 +97,40 @@ const fetchAllWallets = async () => {
   });
 
   if (response?.code === 200) {
-    // GET LOCAL WALLET BALANCES
     const localWallet = response.data.find(
-      (wallet: any) => wallet.currency === getLocalCurrencyCode.value
-    );
-
-    walletBalance.value[0].amount = localWallet?.market_balance ?? 0;
-
-    // LOAD OTHER CURRENCIES BALANCE
-    const nonLocalWallets = response.data.filter(
       (wallet: any) =>
-        wallet.currency !== getLocalCurrencyCode.value &&
-        wallet.currency !== "USD"
+        wallet.country.currency_code === getLocalCurrencyCode.value
     );
 
-    nonLocalWallets.forEach((wallet: any) => {
-      const walletCurrencyData = countryCurrencies.find(
-        (country) => country.currency.short === wallet.currency
-      );
-
-      const walletPayload: IWalletBalance = {
-        countryFlag: walletCurrencyData?.flag ?? "",
-        description: walletCurrencyData?.currency.description ?? "",
-        currencyShort: walletCurrencyData?.currency.short ?? "",
-        currencySign: walletCurrencyData?.currency.sign ?? "",
-        amount: wallet?.market_balance ?? 0,
+    if (localWallet) {
+      walletBalance.value = {
+        countryFlag: localCountryPayload.value?.flag ?? "",
+        description: localWallet?.country.name ?? "",
+        currencyShort: localCountryPayload.value?.currency.short ?? "",
+        currencySign: localCountryPayload.value?.currency.sign ?? "",
+        amount: localWallet?.balance ?? 0,
       };
-
-      const taxWalletPayload: ITaxBalance = {
-        countryFlag: walletCurrencyData?.flag ?? "",
-        currencyShort: walletCurrencyData?.currency.short ?? "",
-        currencySign: walletCurrencyData?.currency.sign ?? "",
-        amount: wallet?.tax_balance ?? 0,
-      };
-
-      // Replace or push for walletBalance
-      const existingWalletIndex = walletBalance.value.findIndex(
-        (entry) => entry.currencyShort === walletPayload.currencyShort
-      );
-
-      if (existingWalletIndex !== -1) {
-        walletBalance.value[existingWalletIndex] = walletPayload;
-      } else {
-        walletBalance.value.push(walletPayload);
-      }
-    });
-
-    // UPDATE LOCAL WALLET STATE
-    updateWalletState({
-      walletBalance: walletBalance.value,
-    });
+    }
   }
 };
 
-onMounted(() => fetchAllWallets());
+const fetchTransactionStats = async () => {
+  const response = await processAPIRequest({
+    action: getTransactionStats,
+    payload: {},
+    showAlert: false,
+  });
+
+  if (response.code === 200) {
+    transactionStats.value = response.data;
+  }
+};
+
+
+onMounted(() => {
+  fetchAllWallets();
+  fetchTransactionStats();
+});
 </script>
 
 <style lang="scss" scoped>

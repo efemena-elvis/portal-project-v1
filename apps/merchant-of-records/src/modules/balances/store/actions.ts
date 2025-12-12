@@ -36,8 +36,11 @@ const $api = new useServiceAPI({
 });
 
 export const getBalanceHistory = async (payload: any) => {
-  return await $api.fetch(`${balanceRoutes.getBalanceHistory}?page=${payload.page}`);
+  return await $api.fetch(
+    `${balanceRoutes.getBalanceHistory}${payload.filters ? payload.filters : `?page=${payload.page}`}`
+  );
 };
+
 
 export const getTransactionStats = async () => {
   return await $api.fetch(balanceRoutes.getTransactionStats)
@@ -49,7 +52,7 @@ export const initiatePayout = async (payload: any) => {
 };
 
 export const getPayouts = async (payload: any) => {
-  return await $api.fetch(`${balanceRoutes.getAllPayouts}?page=${payload.page}`);
+  return await $api.fetch(`${balanceRoutes.getAllPayouts}${payload.filters ? payload.filters : `?page=${payload.page}`}`);
 };
 
 export const fetchAllPayouts = async () => {

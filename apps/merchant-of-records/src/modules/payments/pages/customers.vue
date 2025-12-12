@@ -1,7 +1,14 @@
 <template>
-  <PageContentWrapper :pagingData="tablePaging" pageDescription = "All Customers" :fetchDataByPage="fetchCustomers">
-       <template #pageOptions v-if="tableBody.length > 0 && !isLoading">
-      <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 ">
+  <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Customers"
+    :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
+    @updatePage="(currentPage) => (page = currentPage)"
+  >
+    <template #pageOptions v-if="!isLoading">
+      <div
+        class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
+      >
         <select
           v-model="selectedStatus"
           class="w-full p-4 bg-transparent appearance-none focus:outline-none"
@@ -9,10 +16,10 @@
           <option value="">Status</option>
           <option
             v-for="(status, index) in statusOptions"
-            :value="status.toLowerCase()"
+            :value="status.value.toLowerCase()"
             :key="index"
           >
-            {{ status }}
+            {{ status.key }}
           </option>
         </select>
         <div
@@ -20,17 +27,17 @@
         ></div>
       </div>
 
-          <DatePicker  
-          filterSize="lg"
-          :activePeriod="activePeriod"
-          @onFilterSelected="processFilterSelection"/>
-
+      <DatePicker
+        filterSize="lg"
+        :activePeriod="activePeriod"
+        @onFilterSelected="processFilterSelection"
+      />
     </template>
 
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
-        :tableBody="filteredTableBody"
+        :tableBody="tableBody"
         :isLoading="isLoading"
         :emptyData="{
           title: 'No customers yet',
@@ -39,7 +46,7 @@
         }"
       >
         <TableContainerBody
-          v-for="(payload, index) in filteredTableBody"
+          v-for="(payload, index) in tableBody"
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
@@ -50,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, h} from "vue";
+import { ref, reactive, onMounted, computed, h, watch } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { usePaymentStore } from "../store";
 import { useDate, useString, useEvents } from "@packages/hooks";
@@ -60,13 +67,12 @@ import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-  TableDoubleColumn
+  TableDoubleColumn,
 } from "@packages/uikit";
 
 const { formatNumber, getStatus, notAvailable } = useString();
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
-
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
@@ -78,31 +84,20 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Phone Number", slug: "phone_number" },
   { title: "Status", slug: "status" },
 ]);
-const statusOptions = ["Active", "Blacklisted"];
+const statusOptions = [{key:"Active", value:"false"}, {key:"Blacklisted", value:"true"}];
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const page = ref<number>(1);
+
+const filters = computed(
+  () =>
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+);
 
 const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
-};
-
-const normalizeDate = (date: Date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
-  if (!range || !range[0] || !range[1]) return true;
-
-  const start = normalizeDate(new Date(range[0]));
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999); 
-
-  const target = new Date(date);
-  return target >= start && target <= end;
 };
 
 const processFilterSelection = (
@@ -119,11 +114,12 @@ const processFilterSelection = (
   }
 };
 
-const fetchCustomers = async (page = 1) => {
-   tablePaging.value.current_page = page;
+const fetchCustomers = async (filters: string) => {
+  isLoading.value = true;
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getCustomers,
-    payload: { page },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -138,7 +134,7 @@ const fetchCustomers = async (page = 1) => {
       const createdDate = new Date(Date.parse(data.created_at));
 
       return {
-         date_created: h(TableDoubleColumn, {
+        date_created: h(TableDoubleColumn, {
           entry: {
             primaryText: getDateAdded(data.created_at),
             secondaryText: useDate.formatTime(data.created_at),
@@ -165,19 +161,13 @@ const fetchCustomers = async (page = 1) => {
   }
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const rawDate = tx.raw.raw_date ? new Date(tx.raw.raw_date) : null;
-    const matchesStatus = selectedStatus.value
-      ? tx.raw.raw_status?.toLowerCase() === selectedStatus.value.toLowerCase()
-      : true;
-    const matchesDate = rawDate ? isWithinRange(rawDate, activePeriod.value) : true;
-    return matchesStatus && matchesDate;
-  });
+watch(activePeriod, () => {
+  page.value = 1;
 });
 
-
-onMounted(() => {
-  fetchCustomers();
+watch(filters, (newFilters) => {
+  fetchCustomers(newFilters);
 });
+
+onMounted(fetchCustomers);
 </script>
