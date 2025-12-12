@@ -1,10 +1,15 @@
 <template>
-  <div class="developer-area">
+  <template v-if="isLoading">
+    <ComplianceSkeleton />
+  </template>
+  <div class="developer-area" v-else>
     <div class="developer-input">
       <div class="input-form mb-7">
         <TextFieldInput
           labelId="textSecretKey"
-          labelTitle="Test Secret Key"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Secret Key' : 'Live Secret Key'
+          "
           :labelCompact="false"
           :inputType="IInputType.Password"
           :inputValue="getKeys.secret"
@@ -18,7 +23,9 @@
 
         <TextFieldInput
           labelId="textPublicKey"
-          labelTitle="Test Public Key"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Public Key' : 'Live Public Key'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="getKeys.public"
@@ -32,7 +39,11 @@
 
         <TextFieldInput
           labelId="textCallbackURL"
-          labelTitle="Test Callback URL"
+          :labelTitle="
+            getBusinessMode === `test`
+              ? 'Test Callback URL'
+              : 'Live Callback URL'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Callback URL"
@@ -41,14 +52,13 @@
           :inputValue="urlPayload.callback_url"
           @inputChanged="urlPayload.callback_url = $event"
           @inputValidated="payloadValidity.callback_url = $event"
-          :errorHandler="{
-            validator: 'validateURL',
-          }"
         />
 
         <TextFieldInput
           labelId="textWebhookURL"
-          labelTitle="Test Webhook URL"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Webhook URL' : 'Live Webhook URL'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Webhook URL"
@@ -57,9 +67,6 @@
           :inputValue="urlPayload.webhook_url"
           @inputChanged="urlPayload.webhook_url = $event"
           @inputValidated="payloadValidity.webhook_url = $event"
-          :errorHandler="{
-            validator: 'validateURL',
-          }"
         />
       </div>
 
@@ -79,7 +86,12 @@
           Need help integrating our APIs on your platform?
         </div>
 
-        <button  @click="accessMerchantDeveloperAPI"   class="btn btn-sm btn-tertiary sm:mt-4">Explore our APIs</button>
+        <button
+          @click="accessMerchantDeveloperAPI"
+          class="btn btn-sm btn-tertiary sm:mt-4"
+        >
+          Explore our APIs
+        </button>
       </div>
     </div>
   </div>
@@ -92,8 +104,7 @@ import { storeToRefs } from "pinia";
 import { useAuthStore } from "@/modules/auth/store";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents, useProfile, useString } from "@packages/hooks";
-import { TextFieldInput } from "@packages/uikit";
-
+import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
 
 type IURLType = {
   callback_url: string;
@@ -112,7 +123,6 @@ const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
 const { createAndClickAnchor } = useString();
 
-
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getAPIKeys = computed(() => profileUtil.getAPIKeys());
 
@@ -124,8 +134,8 @@ const {
 } = storeToRefs(useSettingsStore());
 
 const urlPayload = ref<IURLType>({
-  callback_url: getProfileDeveloper.value?.callback_url || "",
-  webhook_url: getProfileDeveloper.value?.webhook_url || "",
+  callback_url: "",
+  webhook_url: "",
 });
 
 const updateKeysBtnRef = ref<HTMLButtonElement | null>(null);
@@ -135,16 +145,20 @@ const payloadValidity = ref<IInputValidity>({
   webhook_url: false,
 });
 
+const isLoading = ref<boolean>(false);
+
 const getKeys = computed(() => {
   if (getBusinessProfile.value?.businessMode === "test") {
     return getAPIKeys.value.test;
   } else return getAPIKeys.value?.live;
 });
 
+const getBusinessMode = computed(() => {
+  return getBusinessProfile.value?.businessMode || "test";
+});
 
 const accessMerchantDeveloperAPI = () => {
-
-  return createAndClickAnchor( "https://docs.vesicash.com","_blank");
+  return createAndClickAnchor("https://docs.vesicash.com", "_blank");
 };
 
 const isActionReady = computed(() => {
@@ -186,18 +200,25 @@ const updateProfileAPIKeys = async () => {
 
 // Fetch all profile data
 const fetchProfileData = async () => {
-  const response = await processAPIRequest({
+  isLoading.value = true;
+
+  await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,
   });
+
+  const developer = getProfileDeveloper.value;
+  if (developer) {
+    urlPayload.value = { ...developer };
+  }
+
+  isLoading.value = false;
 };
 
 watch(
   getProfileDeveloper,
   (newValue) => {
     if (newValue) {
-      // console.log(newValue);
-
       urlPayload.value = {
         callback_url: newValue.callback_url || "",
         webhook_url: newValue.webhook_url || "",
@@ -219,7 +240,7 @@ fetchProfileData();
   }
 
   .developer-display {
-    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block ;
+    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block;
 
     .help-area {
       @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;

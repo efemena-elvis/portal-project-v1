@@ -2,12 +2,13 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Transactions"
+    :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
   >
     <template #pageOptions>
       <div
         class="relative flex items-center gap-4 mb-6 sm:flex-wrap sm:flex-row-reverse top-4 sm:static"
-        v-if="tableBody.length > 0 && !isLoading"
+        v-if="!isLoading"
       >
         <div class="flex items-center justify-between w-full gap-4">
           <div
@@ -85,10 +86,17 @@
           :key="index"
           :tableHeader="tableHeader"
           :tableData="payload"
+          :on-table-clicked="() => openTransactionLog(payload)"
         />
       </TableContainer>
     </template>
   </PageContentWrapper>
+    <teleport to="body" v-if="showTransactionDetailsModal">
+    <TransactionDetailsModal
+      @closeTriggered="toggleTransactionDetailsModal"
+      :transaction="selectedTransaction"
+    />
+  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -98,6 +106,7 @@ import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { DatePicker } from "@packages/uikit";
+import TransactionDetailsModal from "@/modules/payments/modals/transaction-details-modal.vue";
 import {
   TableContainer,
   TableContainerBody,
@@ -114,19 +123,12 @@ const selectedMethod = ref("");
 const selectedStatus = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const page = ref(1);
+const selectedTransaction = ref(null);
+const showTransactionDetailsModal = ref(false);
 
 const filters = computed(
-  () =>
-    `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+  () => `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
 );
-
-watch([selectedMethod, selectedStatus, activePeriod], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchPaymentTransactions(newFilters);
-});
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
@@ -179,12 +181,21 @@ const processFilterSelection = (
   }
 };
 
+const openTransactionLog = (row: any) => {
+  selectedTransaction.value = row.raw;
+  toggleTransactionDetailsModal();
+};
+
+const toggleTransactionDetailsModal = () => {
+  showTransactionDetailsModal.value = !showTransactionDetailsModal.value;
+};
+
 const fetchPaymentTransactions = async (filters: string) => {
   isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getTransactions,
-    payload: { filters },
+    payload: { filters, page: page.value },
     showAlert: false,
   });
 
@@ -282,32 +293,12 @@ const fetchAllTransactions = async () => {
   return all;
 };
 
-const filteredTableBody = computed(() => {
-  return tableBody.value.filter((tx) => {
-    const method = tx.raw?.payment_details?.toLowerCase();
-    const status = tx.raw?.status?.toLowerCase();
-    const rawDate = tx.raw?.raw_date ? new Date(tx.raw.raw_date) : null;
-
-    const matchesMethod = selectedMethod.value
-      ? method === selectedMethod.value.toLowerCase()
-      : true;
-    const matchesStatus = selectedStatus.value
-      ? status === selectedStatus.value
-      : true;
-    const matchesDate = rawDate
-      ? isWithinRange(rawDate, activePeriod.value)
-      : true;
-
-    return matchesMethod && matchesStatus && matchesDate;
-  });
-});
-
 const exportToExcel = async () => {
   const allTransactions = await fetchAllTransactions();
 
   if (!allTransactions || allTransactions.length === 0) return;
 
-  const filtered = allTransactions.filter((tx) => {
+    const filtered = allTransactions.filter((tx) => {
     const method = tx.payment_details.toLowerCase();
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
@@ -326,11 +317,11 @@ const exportToExcel = async () => {
   const cleanData = filtered.map((tx) => ({
     "Date Created": tx.date_created,
     "Customer Details": tx.customer_details,
-    Amount: tx.amount,
     Currency: tx.currency,
+    Amount: tx.amount,
     "Payment Method": tx.payment_details,
     Status: tx.status,
-    Reason: tx.reason,
+    Reason: tx.reason_for_failure || "-",
     Reference: tx.reference,
   }));
 
@@ -340,7 +331,15 @@ const exportToExcel = async () => {
   XLSX.writeFile(workbook, "All_Merchant_Transactions.xlsx");
 };
 
-onMounted(() => fetchPaymentTransactions(filters.value));
+watch([selectedMethod, selectedStatus, activePeriod], () => {
+  page.value = 1;
+});
+
+watch(filters, (newFilters) => {
+  fetchPaymentTransactions(newFilters);
+});
+
+onMounted(fetchPaymentTransactions);
 </script>
 
 <style lang="scss" scoped>

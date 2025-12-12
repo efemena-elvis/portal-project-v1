@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 
@@ -40,11 +40,13 @@ const handleDateChange = (value: [Date, Date] | null) => {
   }
 };
 
-const showDropdown = ref(false);
-const dialogRef = ref<HTMLElement | null>(null);
-const togglerRef = ref<HTMLElement | null>(null);
-
-const toggleDropdown = (state: boolean) => (showDropdown.value = state);
+watch(
+  () => props.activePeriod,
+  (newVal) => {
+    dateRange.value = newVal;
+  },
+  { immediate: true }
+);
 </script>
 
 <style lang="scss" scoped>

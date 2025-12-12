@@ -1,5 +1,5 @@
 <template>
-  <PageContentWrapper>
+  <PageContentWrapper  :pageKeys="{ green: 'Inflow', red: 'Outflow' }">
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
@@ -46,6 +46,7 @@ const { processAPIRequest } = useEvents();
 const isLoading = ref(true);
 
 const tableHeader = ref<TableHeaderType[]>([
+  { title: "", slug: "status" },
   { title: "Date Created", slug: "date_created" },
   { title: "Transaction Summary", slug: "summary" },
   { title: "Market Wallet", slug: "wallet" },

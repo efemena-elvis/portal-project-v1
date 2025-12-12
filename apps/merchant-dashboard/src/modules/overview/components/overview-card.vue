@@ -12,7 +12,7 @@
 
     <div class="bottom-row">
       <span class="mr-[1.5px]">{{ wallet.currencySign }}</span
-      ><span>{{ formatNumber(wallet.amount) }}</span>
+      ><span>{{ formatNumber(wallet.amount || 0)  }}</span>
     </div>
   </div>
 </template>

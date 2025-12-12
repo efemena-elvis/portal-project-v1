@@ -170,7 +170,7 @@ const fetchAllWallets = async () => {
     );
 
     nonLocalWallets.forEach((wallet: any) => {
-      console.log("Processing wallet:", wallet);
+      // console.log("Processing wallet:", wallet);
       const walletCurrencyData = countryCurrencies.find(
         (country) => country.currency.short === wallet.currency
       );

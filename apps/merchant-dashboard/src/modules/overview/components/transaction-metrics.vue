@@ -9,28 +9,18 @@
 
     <div class="transaction-data">
       <div class="title-text">Successful Transactions</div>
-      <div
-        class="value-text"
-        v-for="(transactionStat, index) in transactionStats?.currency_stats"
-        :key="index"
-      >
-        {{ transactionStat.currency
-        }} {{
-          formatNumber(transactionStat?.successful_transactions_value ?? 0) 
-        }}
+      <div class="value-text">
+        {{ getCurrency }}
+        {{ formatNumber(transactionStats?.successful_transactions_value ?? 0) || 0 }}
       </div>
     </div>
 
     <div class="transaction-data">
       <div class="title-text">Total Payouts</div>
-      <div
-        class="value-text"
-        v-for="(transactionStat, index) in transactionStats?.currency_stats"
-        :key="index"
-      >
+      <div class="value-text">
         <span
-          >{{ transactionStat.currency
-          }} {{ formatNumber(transactionStat?.total_payouts_value ?? 0) }}</span
+          >{{ getCurrency }}
+          {{ formatNumber(transactionStats?.total_payouts_value || 0)}}</span
         >
       </div>
     </div>
@@ -38,21 +28,25 @@
 </template>
 
 <script setup lang="ts">
-import { useString } from "@packages/hooks";
+  
+import { useString, useAppVariant} from "@packages/hooks";
+import { computed, ref } from "vue";
 
 const { formatNumber } = useString();
+const appVariant = ref<string>(useAppVariant());
+
+const getCurrency = computed(() => {
+  return appVariant.value === "alexpay" ? "GHS" : "ZMW";
+});
 
 interface ITransactionStats {
   total_transactions: number;
-  currency_stats: Array<{
-    successful_transactions_value: number;
-    total_payouts_value: number;
-    currency: string;
-  }>;
+  successful_transactions_value: number;
+  total_payouts_value: number;
 }
 
 const props = defineProps<{
-  transactionStats: ITransactionStats ;
+  transactionStats: ITransactionStats | null;
 }>();
 </script>
 
