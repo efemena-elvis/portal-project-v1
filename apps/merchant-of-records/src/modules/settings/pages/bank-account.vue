@@ -222,6 +222,7 @@ watch(
 
 // Fetch all profile data
 const fetchProfileData = async () => {
+  
   const response = await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,

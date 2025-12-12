@@ -1,4 +1,4 @@
-import {
+ import {
   profileDetails,
   profileContact,
   profileAccount,
@@ -8,7 +8,7 @@ import {
 export function useSettingsMutations() {
   const mutateProfile = (response: any) => {
     const responsePayload = response.data;
-    // console.log("RESPONSE", responsePayload);
+    // console.log("RESPONSE", responsePayload); 
 
     const { first_name, last_name, phone_number } =
       responsePayload.business_users[0].user;
