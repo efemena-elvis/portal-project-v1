@@ -120,7 +120,7 @@ const customerForm = ref<{
 const { processAPIRequest, clickHandler } = useEvents();
 const { customer_details, reference } = defineProps<{
   customer_details: {
-    phone_number: string;
+    phone_number?: string;
     email: string;
     customer_first_name: string;
     customer_last_name: string;

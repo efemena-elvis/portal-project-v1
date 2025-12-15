@@ -3,6 +3,7 @@
     <!-- CLOSE ACTION -->
     <div class="close-icon">
       <div class="icon icon-times"></div>
+      ehllo
     </div>
 
     <div class="loading-indicator" v-if="checkoutLoading">
@@ -12,10 +13,16 @@
     <div class="checkout-container" v-else>
       <!-- Header Section -->
       <header class="checkout-header">
-        <img :src="renderImg('vesicash-brand.png')" alt="brand-logo" class="brand-logo" />
+        <img
+          :src="renderImg('vesicash-brand.png')"
+          alt="brand-logo"
+          class="brand-logo"
+        />
 
         <div class="payment-info">
-          <div class="payment-info-email">{{ paymentEmail || "Amount to pay" }}</div>
+          <div class="payment-info-email">
+            {{ paymentEmail || "Amount to pay" }}
+          </div>
           <div class="payment-info-amount">
             <span>{{ paymentCurrency }} {{ paymentAmount.toFixed(2) }}</span>
           </div>
@@ -47,7 +54,12 @@
         </button>
 
         <div class="security-badge">
-          <svg class="lock-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            class="lock-icon"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
@@ -71,7 +83,10 @@ import MobileMoneyForm from "../components/mobile-money-form.vue";
 import CardPaymentForm from "../components/card-payment-form.vue";
 import { useImage } from "@/shared/composables";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
-import { getCountryByCurrencyShort, getCountryByCode } from "@packages/constants";
+import {
+  getCountryByCurrencyShort,
+  getCountryByCode,
+} from "@packages/constants";
 import { useEvents } from "@packages/hooks";
 
 const router = useRouter();
@@ -83,12 +98,8 @@ const reference = route.params.reference as string;
 const { renderImg } = useImage();
 const selectedPaymentMethod = ref("mobileMoney");
 
-const {
-  fetchPaymentDetails,
-  paymentDetails,
-  paymentButtonRef,
-  makePayment,
-} = useMobileMoneyPayment();
+const { fetchPaymentDetails, paymentDetails, paymentButtonRef, makePayment } =
+  useMobileMoneyPayment();
 
 const checkoutLoading = ref<boolean>(true);
 
@@ -136,11 +147,13 @@ watch(
 
     setTimeout(() => (checkoutLoading.value = false), 500);
 
-    const { currency, country, country_code, amount, redirect_url } = transaction_details;
+    const { currency, country, country_code, amount, redirect_url } =
+      transaction_details;
     const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
 
     paymentCurrency.value = currency ?? null;
-    paymentCountry.value = country || (getCountryByCode(country_code)?.country as string);
+    paymentCountry.value =
+      country || (getCountryByCode(country_code)?.country as string);
     paymentCountryCode.value = countryPayload?.dialing_code || "260";
 
     paymentRedirectURL.value = redirect_url;
