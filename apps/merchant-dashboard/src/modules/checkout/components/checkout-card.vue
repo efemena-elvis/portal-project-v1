@@ -204,7 +204,7 @@ const { fetchPaymentDetails, store, paymentButtonRef, makePayment } =
 
 const customerDetails = computed(() => {
   return {
-    phone_number: store?.payment_details?.phone_number || "+233-alexpay",
+    // phone_number: store?.payment_details?.phone_number || "+233-alexpay",
     email: store.payment_details?.email || "alexpaycustomer@pay.com",
     customer_first_name:
       store.payment_details?.customer_first_name || "AlexPay",
