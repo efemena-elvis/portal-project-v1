@@ -10,6 +10,7 @@
       <button
         class="size-[28px] bg-white hover:bg-gray-50 transition-colors rounded-full"
         title="Close checkout"
+        @click="handleCheckoutClose"
       >
         <div class="icon icon-times"></div>
       </button>
@@ -211,6 +212,14 @@ const customerDetails = computed(() => {
     customer_last_name: store.payment_details?.customer_last_name || "Customer",
   };
 });
+
+const handleCheckoutClose = () => {
+  if (window.history.length > 1) {
+    history.back();
+  } else {
+    window.location.replace(store.payment_details?.redirect_url ?? "/");
+  }
+};
 
 watch(
   () => store.payment_details,
