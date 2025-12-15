@@ -70,6 +70,7 @@
         :inputType="IInputType.Text"
         :inputPlaceholder="'Enter First Name'"
         isRequired
+        :inputValue="store?.payment_details?.customer_first_name ?? ''"
       />
       <TextFieldInput
         :labelId="'customer_last_name'"
@@ -78,6 +79,7 @@
         :inputType="IInputType.Text"
         :inputPlaceholder="'Enter Last Name'"
         isRequired
+        :inputValue="store?.payment_details?.customer_last_name ?? ''"
       />
     </div>
     <TextFieldInput
@@ -86,6 +88,7 @@
       :labelCompact="false"
       :inputType="IInputType.Email"
       :inputPlaceholder="'Enter Email'"
+      :inputValue="store?.payment_details?.email ?? ''"
       isRequired
     />
 
@@ -178,6 +181,13 @@ const handleSubmission = async (event: Event) => {
     expiry_year: string;
     card_cvv: string;
   };
+  const extras =
+    store.payment_details?.method === "mobilemoney"
+      ? {
+          operator: "mpgs",
+          method: "card",
+        }
+      : {};
   const browerChecks = generateBrowserChecks();
   const request = {
     ...(customerForm.value
@@ -191,6 +201,7 @@ const handleSubmission = async (event: Event) => {
     card_expiry_date: `${formValues.expiry_month}${formValues.expiry_year}`,
     card_cvv: formValues.card_cvv,
     ...browerChecks,
+    ...extras,
   };
 
   const response = await processAPIRequest({
