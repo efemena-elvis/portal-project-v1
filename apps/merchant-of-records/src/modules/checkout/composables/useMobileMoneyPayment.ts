@@ -5,8 +5,8 @@ import { useCheckoutStore } from "../store";
 import { MobileMoneyPaymentRequest } from "../types";
 
 // --- Constants ---
-const POLLING_INTERVAL = 5000;
-const POLLING_DURATION = 120000;
+const POLLING_INTERVAL = 5 * 1000;
+const POLLING_DURATION = 5 * 60000;
 
 export const useMobileMoneyPayment = () => {
   const store = useCheckoutStore();
