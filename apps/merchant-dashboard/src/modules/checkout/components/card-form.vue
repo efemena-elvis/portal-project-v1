@@ -164,7 +164,7 @@ const handleCustomerDetailsCollection = (event: Event) => {
   };
   customerForm.value = {
     ...formValues,
-    phone_number: customer_details.phone_number || "0000000000",
+    // phone_number: customer_details.phone_number || "0000000000",
   };
 };
 
