@@ -186,6 +186,9 @@ const handleSubmission = async (event: Event) => {
       ? {
           operator: "mpgs",
           method: "card",
+          redirect_failed_url: `${store.payment_details.redirect_url}?status=failed`,
+          redirect_success_url: `${store.payment_details.redirect_url}?status=success`,
+          redirect_url: store.payment_details.redirect_url,
         }
       : {};
   const browerChecks = generateBrowserChecks();

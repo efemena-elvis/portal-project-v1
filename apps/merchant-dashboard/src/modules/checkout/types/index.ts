@@ -33,7 +33,7 @@ export type MobileMoneyPaymentRequest = {
 };
 
 export type CardPaymentRequest = {
-  phone_number: string;
+  phone_number?: string;
   email: string;
   customer_first_name: string;
   customer_last_name: string;
