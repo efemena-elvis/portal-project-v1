@@ -48,7 +48,7 @@ const isLoading = ref(true);
 const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "status" },
   { title: "Date Created", slug: "date_created" },
-  { title: "Transaction Summary", slug: "summary" },
+  { title: "Action", slug: "action" },
   { title: "Market Wallet", slug: "wallet" },
   { title: "Balance Before", slug: "balance_before" },
   { title: "Change", slug: "change" },
@@ -88,7 +88,7 @@ const fetchBalanceHistory = async () => {
           data.type === "credit" ? "receive" : "send"
         ),
         date_created: getTransactionDate(data.balance_at),
-        summary: capitalizeFirstLetter(data.action.split("-").join(" ")),
+        action: capitalizeFirstLetter(data.action.split("-").join(" ")),
         balance_before: `ZMW ${formatNumber(data.balance_before)}`,
         change: getBoldTableText(
           `ZMW ${formatNumber(data.amount)}`,

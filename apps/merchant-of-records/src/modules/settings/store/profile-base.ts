@@ -3,6 +3,9 @@ export interface IProfileDetails {
   last_name: string;
   phone_number: string;
   logo: string;
+  business_location: string;
+  timezone: string;
+  email_address: string;
 }
 
 export interface IProfileContact {
@@ -44,6 +47,9 @@ export const profileBase: IProfileBaseType = {
     general_email_address: "",
   },
   profile: {
+    business_location: "",
+    timezone: "",
+    email_address: "",
     logo: "",
     first_name: "",
     last_name: "",

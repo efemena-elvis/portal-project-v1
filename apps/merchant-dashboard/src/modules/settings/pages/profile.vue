@@ -8,10 +8,11 @@
         :hasDocumentUploaded="false"
         :uploadAction="uploadFile"
         fileUploadText="Upload your business logo"
+        :uploadedDocumentContent="getUploadedDocumentContent"
         @onDocumentUploaded="
           {
             businessLogo = $event;
-            updateBusinessLogo();
+            businessPayload.logo = $event;
           }
         "
       />
@@ -40,16 +41,6 @@
           :isDisabled="true"
         />
 
-        <SelectFieldInput
-          labelId="businessTimezone"
-          labelTitle="Business Timezone"
-          :labelCompact="false"
-          inputPlaceholder="Select a business timezone"
-          :inputValue="businessPayload.timezone"
-          :selectData="validTimezones"
-          isRequired
-          @onSelectionChange="businessPayload.timezone = $event"
-        />
 
         <!-- PASSWORD -->
         <TextFieldInput
@@ -65,15 +56,22 @@
 
         <!-- CHANGE PASSWORD SECTION -->
         <div class="mt-4">
-          <div class="link font-medium" @click="toggleChangePasswordModal">
+          <div class="font-medium link" @click="toggleChangePasswordModal">
             Change Password
           </div>
         </div>
       </div>
+      <button
+        class="w-full mt-8 btn btn-primary"
+        :disabled="isActionReady"
+        @click="updateProfile"
+      >
+        Update Profile
+      </button>
     </div>
 
     <div class="profile-display">
-      <div class="logo-area pt-12">
+      <div class="pt-12 logo-area">
         <div class="logo-wrapper">
           <img
             class="w-4/5 h-auto"
@@ -104,7 +102,7 @@ import { IInputType } from "@packages/models";
 import { useAuthStore } from "@/modules/auth/store";
 import { useGlobalStore } from "@/modules/global/store";
 import { useSettingsStore } from "@/modules/settings/store";
-import { countryTimezones } from "@packages/constants";
+
 import { useProfile, useEvents } from "@packages/hooks";
 import {
   TextFieldInput,
@@ -117,7 +115,7 @@ import { storeToRefs } from "pinia";
 type IProfileType = {
   email_address: string;
   business_location: string;
-  timezone: string;
+  logo: string;
 };
 
 const authStore = useAuthStore();
@@ -136,25 +134,28 @@ const { processAPIRequest } = useEvents();
 
 const businessLogo = ref<string>("");
 const showChangePasswordModal = ref<boolean>(false);
+const uploadedDocumentContent = ref<{ name: string; link: string }>({
+  name: "Business Logo",
+  link: getProfileDetails.value?.logo || "",
+});
+
+const getUploadedDocumentContent = computed(() => {
+  return uploadedDocumentContent.value;
+});
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUserProfile = computed(() => profileUtil.getUser());
 
 const businessPayload = ref<IProfileType>({
+  business_location: getUserProfile?.value?.country?.name || "", 
   email_address: getUserProfile?.value?.email || "",
-  business_location: getUserProfile?.value?.country?.name || "",
-  timezone: "",
+  logo: "",
 });
 
-const validTimezones = computed(() => {
-  return countryTimezones.map((timezone) => {
-    return { name: timezone.timezone, value: timezone.timezone };
-  });
-});
 
 const getPayload = computed(() => {
   return {
-    profile: { logo: businessLogo.value, ...getProfileDetails.value },
+    profile: { ...getProfileDetails.value, ...businessPayload.value },
     bank: { ...getProfileAccount.value },
     contact: { ...getProfileContact.value },
     ...getProfileDeveloper.value,
@@ -173,29 +174,38 @@ const fetchProfileData = async () => {
   });
 };
 
-const updateBusinessLogo = async () => {
+const updateProfile = async () => {
   const response = await processAPIRequest({
     action: updateUserProfile,
+    btnText: "Update Profile",
     payload: getPayload.value,
     alertHandler: {
-      201: {
-        message: "Business logo uploaded successfully",
+      200: {
+        message: "Profile updated successfully",
         type: "success",
       },
-
       400: {
-        message: "Business logo upload failed",
+        message: "Bank account update failed",
         type: "error",
       },
     },
   });
 };
 
+const isActionReady = computed(() => {
+  return businessPayload.value.logo &&
+    businessPayload.value.business_location &&
+    businessPayload.value.email_address 
+    ? false
+    : true;
+});
+
 watch(
   getProfileDetails,
   (newValue) => {
     if (newValue) {
       businessLogo.value = newValue.logo || "";
+      businessPayload.value.logo = newValue.logo || "";
     }
   },
   { immediate: true }

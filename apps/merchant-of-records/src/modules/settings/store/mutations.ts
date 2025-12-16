@@ -18,6 +18,9 @@ export function useSettingsMutations() {
       last_name: last_name,
       phone_number: phone_number,
       logo: responsePayload?.logo,
+      business_location: responsePayload?.business_location,
+      timezone: responsePayload?.time_zone,
+      email_address: responsePayload?.email_address,
     };
 
     profileContact.value = {
