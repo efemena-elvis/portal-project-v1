@@ -52,13 +52,13 @@ const props = defineProps<{
 
 <style lang="scss" scoped>
 .transaction-metrics {
-  @apply w-full grid grid-cols-3;
+  @apply w-full grid grid-cols-3 gap-4;
 
   .transaction-data {
     @apply flex flex-col justify-start items-start gap-2;
 
     .title-text {
-      @apply text-[13px] text-grey-500;
+      @apply text-[13px] text-grey-500 ;
     }
 
     .value-text {
