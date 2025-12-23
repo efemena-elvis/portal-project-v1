@@ -3,7 +3,6 @@
     <!-- CLOSE ACTION -->
     <div class="close-icon">
       <div class="icon icon-times"></div>
-      ehllo
     </div>
 
     <div class="loading-indicator" v-if="checkoutLoading">
@@ -40,7 +39,11 @@
           v-model:phoneNumber="mobileMoneyPhoneNumber"
           v-if="selectedPaymentMethod === 'mobileMoney'"
         />
-        <CardPaymentForm v-if="selectedPaymentMethod === 'card'" />
+        <CardForm
+          :customer_details="customerDetails"
+          :reference="reference"
+          v-if="selectedPaymentMethod === 'card'"
+        />
       </main>
 
       <!-- CTA and Security Footer -->
@@ -49,6 +52,7 @@
           class="btn btn-primary btn-md !font-bold w-full"
           ref="paymentButtonRef"
           @click="processPayment"
+          v-if="selectedPaymentMethod === 'mobileMoney'"
         >
           Pay {{ paymentCurrency }} {{ paymentAmount.toFixed(2) }}
         </button>
@@ -80,7 +84,8 @@ import { ref, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import PaymentMethodSelector from "../components/payment-method-selector.vue";
 import MobileMoneyForm from "../components/mobile-money-form.vue";
-import CardPaymentForm from "../components/card-payment-form.vue";
+// import CardPaymentForm from "../components/card-payment-form.vue";
+import CardForm from "../components/card-form.vue";
 import { useImage } from "@/shared/composables";
 import { useMobileMoneyPayment } from "../composables/useMobileMoneyPayment";
 import {
@@ -100,6 +105,15 @@ const selectedPaymentMethod = ref("mobileMoney");
 
 const { fetchPaymentDetails, paymentDetails, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
+
+const customerDetails = computed(() => {
+  return {
+    // phone_number: store?.payment_details?.phone_number || "+233-alexpay",
+    email: paymentDetails.value?.email || "",
+    customer_first_name: paymentDetails.value?.customer_first_name || "",
+    customer_last_name: paymentDetails.value?.customer_last_name || "",
+  };
+});
 
 const checkoutLoading = ref<boolean>(true);
 
