@@ -141,18 +141,18 @@ onMounted(() => {
 }
 
 .overflow-row {
-  @apply flex justify-start items-center gap-8 mb-9;
+  @apply flex justify-start items-center gap-8 mb-9 flex-wrap;
 }
 
 .tax-row {
-  @apply flex justify-between items-center gap-8 mb-9;
+  @apply flex justify-between items-center gap-8 mb-9 sm:flex-col;
 
   &--left {
-    @apply w-1/2;
+    @apply w-1/2 sm:w-full;
   }
 
   &--right {
-    @apply w-1/2;
+    @apply w-1/2 sm:w-full;
   }
 }
 </style>

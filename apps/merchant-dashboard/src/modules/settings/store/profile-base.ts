@@ -3,6 +3,7 @@ export interface IProfileDetails {
   last_name: string;
   phone_number: string;
   logo: string;
+  email_address: string;
 }
 
 export interface IProfileContact {
@@ -48,5 +49,6 @@ export const profileBase: IProfileBaseType = {
     first_name: "",
     last_name: "",
     phone_number: "",
+    email_address: "",
   },
 };

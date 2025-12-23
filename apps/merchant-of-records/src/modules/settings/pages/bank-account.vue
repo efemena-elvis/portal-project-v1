@@ -58,7 +58,7 @@
             </template>
 
             <button
-              class="btn btn-primary w-full mt-8"
+              class="w-full mt-8 btn btn-primary"
               ref="updateBankBtnRef"
               :disabled="isActionReady"
               @click="updateBankAccount"
@@ -137,22 +137,22 @@ const getPayoutCurrencies = computed(() => {
 });
 
 const updateBankAccount = async () => {
-  // const response = await processAPIRequest({
-  //   action: updateUserProfile,
-  //   btnRef: updateBankBtnRef,
-  //   btnText: "Update Bank Account",
-  //   payload: getPayload.value,
-  //   alertHandler: {
-  //     200: {
-  //       message: "Bank account updated successfully",
-  //       type: "success",
-  //     },
-  //     400: {
-  //       message: "Bank account update failed",
-  //       type: "error",
-  //     },
-  //   },
-  // });
+  const response = await processAPIRequest({
+    action: updateUserProfile,
+    btnRef: updateBankBtnRef,
+    btnText: "Update Bank Account",
+    payload: getPayload.value,
+    alertHandler: {
+      200: {
+        message: "Bank account updated successfully",
+        type: "success",
+      },
+      400: {
+        message: "Bank account update failed",
+        type: "error",
+      },
+    },
+  });
 };
 
 const isActionReady = computed(() => {
@@ -222,6 +222,7 @@ watch(
 
 // Fetch all profile data
 const fetchProfileData = async () => {
+  
   const response = await processAPIRequest({
     action: fetchUserProfile,
     showAlert: false,
