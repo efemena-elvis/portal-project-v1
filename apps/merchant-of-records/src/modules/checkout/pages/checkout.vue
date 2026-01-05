@@ -37,6 +37,9 @@
           :dialingCode="paymentCountryCode"
           :initphoneNumber="mobileMoneyPhoneNumber"
           v-model:phoneNumber="mobileMoneyPhoneNumber"
+          v-model:email="paymentEmail"
+          v-model:firstName="customer_first_name"
+          v-model:lastName="customer_last_name"
           v-if="selectedPaymentMethod === 'mobileMoney'"
         />
         <CardForm
@@ -125,6 +128,8 @@ const paymentEmail = ref("");
 const paymentAmount = ref(0);
 
 const mobileMoneyPhoneNumber = ref("");
+const customer_first_name = ref("");
+const customer_last_name = ref("");
 const paymentRedirectURL = ref("");
 
 const getTransactionDetails = computed(() => {
@@ -133,22 +138,44 @@ const getTransactionDetails = computed(() => {
     method: selectedPaymentMethod.value.toLowerCase(),
     country: paymentCountry.value,
     business_name: "Vesicash",
+    customer_first_name: customer_first_name.value,
+    customer_last_name: customer_last_name.value,
+    email: paymentEmail.value,
     reference,
   };
 });
 
 // PROCESS PAYMENT
 const processPayment = () => {
-  if (
-    selectedPaymentMethod.value === "mobileMoney" &&
-    mobileMoneyPhoneNumber.value.length < 10
-  ) {
-    pushToastAlert({
-      message: "Please enter a valid phone number.",
-      type: "error",
-    });
-
-    return;
+  if (selectedPaymentMethod.value === "mobileMoney") {
+    if (mobileMoneyPhoneNumber.value.length < 10) {
+      pushToastAlert({
+        message: "Please enter a valid phone number.",
+        type: "error",
+      });
+      return;
+    }
+    if (!paymentEmail.value.includes("@")) {
+      pushToastAlert({
+        message: "Please enter a valid email address.",
+        type: "error",
+      });
+      return;
+    }
+    if (!customer_first_name.value) {
+      pushToastAlert({
+        message: "Please enter your first name.",
+        type: "error",
+      });
+      return;
+    }
+    if (!customer_last_name.value) {
+      pushToastAlert({
+        message: "Please enter your last name.",
+        type: "error",
+      });
+      return;
+    }
   }
 
   makePayment(getTransactionDetails.value, paymentRedirectURL.value);
@@ -161,8 +188,17 @@ watch(
 
     setTimeout(() => (checkoutLoading.value = false), 500);
 
-    const { currency, country, country_code, amount, redirect_url } =
-      transaction_details;
+    const {
+      currency,
+      country,
+      country_code,
+      amount,
+      redirect_url,
+      phone_number,
+      customer_first_name: first_name,
+      customer_last_name: last_name,
+      email,
+    } = transaction_details;
     const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
 
     paymentCurrency.value = currency ?? null;
@@ -172,6 +208,10 @@ watch(
 
     paymentRedirectURL.value = redirect_url;
     paymentAmount.value = amount ?? 0;
+    mobileMoneyPhoneNumber.value = phone_number || "";
+    customer_first_name.value = first_name || "";
+    customer_last_name.value = last_name || "";
+    paymentEmail.value = email || "";
   }
 );
 

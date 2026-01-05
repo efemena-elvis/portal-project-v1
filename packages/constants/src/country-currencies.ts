@@ -596,7 +596,7 @@ export function getCountryByCurrencyShort(shortCode: string) {
 
 export function getCountryByCode(code: string) {
   return (
-    countries.find((c) => c.code.toLowerCase() === code.toLowerCase()) || null
+    countries.find((c) => c.code?.toLowerCase() === code?.toLowerCase()) || null
   );
 }
 
