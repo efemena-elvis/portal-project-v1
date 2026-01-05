@@ -55,15 +55,13 @@ const $makePaymentAPI = new useServiceAPI({
 });
 
 export const fetchPaymentDetails = async (reference: string) => {
-  return await $getTransactionAPI.push<PaymentDetails>("", {
-    reference,
-  });
+  return await $api.fetch<PaymentDetails>(`/payment/${reference}`);
 };
 
 export const makeMobileMoneyPayment = async (
   payload: MobileMoneyPaymentRequest
 ) => {
-  return await $makePaymentAPI.push<string>("", payload);
+  return await $api.push<string>(`/payment/pay/${payload.reference}`, payload);
 };
 
 export const makeCardPayment = async ({
