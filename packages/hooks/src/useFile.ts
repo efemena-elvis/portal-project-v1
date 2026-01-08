@@ -5,8 +5,8 @@ export default function useFile() {
     return allowedFiles.includes(fileType) ? true : false;
   };
 
-  const processFileSize = (size: number) => {
-    if (size > 5000000) return false;
+  const processFileSize = (size: number, limit = 5000000) => {
+    if (size > limit) return false;
 
     return size.toString().length >= 6
       ? `${(size / 1000000).toFixed(1)}mb`

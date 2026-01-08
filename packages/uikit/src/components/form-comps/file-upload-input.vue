@@ -50,7 +50,7 @@
       class="hidden"
       :disabled="isUploading"
       @change="processDocumentUpload"
-      accept=".jpg, .jpeg, .png, .pdf .xls, .xlsx"
+      accept=".jpg, .jpeg, .png, .pdf, .xls, .xlsx"
     />
   </div>
 
@@ -141,9 +141,10 @@ const processDocumentUpload = async ($event: Event) => {
     return false;
   }
 
-  if (!processFileSize(uploadedFile.size)) {
+  // 10_000_000 ---> 10mb
+  if (!processFileSize(uploadedFile.size, 10_000_000)) {
     pushToastAlert({
-      message: "Upload a maximum file size of 5mb",
+      message: "Upload a maximum file size of 10mb",
       type: "warning",
     });
 
@@ -192,7 +193,7 @@ const processDocumentUpload = async ($event: Event) => {
     isDocUploaded.value = false;
   }
 
-  console.log(docPayload)
+  console.log(docPayload);
 };
 
 // Remove uploaded file handler
@@ -201,9 +202,6 @@ const removeUploadedFile = () => {
   isDocUploaded.value = false;
   emits("onDocumentUploaded", null);
 };
-
-
-
 </script>
 
 <style lang="scss" scoped>
