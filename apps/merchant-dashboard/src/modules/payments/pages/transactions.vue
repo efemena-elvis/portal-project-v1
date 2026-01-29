@@ -230,7 +230,7 @@ const fetchPaymentTransactions = async (filters: string) => {
           (data.reason_for_failure || "-").toString().toLowerCase()
         ),
 
-         reference: data.client_reference ? data.client_reference : data.reference,
+        reference: data.client_reference ? data.client_reference : data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
