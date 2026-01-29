@@ -57,6 +57,13 @@ export const sidebarRoutes: ISidebarRouteType = {
       active: true,
       category: "balances",
     },
+    {
+      link: "/storefront",
+      title: "Storefront",
+      icon: "icon-shopping-cart",
+      active: true,
+      category: "commerce",
+    },
   ],
 
   bottomLevel: [
