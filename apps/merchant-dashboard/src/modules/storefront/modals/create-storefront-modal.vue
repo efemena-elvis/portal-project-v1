@@ -54,7 +54,7 @@
           </div>
 
           <div class="bottom-row">
-            <div class="base-domain-url">https://store.redstonepgs.com/</div>
+            <div class="base-domain-url">{{`https://store.${appVariant}.com/`}}</div>
 
             <div class="secondary-domain-url">
               {{ storefrontPayload.name.toLocaleLowerCase() }}
@@ -71,7 +71,7 @@
           class="w-full btn btn-primary"
           ref="createStorefrontBtnRef"
           :disabled="isActionReady"
-       
+          @click="handleCreateStorefront"
         >
           Create Storefront
         </button>
@@ -84,43 +84,47 @@
 import { ref, computed } from "vue";
 import { IInputType } from "@packages/models";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
-import {storefrontNiches} from "@packages/constants";
+import { storefrontNiches } from "@packages/constants";
 import { useEvents, useString, useProfile } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
-// import { useStorefrontStore } from "@/modules/storefront/store";
+import { useStorefrontStore } from "@/modules/storefront/store";
+import { useAppVariant } from "@packages/hooks";
 
 type IStorefrontType = {
   name: string;
   currency: string;
   tag: string;
-  business_id: string;
+  business_id: string | undefined;
 };
 
 const emits = defineEmits(["closeTriggered", "reloadStorefront"]);
 
 const authStore = useAuthStore();
+const appVariant = ref<string>(useAppVariant());
 const profileUtil = new useProfile(authStore);
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const { capitalizeFirstLetter } = useString();
 const { processAPIRequest, pushToastAlert } = useEvents();
-// const { createStorefront } = useStorefrontStore();
+const { createStorefront } = useStorefrontStore();
 
-const validCurrencies = ref<{ value: string; name: string }[]>([
-  { value: "GHS", name: "Ghanaian Cedi" },
-]);
+const validCurrencies = computed(() => {
+  return appVariant.value === "alexpay"
+    ? [{ value: "GHS", name: "Ghanaian Cedi" }]
+    : [{ value: "ZMW", name: "Zambian Kwacha" }];
+});
 
 const storefrontNicheOptions = computed(() => {
-  return storefrontNiches.map((niche : any) => {
+  return storefrontNiches.map((niche: any) => {
     return { value: niche.slug, name: niche.nicheTitle };
   });
 });
 
 const storefrontPayload = ref<IStorefrontType>({
   name: "",
-  currency: "GHS",
+  currency: appVariant.value === "alexpay" ? "GHS" : "ZMW",
   tag: "",
-  business_id: getBusinessProfile.value.businessId,
+  business_id: getBusinessProfile.value?.businessId,
 });
 
 const storeNameValidity = ref<boolean>(false);
@@ -135,40 +139,40 @@ const isActionReady = computed(() => {
     : true;
 });
 
-// const handleCreateStorefront = async () => {
-//   const response = await processAPIRequest({
-//     action: createStorefront,
-//     payload: storefrontPayload.value,
-//     btnRef: createStorefrontBtnRef,
-//     btnText: "Create Storefront",
-//     alertHandler: {
-//       200: {
-//         message: "Storefront created successfully",
-//         description: "You are being redirected to your storefront dashboard",
-//         type: "success",
-//       },
+const handleCreateStorefront = async () => {
+  const response = await processAPIRequest({
+    action: createStorefront,
+    payload: storefrontPayload.value,
+    btnRef: createStorefrontBtnRef,
+    btnText: "Create Storefront",
+    alertHandler: {
+      200: {
+        message: "Storefront created successfully",
+        description: "You are being redirected to your storefront dashboard",
+        type: "success",
+      },
 
-//       400: {
-//         message: "Storefront creation failed",
-//         description: "Please provide a valid storefront name",
-//         type: "error",
-//       },
-//     },
-//   });
+      400: {
+        message: "Storefront creation failed",
+        description: "Please provide a valid storefront name",
+        type: "error",
+      },
+    },
+  });
 
-//   if (response.code === 200) {
-//     emits("reloadStorefront");
-//     emits("closeTriggered");
-//   } else {
-//     pushToastAlert({
-//       message: capitalizeFirstLetter(
-//         response.error || response.message || "Failed to create storefront"
-//       ),
-//       description: "Provide a valid storefront name",
-//       type: "error",
-//     });
-//   }
-// };
+  if (response.code === 200) {
+    emits("reloadStorefront");
+    emits("closeTriggered");
+  } else {
+    pushToastAlert({
+      message: capitalizeFirstLetter(
+        response.error || response.message || "Failed to create storefront",
+      ),
+      description: "Provide a valid storefront name",
+      type: "error",
+    });
+  }
+};
 </script>
 
 <style lang="scss" scoped>
