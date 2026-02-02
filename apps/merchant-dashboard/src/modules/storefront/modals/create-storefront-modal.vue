@@ -85,10 +85,9 @@ import { ref, computed } from "vue";
 import { IInputType } from "@packages/models";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 import { storefrontNiches } from "@packages/constants";
-import { useEvents, useString, useProfile } from "@packages/hooks";
+import { useEvents, useString, useProfile, useAppVariant } from "@packages/hooks";
 import { useAuthStore } from "@/modules/auth/store";
 import { useStorefrontStore } from "@/modules/storefront/store";
-import { useAppVariant } from "@packages/hooks";
 
 type IStorefrontType = {
   name: string;

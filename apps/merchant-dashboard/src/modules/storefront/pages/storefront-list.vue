@@ -51,11 +51,10 @@ import { TableHeaderType } from "@packages/models";
 import { ref, onMounted, h, computed } from "vue";
 import CreateStoreFrontModal from "../modals/create-storefront-modal.vue";
 import DeleteStoreFrontModal from "../modals/delete-storefront-modal.vue";
-import { useString } from "@packages/hooks";
-import { useEvents } from "@packages/hooks";
+import { useString, useAppVariant, useEvents } from "@packages/hooks";
 import { useRouter } from "vue-router";
 import { useStorefrontStore } from "@/modules/storefront/store";
-import { useAppVariant } from "@packages/hooks";
+
 
 const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
   useString();
