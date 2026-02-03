@@ -236,7 +236,7 @@
               <div class="form-placeholder">https://facebook.com/</div>
               <input
                 type="text"
-                class=""
+                class="focus:outline-none"
                 placeholder="facebook name"
                 v-model="storePayload.facebook"
               />
@@ -248,7 +248,7 @@
               </div>
               <input
                 type="text"
-                class=""
+                class="focus:outline-none"
                 placeholder="whatsapp phone"
                 v-model="socials.whatsapp_url.path_url"
               />
@@ -258,7 +258,7 @@
               <div class="form-placeholder">https://instagram.com/</div>
               <input
                 type="text"
-                class=""
+                class="focus:outline-none"
                 placeholder="instagram username"
                 v-model="storePayload.instagram"
               />
@@ -268,7 +268,7 @@
               <div class="form-placeholder">https://twitter.com/</div>
               <input
                 type="text"
-                class=""
+                class="focus:outline-none"
                 placeholder="twitter username"
                 v-model="storePayload.twitter"
               />
@@ -278,7 +278,7 @@
               <div class="form-placeholder">https://tiktok.com/</div>
               <input
                 type="text"
-                class=""
+                class="focus:outline-none"
                 placeholder="tiktok username"
                 v-model="storePayload.tikTok"
               />

@@ -9,3 +9,4 @@ export function useGlobalProperty<T = unknown>(key: string): T {
 export function useAppVariant(): string {
   return useGlobalProperty<string>("$appVariant");
 }
+ 
