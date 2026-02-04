@@ -1,5 +1,7 @@
 import { useProfile, useServiceAPI } from "@packages/hooks";
 import {
+  CardGTIPaymentRequest,
+  CardGTIPaymentResponse,
   CardPaymentRequest,
   CardPaymentResponse,
   MobileMoneyPaymentRequest,
@@ -20,12 +22,12 @@ const activeMode = getBusinessProfile.value?.businessMode || "test";
 const publicKey = computed(() =>
   activeMode === "test"
     ? profileUtil.getAPIKeys().test.public
-    : profileUtil.getAPIKeys().live.public
+    : profileUtil.getAPIKeys().live.public,
 );
 const secretKey = computed(() =>
   activeMode === "test"
     ? profileUtil.getAPIKeys().test.secret
-    : profileUtil.getAPIKeys().live.secret
+    : profileUtil.getAPIKeys().live.secret,
 );
 
 const $api = new useServiceAPI({
@@ -59,7 +61,7 @@ export const fetchPaymentDetails = async (reference: string) => {
 };
 
 export const makeMobileMoneyPayment = async (
-  payload: MobileMoneyPaymentRequest
+  payload: MobileMoneyPaymentRequest,
 ) => {
   return await $api.push<string>(`/payment/pay/${payload.reference}`, payload);
 };
@@ -77,12 +79,25 @@ export const makeCardPayment = async ({
     {
       ...request,
       ip_address: ip_response.data?.ip_address,
-    }
+    },
   );
 };
 
 export const fetchIpAddress = async () => {
   return await $api.fetch<{ ip_address: string }>(
-    checkoutRoutes.fetch_ip_address
+    checkoutRoutes.fetch_ip_address,
+  );
+};
+
+export const makeGtiCardPayment = async ({
+  reference,
+  request,
+}: {
+  reference: string;
+  request: CardGTIPaymentRequest;
+}) => {
+  return await $api.push<CardGTIPaymentResponse>(
+    checkoutRoutes.make_card_payment(reference),
+    request,
   );
 };

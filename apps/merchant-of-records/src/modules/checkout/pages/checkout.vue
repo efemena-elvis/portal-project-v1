@@ -42,10 +42,13 @@
           v-model:lastName="customer_last_name"
           v-if="selectedPaymentMethod === 'mobileMoney'"
         />
+
         <CardForm
           :customer_details="customerDetails"
           :reference="reference"
           v-if="selectedPaymentMethod === 'card'"
+          :redirect_url="paymentDetails?.redirect_url"
+          :currency="paymentDetails?.currency"
         />
       </main>
 
@@ -212,7 +215,7 @@ watch(
     customer_first_name.value = first_name || "";
     customer_last_name.value = last_name || "";
     paymentEmail.value = email || "";
-  }
+  },
 );
 
 fetchPaymentDetails();
