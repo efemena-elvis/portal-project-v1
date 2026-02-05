@@ -103,9 +103,10 @@ import {
 import { useCheckoutStore } from "../store";
 import { useEvents } from "@packages/hooks";
 import { ref } from "vue";
+import { CardGTIPaymentRequest } from "../types";
 
 const store = useCheckoutStore();
-const { makeCardPayment } = store;
+const { makeCardPayment, makeGtiCardPayment } = store;
 const customerForm = ref<{
   customer_first_name: string;
   customer_last_name: string;
@@ -114,7 +115,12 @@ const customerForm = ref<{
 } | null>(null);
 
 const { processAPIRequest, clickHandler } = useEvents();
-const { customer_details, reference } = defineProps<{
+const {
+  customer_details,
+  reference,
+  redirect_url = "",
+  currency = "",
+} = defineProps<{
   customer_details: {
     phone_number?: string;
     email: string;
@@ -122,6 +128,8 @@ const { customer_details, reference } = defineProps<{
     customer_last_name: string;
   };
   reference: string;
+  redirect_url?: string;
+  currency?: string;
 }>();
 
 const monthOptions = [
@@ -199,6 +207,72 @@ const handleSubmission = async (event: Event) => {
     ...browerChecks,
     ...extras,
   };
+
+  // "billing_address_line1": "123 Business Way",
+  // "billing_city": "Lagos",
+  // "billing_province": "Lagos",
+  // "billing_postal_code": "100001",
+  // "billing_country": "NG",
+  // "redirect_url": "https://google.com"
+  //  "card_number": "5123450000000008",
+  //     "card_cvv": "171",
+  //     "card_expiry_date": "1226",
+
+  const cardGtiRequest: CardGTIPaymentRequest = {
+    billing_address_line1: "123 Business Way",
+    billing_city: "Lagos",
+    billing_country: "NG",
+    billing_postal_code: "100001",
+    billing_province: "Lagos",
+    card_cvv: formValues.card_cvv,
+    card_expiry_date: `${formValues.expiry_month}${formValues.expiry_year.slice(-2)}`,
+    card_number: formValues.card_number,
+    customer_first_name: customerForm.value?.customer_first_name ?? "",
+    customer_last_name: customerForm.value?.customer_last_name ?? "",
+    email: customerForm.value?.email ?? "",
+    phone_number: customerForm.value?.phone_number ?? "",
+    redirect_url,
+  };
+
+  if (["USD"].includes(currency)) {
+    const response = await processAPIRequest({
+      action: makeGtiCardPayment,
+      payload: {
+        reference,
+        request: cardGtiRequest,
+      },
+      showAlert: true,
+      btnRef: paymentButtonRef,
+      btnText: "Pay",
+      alertHandler: {
+        201: {
+          message: "3DS Challenge Required",
+          description: "You need to complete a 3DS Challenge",
+          type: "success",
+        },
+
+        200: {
+          message: "3DS Challenge Required",
+          description: "You need to complete a 3DS Challenge",
+          type: "success",
+        },
+
+        400: {
+          message: "Payment Failed",
+          type: "error",
+        },
+        500: {
+          message: "Something went wrong",
+          type: "error",
+        },
+      },
+    });
+    console.log({ response });
+    if (response) {
+      location.href = response.data?.redirect_url ?? "/";
+    }
+    return;
+  }
 
   const response = await processAPIRequest({
     action: makeCardPayment,

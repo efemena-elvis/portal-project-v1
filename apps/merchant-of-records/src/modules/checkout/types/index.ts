@@ -43,6 +43,22 @@ export type CardPaymentRequest = {
   ip_address?: string;
 };
 
+export type CardGTIPaymentRequest = {
+  card_number: string;
+  card_cvv: string;
+  card_expiry_date: string; // MMYY
+  email: string;
+  phone_number: string;
+  customer_first_name: string;
+  customer_last_name: string;
+  billing_address_line1: string;
+  billing_city: string;
+  billing_province: string;
+  billing_postal_code: string;
+  billing_country: string; // ISO-2 country code, e.g. "NG"
+  redirect_url: string;
+};
+
 export interface CardPaymentResponse {
   device_storage_token: {
     methodPostData: string;
@@ -61,3 +77,13 @@ export interface CardPaymentResponse {
   operator: string | null;
   payment_status: string;
 }
+
+export type CardGTIPaymentResponse = {
+  message: string;
+  device_storage_token: string | null;
+  method: "card";
+  payment_status: "processing";
+  operator: string;
+  reference: string;
+  redirect_url: string;
+};
