@@ -192,6 +192,13 @@ const handleSubmission = async (event: Event) => {
           redirect_url: store.payment_details.redirect_url,
         }
       : {};
+  const gtiExtras =
+    store.payment_details?.method === "mobilemoney"
+      ? {
+          operator: "gti",
+          method: "card",
+        }
+      : {};
   const browerChecks = generateBrowserChecks();
   const request = {
     ...(customerForm.value
@@ -232,6 +239,7 @@ const handleSubmission = async (event: Event) => {
     email: customerForm.value?.email ?? "",
     phone_number: customerForm.value?.phone_number ?? "",
     redirect_url,
+    ...gtiExtras,
   };
 
   if (["USD"].includes(currency)) {
