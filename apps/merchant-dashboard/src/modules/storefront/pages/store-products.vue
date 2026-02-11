@@ -208,7 +208,7 @@ const fetchAllStoreProducts = async () => {
         ),
         quantity: data.stock,
         status: `${getStatus(
-          data.stock > 0 ? "success" : "danger",
+          data.stock > 0 ? "success" : "failed",
           data.stock > 0 ? "Available" : "Out of Stock"
         )}`,
         date_created: getDateAdded(data.created_at),
