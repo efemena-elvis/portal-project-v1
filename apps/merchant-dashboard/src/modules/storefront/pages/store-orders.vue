@@ -144,7 +144,12 @@ const fetchAllStoreOrders = async () => {
     tableBody.push(
       ...response.data.orders.map((data: any, index: number) => ({
         counter: `${index + 1}`,
-        date_created: getDateOrdered(data.created_at),
+       date_created: h(TableDoubleColumn, {
+          entry: {
+            primaryText: getDateOrdered(data.created_at),
+            secondaryText: useDate.formatTime(data.created_at),
+          },
+        }),
         customer: h(TableDoubleColumn, {
           entry: {
             primaryText: `${data.customer_details.firstname} ${data.customer_details.lastname}`,
