@@ -59,7 +59,7 @@ export const deleteStorefront = async (payload: any) => {
 
 export const getStoreProducts = async (payload: any) => {
   return await $api.fetch(
-    `${storeRoutes.getProducts}?slug=${payload.storefrontSlug}`,
+    `${storeRoutes.getProducts}?slug=${payload.storefrontSlug}&page=${payload.page}`,
   );
 };
 
@@ -76,7 +76,7 @@ export const deleteStoreProduct = async (payload: any) => {
 };
 
 export const getStoreOrders = async (payload: any) => {
-  return await $api.fetch(`${storeRoutes.getOrders}/${payload.storefrontId}`);
+  return await $api.fetch(`${storeRoutes.getOrders}/${payload.storefrontId}?page=${payload.page}`);
 };
 
 export const updateOrderStatus = async (payload: any) => {

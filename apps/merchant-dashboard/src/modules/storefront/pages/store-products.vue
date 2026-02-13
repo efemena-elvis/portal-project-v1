@@ -1,4 +1,9 @@
 <template>
+  <!-- <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Products"
+    @updatePage="(currentPage) => (page = currentPage)"
+  > -->
   <div class="pb-10 strorefront-product-page">
     <!-- TOP AREA -->
     <div class="top-area">
@@ -37,9 +42,11 @@
         :key="index"
         :tableHeader="tableHeader"
         :tableData="payload"
+        :pagingData="tablePaging"
       />
     </TableContainer>
   </div>
+  <!-- </PageContentWrapper>  -->
 
   <teleport to="body" v-if="showManageProductModal">
     <ManageProductModal
@@ -70,6 +77,7 @@ import {
   TableContainerBody,
   TableActionBtn,
   TableDoubleColumn,
+  PageContentWrapper,
 } from "@packages/uikit";
 import ManageProductModal from "@/modules/storefront/modals/manage-product-modal.vue";
 import DeleteProductModal from "@/modules/storefront/modals/delete-product-modal.vue";
@@ -97,6 +105,8 @@ const tableHeader = ref<TableHeaderType[]>([
 ]);
 
 const tableBody = reactive<any[]>([]);
+const tablePaging = ref<any>({});
+const page = ref(1);
 
 const currency = computed(() => {
   return appVariant.value === "alexpay" ? "GHS" : "ZMW";
@@ -140,8 +150,9 @@ const triggerManageProduct = () => {
   }
 
   const hasLength = (val: any) => val && val.length > 0;
-  const socialCount = [facebook, instagram, twitter, tikTok].filter(hasLength)
-    .length;
+  const socialCount = [facebook, instagram, twitter, tikTok].filter(
+    hasLength,
+  ).length;
 
   if (socialCount < 2) {
     pushToastAlert({
@@ -181,10 +192,11 @@ const filteredTableBody = computed(() => {
 
 const fetchAllStoreProducts = async () => {
   isLoading.value = true;
+  tablePaging.value.current_page = page;
 
   const response = await processAPIRequest({
     action: getStoreProducts,
-    payload: { storefrontSlug: route.query.storeSlug },
+    payload: { storefrontSlug: route.query.storeSlug, page: page.value },
     showAlert: false,
   });
 
@@ -204,12 +216,12 @@ const fetchAllStoreProducts = async () => {
           },
         }),
         amount: getBoldTableText(
-          `${currency.value}${formatNumber(data.amount)}`
+          `${currency.value}${formatNumber(data.amount)}`,
         ),
         quantity: data.stock,
         status: `${getStatus(
           data.stock > 0 ? "success" : "failed",
-          data.stock > 0 ? "Available" : "Out of Stock"
+          data.stock > 0 ? "Available" : "Out of Stock",
         )}`,
         date_created: getDateAdded(data.created_at),
         action: h(TableActionBtn, {
@@ -220,9 +232,10 @@ const fetchAllStoreProducts = async () => {
           onManageClick: () => handleEditProduct(data),
           onDeleteClick: () => handleDeleteProduct(data),
         }),
-      }))
+      })),
     );
   }
+  tablePaging.value = response.pagination[0];
 };
 
 const handleDeleteProduct = (productData: any) => {
@@ -246,7 +259,7 @@ const fetchStorefrontById = async () => {
     storeDetails.value = response.data;
 
     const niche = storefrontNiches.find(
-      (niche) => niche.slug === response.data.tag
+      (niche) => niche.slug === response.data.tag,
     );
     productCategories.value = niche?.categories || [];
   }

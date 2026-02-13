@@ -1,4 +1,9 @@
 <template>
+    <!-- <PageContentWrapper
+    :pagingData="tablePaging"
+    pageDescription="All Orders"
+    @updatePage="(currentPage) => (page = currentPage)"
+  > -->
   <div class="pb-10 strorefront-order-page">
     <!-- TOP AREA -->
     <div class="top-area">
@@ -19,6 +24,7 @@
       :tableHeader="tableHeader"
       :tableBody="tableBody"
       :isLoading="isLoading"
+    
       :emptyData="{
         title: 'No orders yet',
         description:
@@ -33,6 +39,7 @@
       />
     </TableContainer>
   </div>
+  <!-- </PageContentWrapper>  -->
 
   <teleport to="body" v-if="showViewProductDetailsModal">
     <ViewProductDetailsModal
@@ -48,6 +55,7 @@
       @reloadStoreOrders="fetchAllStoreOrders"
     />
   </teleport>
+
 </template>
 
 <script lang="ts" setup>
@@ -58,7 +66,7 @@ import { useStorefrontStore } from "@/modules/storefront/store";
 import {useEvents, useDate,  useString, useAppVariant} from "@packages/hooks";
 import UpdateOrdersModal from "@/modules/storefront/modals/update-orders-modal.vue";
 import ViewProductDetailsModal from "@/modules/storefront/modals/view-product-details-modal.vue";
-import {TableDoubleColumn, TableActionBtn,TableContainerBody, TableContainer} from "@packages/uikit"
+import {TableDoubleColumn, TableActionBtn,TableContainerBody, TableContainer, PageContentWrapper} from "@packages/uikit"
 
 
 const { getBoldTableText, getStatus, formatNumber } = useString();
@@ -70,12 +78,21 @@ const { processAPIRequest } = useEvents();
 const appVariant = ref<string>(useAppVariant());
 
 const isLoading = ref<boolean>(true);
+const page = ref(1);
 
 
 const getDateOrdered = (date: string) => {
   let { w2, m4, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m4}, ${y1}`;
 };
+
+const tableBody = reactive<any[]>([]);
+const tablePaging = ref<any>({});
+
+const productOrderDetails = ref<any>({});
+
+const showUpdateOrdersModal = ref(false);
+const showViewProductDetailsModal = ref(false);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "S/N", slug: "counter" },
@@ -87,13 +104,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const tableBody = reactive<any[]>([]);
-const tablePaging = ref<any>({});
 
-const productOrderDetails = ref<any>({});
-
-const showUpdateOrdersModal = ref(false);
-const showViewProductDetailsModal = ref(false);
 
 const currency = computed(() => {
   return appVariant.value === "alexpay" ? "GHS" : "ZMW";
@@ -130,9 +141,10 @@ const renderOrderQuantity = (order: any) => {
 };
 
 const fetchAllStoreOrders = async () => {
+  tablePaging.value.current_page = page;
   const response = await processAPIRequest({
     action: getStoreOrders,
-    payload: { storefrontId: route.params.storeId },
+    payload: { storefrontId: route.params.storeId, page: page.value },
     showAlert: false,
   });
 
