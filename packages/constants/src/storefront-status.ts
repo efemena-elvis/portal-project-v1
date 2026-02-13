@@ -18,7 +18,7 @@
   },
   {
     id: 4,
-    name: "Out for Delivery",
+    name: "Shipped",
     description: "The order is currently on its way to the customer.",
   },
   {

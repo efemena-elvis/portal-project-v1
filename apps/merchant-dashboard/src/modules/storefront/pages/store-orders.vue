@@ -113,7 +113,7 @@ const renderStatusColor = (status: string) => {
     "preparing order",
     "ready for pickup",
     "awaiting pickup by carrier",
-    "out for delivery",
+    "shipped",
   ];
 
   if (pending.includes(status.toLowerCase())) return "pending";
