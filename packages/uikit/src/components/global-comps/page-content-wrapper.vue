@@ -79,6 +79,7 @@ const updatePageMeta = () => {
 };
 
 watch(route, () => updatePageMeta(), { immediate: true });
+
 </script>
 
 <style lang="scss">

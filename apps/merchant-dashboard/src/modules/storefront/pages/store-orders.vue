@@ -1,9 +1,12 @@
 <template>
-    <!-- <PageContentWrapper
+    <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Orders"
+    :pageKeys="{ green: 'Delivered', yellow: 'Pending', red: 'Cancelled' }"
     @updatePage="(currentPage) => (page = currentPage)"
-  > -->
+  >
+  
+  <template #pageContent>
   <div class="pb-10 strorefront-order-page">
     <!-- TOP AREA -->
     <div class="top-area">
@@ -39,7 +42,8 @@
       />
     </TableContainer>
   </div>
-  <!-- </PageContentWrapper>  -->
+   </template>
+  </PageContentWrapper> 
 
   <teleport to="body" v-if="showViewProductDetailsModal">
     <ViewProductDetailsModal
@@ -59,7 +63,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref, reactive, computed } from "vue";
+import { h, ref, reactive, computed, watch, onMounted } from "vue";
 import { useRoute} from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import { useStorefrontStore } from "@/modules/storefront/store";
@@ -205,7 +209,13 @@ const fetchAllStoreOrders = async () => {
   }
 };
 
+watch(page, () => {
+  fetchAllStoreOrders()
+});
+
+onMounted(() => {
 fetchAllStoreOrders();
+});
 </script>
 
 <style lang="scss" scoped>

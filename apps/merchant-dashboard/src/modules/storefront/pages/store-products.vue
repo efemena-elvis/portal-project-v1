@@ -1,52 +1,56 @@
 <template>
-  <!-- <PageContentWrapper
+  <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Products"
+    :pageKeys="{ green: 'Active', red: 'Out of Stock' }"
     @updatePage="(currentPage) => (page = currentPage)"
-  > -->
-  <div class="pb-10 strorefront-product-page">
-    <!-- TOP AREA -->
-    <div class="top-area">
-      <div class="top-area--left">
-        <div class="form-input-block">
-          <div class="icon icon-search-normal"></div>
-
-          <input
-            type="search"
-            class="form-control form-input"
-            placeholder="Search products..."
-            v-model="searchQuery"
-          />
+  >
+    <template #pageContent>
+      <div class="pb-10 strorefront-product-page">
+        <!-- TOP AREA -->
+        <div class="top-area">
+          <div class="top-area--left">
+            <div class="form-input-block">
+              <div class="icon icon-search-normal"></div>
+              <input
+                type="search"
+                class="form-control form-input"
+                placeholder="Search products..."
+                v-model="searchQuery"
+              />
+            </div>
+          </div>
+          <div class="top-area--right button-actions">
+            <button
+              class="btn btn-sm btn-primary"
+              @click="triggerManageProduct"
+            >
+              Add a Product
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="top-area--right button-actions">
-        <button class="btn btn-sm btn-primary" @click="triggerManageProduct">
-          Add a Product
-        </button>
+        <TableContainer
+          :tableHeader="tableHeader"
+          :tableBody="filteredTableBody"
+          :isLoading="isLoading"
+          :emptyData="{
+            title: 'No product yet!',
+            description:
+              'You haven\'t created any product on this storefront yet. This is where you\'ll be able to manage all created products',
+          }"
+        >
+          <TableContainerBody
+            v-for="(payload, index) in filteredTableBody"
+            :key="index"
+            :tableHeader="tableHeader"
+            :tableData="payload"
+            :pagingData="tablePaging"
+          />
+        </TableContainer>
       </div>
-    </div>
-
-    <TableContainer
-      :tableHeader="tableHeader"
-      :tableBody="filteredTableBody"
-      :isLoading="isLoading"
-      :emptyData="{
-        title: 'No product yet!',
-        description:
-          'You haven\'t created any product on this storefront yet. This is where you\'ll be able to manage all created products',
-      }"
-    >
-      <TableContainerBody
-        v-for="(payload, index) in filteredTableBody"
-        :key="index"
-        :tableHeader="tableHeader"
-        :tableData="payload"
-        :pagingData="tablePaging"
-      />
-    </TableContainer>
-  </div>
-  <!-- </PageContentWrapper>  -->
+    </template>
+  </PageContentWrapper>
 
   <teleport to="body" v-if="showManageProductModal">
     <ManageProductModal
@@ -67,7 +71,7 @@
 </template>
 
 <script lang="ts" setup>
-import { h, ref, reactive, computed } from "vue";
+import { h, ref, reactive, computed, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useString, useEvents, useDate, useAppVariant } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
@@ -265,8 +269,15 @@ const fetchStorefrontById = async () => {
   }
 };
 
-fetchAllStoreProducts();
-fetchStorefrontById();
+watch(page, () => {
+  fetchAllStoreProducts();
+  fetchStorefrontById();
+});
+
+onMounted(() => {
+  fetchAllStoreProducts();
+  fetchStorefrontById();
+});
 </script>
 
 <style lang="scss" scoped>
