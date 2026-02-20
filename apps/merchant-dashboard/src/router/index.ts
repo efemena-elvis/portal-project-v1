@@ -10,6 +10,7 @@ import complianceRoutes from "@/modules/compliance";
 import settingsRoutes from "@/modules/settings";
 import overviewRoutes from "@/modules/overview";
 import checkoutRoutes from "@/modules/checkout";
+import storefrontRoutes from "@/modules/storefront";
 
 const routes = [
   ...authRoutes,
@@ -19,6 +20,7 @@ const routes = [
   ...complianceRoutes,
   ...settingsRoutes,
   ...checkoutRoutes,
+  ...storefrontRoutes,
 
   {
     path: "/*",

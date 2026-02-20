@@ -6,7 +6,7 @@
         <span class="font-medium">({{ pagingData?.page_count || 0 }})</span>
       </div>
 
-       <div class="page-keys">
+      <div class="page-keys">
         <div class="page-key-item" v-if="pageKeys.green">
           <div class="bg-green-400 status-key"></div>
           <div class="status-text">{{ pageKeys.green }}</div>
@@ -25,11 +25,7 @@
     </div>
 
     <div class="right" v-if="pagingData.total_pages_count > 1">
-      <div
-        class="nav btn btn-sm"
-        :class="{ disabled: pagingData.current_page === 1 }"
-        @click="goToPrevPage"
-      >
+      <div class="nav btn btn-sm" @click="goToPrevPage">
         <div class="icon icon-caret-left"></div>
         <div class="nav-text">Prev</div>
       </div>
@@ -52,7 +48,9 @@
 
       <div
         class="nav btn btn-sm"
-        :class="{ disabled: pagingData.current_page === pagingData.total_pages_count }"
+        :class="{
+          disabled: pagingData.current_page === pagingData.total_pages_count,
+        }"
         @click="goToNextPage"
       >
         <div class="nav-text">Next</div>
@@ -60,7 +58,6 @@
       </div>
     </div>
   </div>
-
 </template>
 
 <script lang="ts" setup>
@@ -88,7 +85,7 @@ watch(
   () => props.pagingData.current_page,
   (newVal) => {
     inputPage.value = newVal;
-  }
+  },
 );
 
 const goToPage = () => {
@@ -111,8 +108,6 @@ const goToNextPage = () => {
     emit("page-change", props.pagingData.current_page + 1);
   }
 };
-
-
 </script>
 
 <style lang="scss" scoped>

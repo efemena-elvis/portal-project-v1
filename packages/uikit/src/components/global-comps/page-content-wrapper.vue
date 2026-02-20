@@ -26,12 +26,14 @@
       />
     </template>
     <template v-if="showCustomActionBtn">
-      <button
-        class="p-[1.1rem] rounded-lg btn-primary"
-        @click="$emit('customActionBtnClicked')"
-      >
-        {{ customActionBtnText }}
-      </button>
+      <div class="">
+        <button
+          class="p-[1.1rem] rounded-lg btn-primary absolute -top-5 right-6"
+          @click="$emit('customActionBtnClicked')"
+        >
+          {{ customActionBtnText }}
+        </button>
+      </div>
     </template>
   </div>
 </template>
@@ -77,6 +79,7 @@ const updatePageMeta = () => {
 };
 
 watch(route, () => updatePageMeta(), { immediate: true });
+
 </script>
 
 <style lang="scss">
