@@ -28,7 +28,7 @@
     <template v-if="showCustomActionBtn">
       <div class="">
         <button
-          class="p-[1.1rem] rounded-lg btn-primary absolute -top-5 right-6"
+          class="p-[1.1rem] rounded-lg btn-primary absolute -top-4 right-6"
           @click="$emit('customActionBtnClicked')"
         >
           {{ customActionBtnText }}
@@ -93,7 +93,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
       @apply flex justify-start items-center gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl sm:-my-12;
+        @apply font-bold text-grey-900 text-2xl sm:relative top-1.5 sm:mb-6;
       }
     }
 
