@@ -140,7 +140,7 @@ const props = withDefaults(defineProps<ITextInputField>(), {
   copiedText: "Copied successfully",
   placeTextCenter: false,
   hasBottomPadding: true,
-  name:'nfm____'
+  name: "nfm____",
 });
 
 // Set a default value for errorHandler if it's not provided
@@ -216,7 +216,7 @@ const handleFormInput = () => {
     "inputChanged",
     typeof formValue.value === "string"
       ? formValue.value.trim()
-      : formValue.value
+      : formValue.value,
   );
 };
 
@@ -235,14 +235,14 @@ const validateInputFields = (errorHandler: IInputValidator) => {
     case "validateNumberEntry":
       formErrorMsg.value = validateNumberEntry(
         formValue.value as string,
-        message
+        message,
       );
       break;
 
     case "validateOnlyNumbers":
       formErrorMsg.value = validateOnlyNumbers(
         formValue.value as string,
-        message
+        message,
       );
       break;
 
@@ -257,14 +257,14 @@ const validateInputFields = (errorHandler: IInputValidator) => {
     case "validateSingleName":
       formErrorMsg.value = validateSingleName(
         formValue.value as string,
-        message
+        message,
       );
       break;
 
     case "validateAlphanumeric":
       formErrorMsg.value = validateAlphanumeric(
         formValue.value as string,
-        message
+        message,
       );
       break;
 
@@ -272,7 +272,7 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       formErrorMsg.value = validateDateRange(
         formValue.value as string,
         range as number,
-        message
+        message,
       );
       break;
 
@@ -329,7 +329,7 @@ const triggerCopyText = async () => {
     .suffix-item,
     .suffix-date-item,
     textarea {
-      @apply hidden ;
+      @apply hidden;
     }
 
     &.has-prefix {
@@ -342,7 +342,7 @@ const triggerCopyText = async () => {
       }
 
       .form-control {
-        @apply pl-[45px] ;
+        @apply pl-[45px];
       }
     }
 
