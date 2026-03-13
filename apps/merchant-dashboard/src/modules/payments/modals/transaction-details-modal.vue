@@ -102,7 +102,7 @@ const displayFields = [
   { label: "Reference ID", key: "reference" },
   { label: "Date", key: "created_at" },
   { label: "Time", key: "created_at_time" },
-  { label: "Payment Method", key: "method" },
+  { label: "", key: "method" },
   { label: "Customer Name", key: "full_name" },
   { label: "Email", key: "email" },
   { label: "MOMO Number", key: "phone_number" },
@@ -113,7 +113,6 @@ const displayFields = [
   { label: "Type", key: "type" },
   { label: "Attempts", key: "attempts" },
   { label: "Status", key: "status" },
-
 ];
 
 const getTransactionDate = (date: string) => {
@@ -131,7 +130,7 @@ const fetchSingleTransaction = async () => {
   });
 
   transactionData.value =
-  response.code === 200 ? response.data : props.transaction;
+    response.code === 200 ? response.data : props.transaction;
   isLoading.value = false;
 };
 

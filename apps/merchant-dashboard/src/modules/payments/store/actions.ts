@@ -88,7 +88,7 @@ export const createPaymentLink = async (payload: any) => {
 
 export const fetchPaymentLinks = async (payload: any) => {
   return await $paymentLinkAPI.fetch(
-    `${paymentRoutes.getPaymentLinks}?page=${payload.page}&limit=10`,
+    `${paymentRoutes.getPaymentLinks}${payload.filters ? payload.filters : `?page=${payload.page}`}&limit=10`,
   );
 };
 
