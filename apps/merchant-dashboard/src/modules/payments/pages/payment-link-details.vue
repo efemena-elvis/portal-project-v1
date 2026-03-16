@@ -108,7 +108,7 @@ const fetchPaymentLinkByReference = async () => {
 
   const response = await processAPIRequest({
     action: fetchSinglePaymentLink,
-    payload: { reference: route.params.reference },
+    payload: { id: route.params.id },
     showAlert: false,
   });
 

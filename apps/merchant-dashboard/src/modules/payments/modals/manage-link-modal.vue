@@ -171,10 +171,10 @@ const handleUpdatePaymentLink = async () => {
 
       return acc;
     },
-    {} as Partial<IPaymentLinkType & { reference: string }>,
+    {} as Partial<IPaymentLinkType & { id: string }>,
   );
 
-  updatedFields.reference = props.paymentLinkDetails.reference;
+  updatedFields.id = props.paymentLinkDetails.id;
 
   const response = await processAPIRequest({
     action: updatePaymentLink,

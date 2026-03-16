@@ -99,7 +99,7 @@ const overviewRoutes: IRouteType[] = [
 
   // Standalone payment link details page (no sidebar/layout)
   {
-    path: "/payment-links/:reference",
+    path: "/payment-links/:id",
     name: "VesicashPaymentLinkDetails",
     component: () =>
       import(

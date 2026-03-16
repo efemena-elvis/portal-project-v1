@@ -64,7 +64,7 @@ const deletePaymentLinkBtnRef = ref(null);
 const handlePaymentLinkDelete = async () => {
   const response = await processAPIRequest({
     action: deletePaymentLink,
-    payload: { paymentLinkId: props.paymentLinkData.reference },
+    payload: { paymentLinkId: props.paymentLinkData.id},
     btnRef: deletePaymentLinkBtnRef,
     btnText: "Delete",
     alertHandler: {

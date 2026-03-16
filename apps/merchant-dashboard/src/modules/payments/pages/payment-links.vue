@@ -215,7 +215,7 @@ const fetchAllPaymentLinks = async (filters: string) => {
         },
       }),
       link: h(CopyLinkCell, {
-        link: `${getDomain.value}/payment-links/${data.reference}`,
+        link: `${getDomain.value}/payment-links/${data.id}`,
       }),
       status: getStatus(
         data.status === "active" ? "success" : "failed",
