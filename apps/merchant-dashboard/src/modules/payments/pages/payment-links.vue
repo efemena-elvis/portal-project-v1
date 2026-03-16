@@ -11,7 +11,7 @@
     <template #pageOptions v-if="!isLoading">
       <div class="flex gap-4 absolute left-0 top-12 sm:w-full sm:mt-8">
         <div
-          class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80 "
+          class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer sm:w-1/2 bg-grey-50/80"
         >
           <select
             v-model="selectedStatus"
@@ -60,7 +60,7 @@
   </PageContentWrapper>
 
   <!-- Modals -->
-  <teleport to="body" v-if="showCreatePaymentLinkModal">
+  <teleport to="body" v-if="paymentStore.showCreateLinkModal">
     <CreatePaymentLinkModal
       @closeTriggered="toggleCreatePaymentLinkModal"
       @reloadPaymentLinks="fetchAllPaymentLinks"
@@ -135,7 +135,6 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const showCreatePaymentLinkModal = ref(false);
 const showDeletePaymentLinkModal = ref(false);
 const showManageLinksModal = ref(false);
 
@@ -164,11 +163,17 @@ const processFilterSelection = (
 };
 
 const toggleCreatePaymentLinkModal = () => {
-  showCreatePaymentLinkModal.value = !showCreatePaymentLinkModal.value;
+  if (paymentStore.showCreateLinkModal) {
+    paymentStore.closeCreateLinkModal();
+    paymentStore.resetPaymentLinkPreview();
+  } else {
+    paymentStore.openCreateLinkModal();
+  }
 };
 
 const togglePreviewPaymentLinkModal = () => {
   paymentStore.closePaymentLinkPreview();
+  paymentStore.openCreateLinkModal();
 };
 
 const toggleManageLinksModal = () => {
@@ -239,7 +244,7 @@ const handleManagePaymentLink = (data: any) => {
   toggleManageLinksModal();
 };
 
-watch(activePeriod, () => {
+watch([selectedStatus, activePeriod], () => {
   page.value = 1;
 });
 

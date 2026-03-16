@@ -70,13 +70,13 @@
           >
         </div>
 
-        <!-- PAYMENT DESCRIPTION -->
         <TextFieldInput
           labelId="description"
           labelTitle="Description"
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Provide a description for the payment"
+          :inputValue="paymentLinkPayload.description"
           isRequired
           @inputChanged="paymentLinkPayload.description = $event"
           :errorHandler="{
@@ -84,13 +84,14 @@
             message: 'Description is required',
           }"
         />
-        <!-- PAYMENT REDIRECT URL -->
+
         <TextFieldInput
           labelId="redirect_url"
           labelTitle="Redirect URL"
           inputPlaceholder="e.g. https://website.com/success"
           :labelCompact="false"
           :inputType="IInputType.Text"
+          :inputValue="paymentLinkPayload.redirect_url"
           @inputChanged="paymentLinkPayload.redirect_url = $event"
           :errorHandler="{
             validator: 'validateURL',
@@ -153,14 +154,11 @@
           >
 
           <div class="flex items-center gap-3">
-            <!-- Color picker -->
             <input
               type="color"
               v-model="paymentLinkPayload.background_color"
               class="w-10 h-10 border rounded mb-4"
             />
-
-            <!-- Hex text input synced -->
             <TextFieldInput
               labelId="bgColor"
               :labelCompact="false"
@@ -200,7 +198,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { ModalDialog, TextFieldInput, FileUploadInput } from "@packages/uikit";
 import { useEvents, useString, useAppVariant } from "@packages/hooks";
@@ -231,29 +229,28 @@ const paymentStore = usePaymentStore();
 
 const validCurrencies = computed(() => {
   return appVariant.value === "alexpay"
-    ? [
-        {
-          value: "USD",
-          name: "United States Dollars",
-          logo: "https://flagcdn.com/us.svg",
-        },
-        {
+    ? [ {
           value: "GHS",
           name: "Ghanaian Cedi",
           logo: "https://flagcdn.com/gh.svg",
         },
-      ]
-    : [
         {
           value: "USD",
           name: "United States Dollars",
           logo: "https://flagcdn.com/us.svg",
-        },
+        }
+      ]
+    : [
         {
           value: "ZMW",
           name: "Zambian Kwacha",
           logo: "https://flagcdn.com/zm.svg",
         },
+         {
+          value: "GHS",
+          name: "Ghanaian Cedi",
+          logo: "https://flagcdn.com/gh.svg",
+        }
       ];
 });
 
@@ -279,24 +276,24 @@ const isActionReady = computed(() => {
     : true;
 });
 
-// const onHexInputChanged = (val: string) => {
-//   backgroundHex.value = val;
-// };
-
 const uploadedLogo = ref<string>("");
 const allowCustomerEdit = ref<boolean>(false);
 
 const paymentLinkPayload = ref<IPaymentLinkType>({
-  amount: "",
-  allow_amount_edit: false,
-  description: "",
-  currency: "USD",
-  redirect_url: "",
-  logo_url: "",
-  background_color: "#ffffff",
-  is_reusable: false,
+  ...{
+    amount: "",
+    allow_amount_edit: false,
+    description: "",
+    currency: appVariant.value === "alexpay" ? "GHS" : "ZMW",
+    redirect_url: "",
+    logo_url: "",
+    background_color: "#ffffff",
+    is_reusable: false,
+  },
+  ...paymentStore.previewPayload, // override defaults with store values if available
 });
 
+allowCustomerEdit.value = paymentLinkPayload.value.allow_amount_edit ?? false;
 const createPaymentLinkBtnRef = ref(null);
 const previewPaymentLinkBtnRef = ref(null);
 
@@ -317,6 +314,7 @@ const currencySymbol = computed(() => {
 
 const handlePreviewPaymentLink = () => {
   paymentStore.setPaymentLinkPreview(paymentLinkPayload.value);
+  paymentStore.closeCreateLinkModal();
   paymentStore.openPaymentLinkPreview();
 };
 
@@ -354,6 +352,17 @@ const handleCreatePaymentLink = async () => {
     });
   }
 };
+
+watch(
+  () => paymentStore.previewPayload,
+  (newPayload) => {
+    if (newPayload) {
+      paymentLinkPayload.value = { ...paymentLinkPayload.value, ...newPayload };
+      allowCustomerEdit.value =
+        paymentLinkPayload.value.allow_amount_edit ?? false;
+    }
+  },
+);
 </script>
 
 <style lang="scss" scoped>

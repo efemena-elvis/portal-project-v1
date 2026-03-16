@@ -1,9 +1,9 @@
 <template>
   <ModalDialog @closeModal="$emit('closeTriggered')">
-
     <template #modal-cover-body>
       <div :style="{ backgroundColor: paymentLinkPayload.background_color }" class="p-6">
         <img
+        v-if="paymentLinkPayload?.logo_url"
           :src="paymentLinkPayload?.logo_url"
           alt="logo"
           class="w-[60px] h-[60px] aspect-square rounded-md border border-grey-200"

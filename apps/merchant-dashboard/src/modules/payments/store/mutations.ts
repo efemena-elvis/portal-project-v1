@@ -1,4 +1,4 @@
-import { previewPayload, showPreviewModal } from "./state";
+import { previewPayload, showPreviewModal, showCreateLinkModal } from "./state";
 
 export const setPaymentLinkPreview = (payload: any) => {
   previewPayload.value = { ...payload };
@@ -10,6 +10,14 @@ export const openPaymentLinkPreview = () => {
 
 export const closePaymentLinkPreview = () => {
   showPreviewModal.value = false;
+};
+
+export const openCreateLinkModal = () => {
+  showCreateLinkModal.value = true;
+};
+
+export const closeCreateLinkModal = () => {
+  showCreateLinkModal.value = false;
 };
 
 export const resetPaymentLinkPreview = () => {

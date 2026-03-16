@@ -43,6 +43,19 @@
               message: 'Description is required',
             }"
           />
+            <TextFieldInput
+          labelId="redirect_url"
+          labelTitle="Redirect URL"
+          inputPlaceholder="e.g. https://website.com/success"
+          :labelCompact="false"
+          :inputType="IInputType.Text"
+          :inputValue="paymentPayload.redirect_url"
+          @inputChanged="paymentPayload.redirect_url = $event"
+          :errorHandler="{
+            validator: 'validateURL',
+            message: 'Enter a valid URL',
+          }"
+        />
 
           <p>Status</p>
           <SelectFieldInput
@@ -98,6 +111,7 @@ import { IInputType } from "@packages/models";
 type IPaymentLinkType = {
   amount?: string;
   description?: string;
+  redirect_url?: string;
   is_reusable?: string;
   status?: string;
 };
@@ -130,6 +144,7 @@ const paymentLinkStatusOptions = computed(() => [
 const paymentPayload = ref<IPaymentLinkType>({
   amount: props.paymentLinkDetails.amount || "",
   description: props.paymentLinkDetails.description || "",
+  redirect_url: props.paymentLinkDetails.redirect_url || "",
   is_reusable: props.paymentLinkDetails.is_reusable ? "true" : "false",
   status: props.paymentLinkDetails.status || "active",
 });
