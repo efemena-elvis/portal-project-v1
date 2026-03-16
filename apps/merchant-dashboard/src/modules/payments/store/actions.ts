@@ -100,12 +100,6 @@ export const fetchSinglePaymentLink = async (payload: { id: string }) => {
   return response.data;
 };
 
-// export const fetchSinglePaymentLink = async (payload: any) => {
-//   return await $paymentLinkAPI.fetch(
-//     `${paymentRoutes.getPaymentLinks}/details/${payload.id}`,
-//   );
-// };
-
 export const updatePaymentLink = async (payload: any) => {
   return await $paymentLinkAPI.patch(
     `${paymentRoutes.getPaymentLinks}/${payload.id}`,
@@ -117,4 +111,20 @@ export const deletePaymentLink = async (payload: any) => {
   return await $paymentLinkAPI.delete(
     `${paymentRoutes.getPaymentLinks}/${payload.id}`,
   );
+};
+
+export const payViaPaymentLink = async (payload: any) => {
+  const response = await axios.post(
+    `${PROD_BASE_URL}/v1/${paymentRoutes.getPaymentLinks}/${payload.id}/pay`,
+    payload.data,
+    {
+      validateStatus: () => true, // accept all status codes
+    }
+  );
+
+  return {
+    code: response.status, // maps status to the "code" processAPIRequest expects
+    data: response.data,
+    message: response.data?.message || response.statusText,
+  };
 };

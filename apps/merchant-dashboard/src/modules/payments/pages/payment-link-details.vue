@@ -71,7 +71,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useEvents, useString } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { countryCurrencies } from "@packages/constants";
@@ -80,9 +80,9 @@ import { TableLoading } from "@packages/uikit";
 const emits = defineEmits(["closeTriggered", "reloadPaymentLinks"]);
 
 const route = useRoute();
+const router = useRouter();
 const { processAPIRequest} = useEvents();
 const { fetchSinglePaymentLink} = usePaymentStore();
-const {createAndClickAnchor} = useString()
 
 const paymentLinkDetails = ref<any>({});
 const isLoading = ref<boolean>(true);
@@ -100,10 +100,10 @@ const currencySymbol = computed(() => {
 });
 
 const handleMakePayment = async () => {
-  return createAndClickAnchor(paymentLinkDetails.value?.link_url, "_blank")
+  return router.push(`/payment-links/pay/${route.params.id}`)
 };
 
-const fetchPaymentLinkByReference = async () => {
+const fetchPaymentLinkById = async () => {
   isLoading.value = true;
 
   const response = await processAPIRequest({
@@ -124,7 +124,7 @@ const fetchPaymentLinkByReference = async () => {
   isLoading.value = false;
 };
 
-onMounted(() => fetchPaymentLinkByReference());
+onMounted(() => fetchPaymentLinkById());
 </script>
 
 <style scoped lang="scss"></style>

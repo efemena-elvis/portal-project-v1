@@ -8,7 +8,7 @@
     </template>
 
     <template #modal-cover-body>
-     <div class="mt-2 modal-cover-body max-h-[60vh] overflow-y-auto pr-1">
+     <div class="mt-2 modal-cover-body">
         <!-- AMOUNT-->
         <div class="">
           <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -70,16 +70,6 @@
           >
         </div>
 
-        <SelectFieldInput
-          labelId="paymentMethod"
-          labelTitle="Payment Method"
-          inputPlaceholder="Select payment method"
-          :inputValue="paymentLinkPayload.payment_method"
-          :selectData="paymentMethods"
-          isRequired
-          @onSelectionChange="paymentLinkPayload.payment_method = $event"
-        />
-
         <TextFieldInput
           labelId="description"
           labelTitle="Description"
@@ -109,28 +99,6 @@
           }"
         />
 
-        <!-- CARD REDIRECT URLS -->
-        <TextFieldInput
-          v-if="paymentLinkPayload.payment_method === 'card'"
-          labelId="redirect_success_url"
-          labelTitle="Redirect Success URL"
-          inputPlaceholder="https://yourwebsite.com/success"
-          :labelCompact="false"
-          :inputType="IInputType.Text"
-          :inputValue="paymentLinkPayload.redirect_success_url"
-          @inputChanged="paymentLinkPayload.redirect_success_url = $event"
-        />
-
-        <TextFieldInput
-          v-if="paymentLinkPayload.payment_method === 'card'"
-          labelId="redirect_failed_url"
-          labelTitle="Redirect Failed URL"
-          inputPlaceholder="https://yourwebsite.com/failed"
-          :labelCompact="false"
-          :inputType="IInputType.Text"
-          :inputValue="paymentLinkPayload.redirect_failed_url"
-          @inputChanged="paymentLinkPayload.redirect_failed_url = $event"
-        />
 
         <!-- IS REUSABLE -->
         <div class="flex items-center gap-3 my-2 w-full">
@@ -233,7 +201,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
 import { IInputType } from "@packages/models";
-import { ModalDialog, TextFieldInput, FileUploadInput, SelectFieldInput } from "@packages/uikit";
+import { ModalDialog, TextFieldInput, FileUploadInput} from "@packages/uikit";
 import { useEvents, useString, useAppVariant } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { useGlobalStore } from "@/modules/global/store";
@@ -246,11 +214,8 @@ type IPaymentLinkType = {
   currency: string;
   payment_method: string;
   redirect_url?: string;
-  redirect_success_url?: string;
-  redirect_failed_url?: string;
   logo_url?: string;
   background_color?: string;
-  operator?: string;
   is_reusable: boolean;
 };
 
@@ -292,16 +257,6 @@ const validCurrencies = computed(() => {
       ];
 });
 
-const paymentMethods = ref([
-  {
-    name: "Mobile Money",
-    value: "mobilemoney"
-  },
-    {
-    name: "Card",
-    value: "card"
-  },
-])
 
 // Display the hex without #
 const backgroundHex = computed({
@@ -323,14 +278,6 @@ const isActionReady = computed(() => {
     paymentLinkPayload.value.description &&
     paymentLinkPayload.value.redirect_url;
 
-  if (paymentLinkPayload.value.payment_method === "card") {
-    return !(
-      baseValid &&
-      paymentLinkPayload.value.redirect_success_url &&
-      paymentLinkPayload.value.redirect_failed_url
-    );
-  }
-
   return !baseValid;
 });
 
@@ -345,8 +292,6 @@ const paymentLinkPayload = ref<IPaymentLinkType>({
     currency: appVariant.value === "alexpay" ? "GHS" : "ZMW",
     payment_method: "mobilemoney",
     redirect_url: "",
-    redirect_success_url: "",
-    redirect_failed_url: "",
     logo_url: "",
     background_color: "#ffffff",
     is_reusable: false,
@@ -380,15 +325,9 @@ const handlePreviewPaymentLink = () => {
 };
 
 const handleCreatePaymentLink = async () => {
-    const payload = { ...paymentLinkPayload.value };
-
-  if (payload.payment_method === "card") {
-    payload.operator = appVariant.value === "alexpay" ? "mpgs" : "tj";
-  }
-
   const response = await processAPIRequest({
     action: createPaymentLink,
-    payload: payload,
+    payload: paymentLinkPayload.value,
     btnRef: createPaymentLinkBtnRef,
     btnText: "Create Payment Link",
     alertHandler: {

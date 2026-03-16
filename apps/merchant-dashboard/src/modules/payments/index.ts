@@ -114,6 +114,22 @@ const overviewRoutes: IRouteType[] = [
       },
     },
   },
+  {
+    path: "/payment-links/pay/:id",
+    name: "VesicashMomoPayment",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-details.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Details",
+      pageMeta: {
+        title: "Payment Details",
+        description: "Merchant Payment Details",
+      },
+    },
+  },
 ];
 
 export default overviewRoutes;
