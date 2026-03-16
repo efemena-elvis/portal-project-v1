@@ -92,11 +92,19 @@ export const fetchPaymentLinks = async (payload: any) => {
   );
 };
 
-export const fetchSinglePaymentLink = async (payload: any) => {
-  return await $paymentLinkAPI.fetch(
-    `${paymentRoutes.getPaymentLinks}/details/${payload.id}`
+export const fetchSinglePaymentLink = async (payload: { id: string }) => {
+  const response = await axios.get(
+    `${PROD_BASE_URL}/v1/${paymentRoutes.getPaymentLinks}/details/${payload.id}`
   );
+
+  return response.data;
 };
+
+// export const fetchSinglePaymentLink = async (payload: any) => {
+//   return await $paymentLinkAPI.fetch(
+//     `${paymentRoutes.getPaymentLinks}/details/${payload.id}`,
+//   );
+// };
 
 export const updatePaymentLink = async (payload: any) => {
   return await $paymentLinkAPI.patch(
@@ -107,6 +115,6 @@ export const updatePaymentLink = async (payload: any) => {
 
 export const deletePaymentLink = async (payload: any) => {
   return await $paymentLinkAPI.delete(
-    `${paymentRoutes.getPaymentLinks}/${payload.paymentLinkId}`,
+    `${paymentRoutes.getPaymentLinks}/${payload.id}`,
   );
 };

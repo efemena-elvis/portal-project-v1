@@ -204,7 +204,7 @@ const handleUpdatePaymentLink = async () => {
 
 <style lang="scss" scoped>
 .modal-cover-body {
-  @apply flex flex-col pt-6;
+  @apply flex flex-col pt-6 ;
   .title-text {
     @apply text-grey-800 font-bold mb-2.5;
   }

@@ -8,9 +8,9 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="mt-3 modal-cover-body">
+     <div class="mt-2 modal-cover-body max-h-[60vh] overflow-y-auto pr-1">
         <!-- AMOUNT-->
-        <div class="mt-1">
+        <div class="">
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >Amount</label
           >
@@ -70,6 +70,16 @@
           >
         </div>
 
+        <SelectFieldInput
+          labelId="paymentMethod"
+          labelTitle="Payment Method"
+          inputPlaceholder="Select payment method"
+          :inputValue="paymentLinkPayload.payment_method"
+          :selectData="paymentMethods"
+          isRequired
+          @onSelectionChange="paymentLinkPayload.payment_method = $event"
+        />
+
         <TextFieldInput
           labelId="description"
           labelTitle="Description"
@@ -88,7 +98,7 @@
         <TextFieldInput
           labelId="redirect_url"
           labelTitle="Redirect URL"
-          inputPlaceholder="e.g. https://website.com/success"
+          inputPlaceholder="e.g. https://yourwebsite.com/thank-you"
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="paymentLinkPayload.redirect_url"
@@ -97,6 +107,29 @@
             validator: 'validateURL',
             message: 'Enter a valid URL',
           }"
+        />
+
+        <!-- CARD REDIRECT URLS -->
+        <TextFieldInput
+          v-if="paymentLinkPayload.payment_method === 'card'"
+          labelId="redirect_success_url"
+          labelTitle="Redirect Success URL"
+          inputPlaceholder="https://yourwebsite.com/success"
+          :labelCompact="false"
+          :inputType="IInputType.Text"
+          :inputValue="paymentLinkPayload.redirect_success_url"
+          @inputChanged="paymentLinkPayload.redirect_success_url = $event"
+        />
+
+        <TextFieldInput
+          v-if="paymentLinkPayload.payment_method === 'card'"
+          labelId="redirect_failed_url"
+          labelTitle="Redirect Failed URL"
+          inputPlaceholder="https://yourwebsite.com/failed"
+          :labelCompact="false"
+          :inputType="IInputType.Text"
+          :inputValue="paymentLinkPayload.redirect_failed_url"
+          @inputChanged="paymentLinkPayload.redirect_failed_url = $event"
         />
 
         <!-- IS REUSABLE -->
@@ -126,7 +159,7 @@
         </div>
 
         <!-- CUSTOMIZATION -->
-        <div class="font-bold my-3">Customization</div>
+        <div class="font-bold mb-3 mt-5">Customization</div>
 
         <!-- LOGO -->
         <div class="relative">
@@ -175,7 +208,7 @@
 
     <!-- MODAL COVER FOOTER -->
     <template #modal-cover-footer>
-      <div class="mt-4 modal-cover-footer flex gap-3">
+      <div class="mt-2 modal-cover-footer flex gap-3">
         <button
           class="w-1/2 btn btn-primary cursor-pointer"
           ref="createPaymentLinkBtnRef"
@@ -200,7 +233,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
 import { IInputType } from "@packages/models";
-import { ModalDialog, TextFieldInput, FileUploadInput } from "@packages/uikit";
+import { ModalDialog, TextFieldInput, FileUploadInput, SelectFieldInput } from "@packages/uikit";
 import { useEvents, useString, useAppVariant } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { useGlobalStore } from "@/modules/global/store";
@@ -211,9 +244,13 @@ type IPaymentLinkType = {
   allow_amount_edit?: boolean;
   description: string;
   currency: string;
-  redirect_url: string;
+  payment_method: string;
+  redirect_url?: string;
+  redirect_success_url?: string;
+  redirect_failed_url?: string;
   logo_url?: string;
   background_color?: string;
+  operator?: string;
   is_reusable: boolean;
 };
 
@@ -229,7 +266,8 @@ const paymentStore = usePaymentStore();
 
 const validCurrencies = computed(() => {
   return appVariant.value === "alexpay"
-    ? [ {
+    ? [
+        {
           value: "GHS",
           name: "Ghanaian Cedi",
           logo: "https://flagcdn.com/gh.svg",
@@ -238,7 +276,7 @@ const validCurrencies = computed(() => {
           value: "USD",
           name: "United States Dollars",
           logo: "https://flagcdn.com/us.svg",
-        }
+        },
       ]
     : [
         {
@@ -246,13 +284,24 @@ const validCurrencies = computed(() => {
           name: "Zambian Kwacha",
           logo: "https://flagcdn.com/zm.svg",
         },
-         {
+        {
           value: "GHS",
           name: "Ghanaian Cedi",
           logo: "https://flagcdn.com/gh.svg",
-        }
+        },
       ];
 });
+
+const paymentMethods = ref([
+  {
+    name: "Mobile Money",
+    value: "mobilemoney"
+  },
+    {
+    name: "Card",
+    value: "card"
+  },
+])
 
 // Display the hex without #
 const backgroundHex = computed({
@@ -269,11 +318,20 @@ const backgroundHex = computed({
 });
 
 const isActionReady = computed(() => {
-  return paymentLinkPayload.value.amount &&
+  const baseValid =
+    paymentLinkPayload.value.amount &&
     paymentLinkPayload.value.description &&
-    paymentLinkPayload.value.redirect_url
-    ? false
-    : true;
+    paymentLinkPayload.value.redirect_url;
+
+  if (paymentLinkPayload.value.payment_method === "card") {
+    return !(
+      baseValid &&
+      paymentLinkPayload.value.redirect_success_url &&
+      paymentLinkPayload.value.redirect_failed_url
+    );
+  }
+
+  return !baseValid;
 });
 
 const uploadedLogo = ref<string>("");
@@ -285,7 +343,10 @@ const paymentLinkPayload = ref<IPaymentLinkType>({
     allow_amount_edit: false,
     description: "",
     currency: appVariant.value === "alexpay" ? "GHS" : "ZMW",
+    payment_method: "mobilemoney",
     redirect_url: "",
+    redirect_success_url: "",
+    redirect_failed_url: "",
     logo_url: "",
     background_color: "#ffffff",
     is_reusable: false,
@@ -319,9 +380,15 @@ const handlePreviewPaymentLink = () => {
 };
 
 const handleCreatePaymentLink = async () => {
+    const payload = { ...paymentLinkPayload.value };
+
+  if (payload.payment_method === "card") {
+    payload.operator = appVariant.value === "alexpay" ? "mpgs" : "tj";
+  }
+
   const response = await processAPIRequest({
     action: createPaymentLink,
-    payload: paymentLinkPayload.value,
+    payload: payload,
     btnRef: createPaymentLinkBtnRef,
     btnText: "Create Payment Link",
     alertHandler: {
@@ -367,7 +434,7 @@ watch(
 
 <style lang="scss" scoped>
 .display-block {
-  @apply border border-grey-300 rounded-md px-4 py-3 -mt-1 mb-8;
+  @apply border border-grey-300 rounded-md px-4 py-3 -mt-1 mb-2;
 
   .top-row {
     @apply flex justify-start items-center gap-x-2 mb-2;

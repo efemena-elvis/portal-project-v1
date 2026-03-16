@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { ModalDialog } from "@packages/uikit";
 import { useEvents, useAppVariant } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
@@ -64,7 +64,7 @@ const deletePaymentLinkBtnRef = ref(null);
 const handlePaymentLinkDelete = async () => {
   const response = await processAPIRequest({
     action: deletePaymentLink,
-    payload: { paymentLinkId: props.paymentLinkData.id},
+    payload: { id: props.paymentLinkData.id},
     btnRef: deletePaymentLinkBtnRef,
     btnText: "Delete",
     alertHandler: {
