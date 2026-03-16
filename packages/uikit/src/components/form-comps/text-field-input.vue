@@ -116,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed , watch} from "vue";
 import { useValidators, useEvents } from "@packages/hooks";
 import { SearchIcon } from "@packages/uikit";
 import { ITextInputField, IInputType, IInputValidator } from "@packages/models";
@@ -306,6 +306,14 @@ const triggerCopyText = async () => {
     if (props.inputType === IInputType.Password) toggleHidden();
   }, 2000);
 };
+
+
+watch(
+  () => props.inputValue,
+  (val) => {
+    formValue.value = val;
+  }
+);
 </script>
 
 <style lang="scss" scoped>

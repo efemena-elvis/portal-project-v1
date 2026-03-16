@@ -247,7 +247,7 @@ watch(filters, (newFilters) => {
   fetchAllPaymentLinks(newFilters);
 });
 
-onMounted(() => fetchAllPaymentLinks());
+onMounted(fetchAllPaymentLinks);
 </script>
 
 <style scoped></style>

@@ -50,7 +50,7 @@
           </div>
         </div>
         <!-- ALLOW CUSTOMER EDIT AMOUNT -->
-        <div class="flex items-center gap-3 my-2 w-full my-3">
+        <div class="flex items-center gap-3 w-full my-3">
           <button
             type="button"
             @click="
@@ -119,7 +119,9 @@
               class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300"
             ></span>
           </button>
-          <span class="text-sm font-medium text-gray-700">Payment link is reusable</span>
+          <span class="text-sm font-medium text-gray-700"
+            >Payment link is reusable</span
+          >
         </div>
 
         <!-- CUSTOMIZATION -->
@@ -164,8 +166,9 @@
               :labelCompact="false"
               inputPlaceholder="FFFFFF"
               :inputValue="backgroundHex"
+              :maxLength="6"
               :inputType="IInputType.Text"
-              @inputChanged="onHexInputChanged"
+              @inputChanged="backgroundHex = $event"
             />
           </div>
         </div>
@@ -276,9 +279,9 @@ const isActionReady = computed(() => {
     : true;
 });
 
-const onHexInputChanged = (val: string) => {
-  backgroundHex.value = val;
-};
+// const onHexInputChanged = (val: string) => {
+//   backgroundHex.value = val;
+// };
 
 const uploadedLogo = ref<string>("");
 const allowCustomerEdit = ref<boolean>(false);
