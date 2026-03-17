@@ -37,7 +37,7 @@ export const useMobileMoneyPayment = () => {
 
   const makePayment = async (
     reference: string,
-    request: MobileMoneyPaymentRequest
+    request: MobileMoneyPaymentRequest,
   ) => {
     updatingInitiatingPayment(true);
     const response = await processAPIRequest({
@@ -89,23 +89,28 @@ export const useMobileMoneyPayment = () => {
   const pollPaymentStatus = (reference: string) => {
     const poll = async () => {
       const response = await fetchPaymentDetails(reference, false);
-      if (response && response.data?.status === "failed")
+
+      if (response && response.data?.status.toLowerCase() === "failed") {
         stopPaymentStatusPolling();
+      }
+
       if (
         response &&
-        (response.data?.status === "success" ||
-          response.data?.status === "successful")
+        (response.data?.status.toLowerCase() === "success" ||
+          response.data?.status.toLowerCase() === "successful")
       ) {
         stopPaymentStatusPolling();
+
         setTimeout(() => {
-          location.href = response.data?.redirect_url ?? "/";
+          const redirectUrl = response.data?.redirect_url || "/";
+          window.location.replace(redirectUrl);
         }, 2500);
       }
     };
     poll();
     pollingIntervalId = setInterval(
       poll,
-      POLLING_INTERVAL
+      POLLING_INTERVAL,
     ) as unknown as number;
 
     pollingTimeoutId = setTimeout(() => {

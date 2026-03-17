@@ -70,7 +70,7 @@
       labelTitle="Redirect Success URL"
       :labelCompact="false"
       :inputType="IInputType.Text"
-      inputPlaceholder="https://merchant-website.com/payment-success"
+      inputPlaceholder="https://yourwebsite.com/payment-success"
       :inputValue="payload.redirect_success_url"
       @inputChanged="payload.redirect_success_url = $event"
       isRequired
@@ -82,7 +82,7 @@
       labelTitle="Redirect Failed URL"
       :labelCompact="false"
       :inputType="IInputType.Text"
-      inputPlaceholder="https://merchant-website.com/payment-failed"
+      inputPlaceholder="https://yourwebsite.com/payment-failed"
       :inputValue="payload.redirect_failed_url"
       @inputChanged="payload.redirect_failed_url = $event"
       isRequired
