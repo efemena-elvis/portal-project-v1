@@ -1,11 +1,16 @@
 <template>
-  <PageContentWrapper
-    pageDescription="Merchant Storefront"
-    :showCustomActionBtn="true"
-    customActionBtnText="Create a storefront"
-    @customActionBtnClicked="toggleCreateStorefrontModal"
-  >
+  <PageContentWrapper pageTitle="Merchant Storefront">
     <template v-slot:pageContent>
+      <div
+        class="flex justify-end relative right-0 -top-16 h-[25px] sm:-top-[3.2rem]"
+      >
+        <button
+          @click="toggleCreateStorefrontModal"
+          class="w-48 p-4 text-sm font-semibold btn btn-primary"
+        >
+          Create a storefront
+        </button>
+      </div>
       <TableContainer
         :tableHeader="tableHeader"
         :tableBody="tableBody"
@@ -55,7 +60,6 @@ import { useString, useAppVariant, useEvents } from "@packages/hooks";
 import { useRouter } from "vue-router";
 import { useStorefrontStore } from "@/modules/storefront/store";
 
-
 const { getBoldTableText, getStatus, createPreviewLink, formatNumber } =
   useString();
 
@@ -103,7 +107,10 @@ const fetchAllStorefront = async () => {
 
   if (response.code === 200) {
     tableBody.value = response.data.map((data: any, index: number) => {
-      const domain = appVariant.value === "alexpay" ? `store.alexpay.com/${data.slug}` : `store.${appVariant.value}.com/${data.slug}`;
+      const domain =
+        appVariant.value === "alexpay"
+          ? `store.alexpay.com/${data.slug}`
+          : `store.${appVariant.value}.com/${data.slug}`;
 
       return {
         counter: index + 1,
