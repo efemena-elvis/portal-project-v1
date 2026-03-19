@@ -4,7 +4,7 @@
     <TableLoading v-if="isLoading" />
 
     <template v-else>
-      <div class="table-container-wrapper">
+      <div class="table-container-wrapper" :class="hasCustomBtn && 'mt-20 sm:mt-8'">
         <template v-if="true">
           <div class="table-container">
             <table class="table">
@@ -75,6 +75,10 @@ const props = defineProps({
       customImg: "",
     }),
   },
+hasCustomBtn: {
+  type: Boolean,
+  default: false
+}
 });
 
 const { tableHeader, tableBody, isLoading } = toRefs(props);

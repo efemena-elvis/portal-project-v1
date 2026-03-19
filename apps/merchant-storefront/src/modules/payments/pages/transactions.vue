@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between w-full gap-4">
           <div class="relative w-48 text-sm font-semibold text-teal-800 border rounded-md cursor-pointer filter-select bg-grey-50/80">
             <select v-model="selectedMethod" class="w-full p-4 bg-transparent appearance-none focus:outline-none">
-              <option value="">Payment Method</option>
+              <option value="">Method</option>
               <option v-for="(method, index) in paymentMethods" :value="method" :key="index">{{ method }}</option>
             </select>
             <div class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"></div>

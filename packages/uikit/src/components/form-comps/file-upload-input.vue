@@ -193,7 +193,7 @@ const processDocumentUpload = async ($event: Event) => {
     isDocUploaded.value = false;
   }
 
-  console.log(docPayload);
+
 };
 
 // Remove uploaded file handler

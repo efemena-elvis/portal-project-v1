@@ -18,7 +18,7 @@
               v-model="selectedMethod"
               class="w-full p-4 bg-transparent appearance-none focus:outline-none"
             >
-              <option value="">Payment Method</option>
+              <option value="">Method</option>
               <option
                 v-for="(method, index) in paymentMethods"
                 :value="method.toLowerCase()"

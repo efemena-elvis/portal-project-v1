@@ -150,7 +150,6 @@ import {
 } from "@packages/uikit";
 import { useGlobalStore } from "@/modules/global/store";
 import { useStoreStore } from "../store";
-import { updateStoreProduct } from '../store/actions';
 
 type IStorefrontType = {
   name: string;

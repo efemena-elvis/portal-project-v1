@@ -70,7 +70,7 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 
-const { formatNumber, getStatus, notAvailable } = useString();
+const {  getStatus, notAvailable } = useString();
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 

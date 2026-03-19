@@ -7,9 +7,6 @@ import constants from "@/shared/utilities/constants";
 export function useAuthActions() {
   const { APP_API_BASE_URL, APP_API_VERSION, APP_AUTH_TOKEN } = constants;
 
-  // console.log("Using Auth Actions with API Base URL:", APP_API_BASE_URL);
-  // console.log("Using Auth Actions with API Version:", APP_API_VERSION);
-
   const $api = new useServiceAPI({
     API_BASE_URL: APP_API_BASE_URL,
     API_VERSION: APP_API_VERSION,

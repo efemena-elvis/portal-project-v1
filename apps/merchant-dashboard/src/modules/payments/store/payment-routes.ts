@@ -4,4 +4,5 @@ export const paymentRoutes = {
   getCustomers: "customers",
   getBanks: "payment/banks",
   getAllRefunds: "refunds",
+  getPaymentLinks: "payment/links",
 };
