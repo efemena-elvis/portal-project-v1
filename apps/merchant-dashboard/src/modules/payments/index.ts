@@ -116,7 +116,7 @@ const overviewRoutes: IRouteType[] = [
   },
   {
     path: "/payment-links/pay/:id",
-    name: "VesicashMomoPayment",
+    name: "VesicashPaymentDetails",
     component: () =>
       import(
         /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-details.vue"
@@ -129,6 +129,41 @@ const overviewRoutes: IRouteType[] = [
         description: "Merchant Payment Details",
       },
     },
+  },
+
+    {
+    path: "/payment-links/success",
+    name: "VesicashPaymentSuccess",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-success.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Success",
+      pageMeta: {
+        title: "Payment Success",
+        description: "Merchant Payment Success",
+      },
+    },
+    
+  },
+      {
+    path: "/payment-links/failed",
+    name: "VesicashPaymentFailed",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-failed.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Failed",
+      pageMeta: {
+        title: "Payment Failed",
+        description: "Merchant Payment Failed",
+      },
+    },
+    
   },
 ];
 

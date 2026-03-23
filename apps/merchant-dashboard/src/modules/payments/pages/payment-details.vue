@@ -70,10 +70,10 @@
       labelTitle="Redirect Success URL"
       :labelCompact="false"
       :inputType="IInputType.Text"
-      inputPlaceholder="https://yourwebsite.com/payment-success"
+      :disabled="true"
       :inputValue="payload.redirect_success_url"
-      @inputChanged="payload.redirect_success_url = $event"
       isRequired
+      class="pointer-events-none"
     />
 
     <TextFieldInput
@@ -81,11 +81,11 @@
       labelId="redirect_failed"
       labelTitle="Redirect Failed URL"
       :labelCompact="false"
+      :disabled="true"
       :inputType="IInputType.Text"
-      inputPlaceholder="https://yourwebsite.com/payment-failed"
       :inputValue="payload.redirect_failed_url"
-      @inputChanged="payload.redirect_failed_url = $event"
       isRequired
+      class="pointer-events-none"
     />
 
     <TextFieldInput
@@ -125,7 +125,7 @@ import { usePaymentStore } from "@/modules/payments/store";
 const route = useRoute();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { fetchSinglePaymentLink, payViaPaymentLink } = usePaymentStore();
-const { createAndClickAnchor} = useString();
+const { createAndClickAnchor } = useString();
 
 const appVariant = ref<string>(useAppVariant());
 const payBtnRef = ref(null);
@@ -136,6 +136,12 @@ const paymentMethods = [
   { name: "Mobile Money", value: "mobilemoney" },
 ];
 
+const getDomain = computed(() =>
+  appVariant.value === "alexpay"
+    ? "https://merchants.alexpay.com"
+    : "https://merchant.redstonepgs.com",
+);
+
 const payload = ref({
   email: "",
   customer_first_name: "",
@@ -143,8 +149,8 @@ const payload = ref({
   phone_number: "",
   method: "mobilemoney",
   operator: "",
-  redirect_success_url: "",
-  redirect_failed_url: "",
+  redirect_success_url: `${getDomain.value}/payment-links/success`,
+  redirect_failed_url: `${getDomain.value}/payment-links/failed`,
   amount: "",
 });
 
@@ -186,6 +192,7 @@ const fetchPaymentLinkById = async () => {
 
   if (response && response.code === 200 && response.data) {
     payload.value.amount = response.data.amount || "";
+      localStorage.setItem("paymentId", response.data.id)
   }
 
   isLoading.value = false;
@@ -204,7 +211,7 @@ const handlePayment = async () => {
     },
     btnRef: payBtnRef,
     btnText: "Pay Now",
-    
+
     alertHandler: {
       200: {
         message: "Payment initiated successfully",
@@ -219,13 +226,10 @@ const handlePayment = async () => {
     },
   });
   if (response && response.code === 200 && response.data) {
-
-     setTimeout(() => {
+    setTimeout(() => {
       createAndClickAnchor(response.data.data.payment_link, "_blank");
     }, 1200);
-  }
-
-    else{
+  } else {
     pushToastAlert({
       message: "Payment initialization failed",
       description: "Something went wrong, try again",
@@ -234,4 +238,5 @@ const handlePayment = async () => {
   }
   isLoading.value = false;
 };
+
 </script>

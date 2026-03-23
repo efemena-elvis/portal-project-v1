@@ -8,7 +8,7 @@
     </template>
 
     <template #modal-cover-body>
-     <div class="mt-2 modal-cover-body">
+      <div class="mt-2 modal-cover-body">
         <!-- AMOUNT-->
         <div class="">
           <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -88,17 +88,12 @@
         <TextFieldInput
           labelId="redirect_url"
           labelTitle="Redirect URL"
-          inputPlaceholder="e.g. https://yourwebsite.com/thank-you"
+          :disabled="true"
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="paymentLinkPayload.redirect_url"
-          @inputChanged="paymentLinkPayload.redirect_url = $event"
-          :errorHandler="{
-            validator: 'validateURL',
-            message: 'Enter a valid URL',
-          }"
+          class ="pointer-events-none"
         />
-
 
         <!-- IS REUSABLE -->
         <div class="flex items-center gap-3 my-2 w-full">
@@ -139,12 +134,11 @@
               :uploadAction="uploadFile"
               :showSkip="false"
               fileUploadText="Click here to upload your logo"
+              :uploadedDocumentContent="getUploadedLogoContent"
               @onDocumentUploaded="
-                (logo) => {
-                  uploadedLogo = logo;
-                  paymentLinkPayload.logo_url = logo;
-                }
+                (logo) => (paymentLinkPayload.logo_url = logo)
               "
+              :hasDocumentUploaded="!!uploadedLogo"
             />
           </div>
         </div>
@@ -201,7 +195,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
 import { IInputType } from "@packages/models";
-import { ModalDialog, TextFieldInput, FileUploadInput} from "@packages/uikit";
+import { ModalDialog, TextFieldInput, FileUploadInput } from "@packages/uikit";
 import { useEvents, useString, useAppVariant } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { useGlobalStore } from "@/modules/global/store";
@@ -213,7 +207,7 @@ type IPaymentLinkType = {
   description: string;
   currency: string;
   payment_method: string;
-  redirect_url?: string;
+  redirect_url: string;
   logo_url?: string;
   background_color?: string;
   is_reusable: boolean;
@@ -257,7 +251,6 @@ const validCurrencies = computed(() => {
       ];
 });
 
-
 // Display the hex without #
 const backgroundHex = computed({
   get: () => {
@@ -281,8 +274,22 @@ const isActionReady = computed(() => {
   return !baseValid;
 });
 
-const uploadedLogo = ref<string>("");
+const uploadedLogo = ref<string>(paymentStore.previewPayload?.logo_url || "");
+
+const getUploadedLogoContent = computed(() => {
+  return {
+    name: "Logo",
+    link: uploadedLogo.value,
+  };
+});
+
 const allowCustomerEdit = ref<boolean>(false);
+
+const getDomain = computed(() =>
+  appVariant.value === "alexpay"
+    ? "https://merchants.alexpay.com"
+    : "https://merchant.redstonepgs.com",
+);
 
 const paymentLinkPayload = ref<IPaymentLinkType>({
   ...{
@@ -291,8 +298,8 @@ const paymentLinkPayload = ref<IPaymentLinkType>({
     description: "",
     currency: appVariant.value === "alexpay" ? "GHS" : "ZMW",
     payment_method: "mobilemoney",
-    redirect_url: "",
-    logo_url: "",
+    redirect_url: `${getDomain.value}/payment-links/success`,
+    logo_url: uploadedLogo.value,
     background_color: "#ffffff",
     is_reusable: false,
   },
