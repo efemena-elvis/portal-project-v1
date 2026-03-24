@@ -12,6 +12,11 @@
   v-if="paymentLinkDetails.status !== 'active'"
   class="text-center bg-white p-8 rounded-xl shadow-md w-[400px]"
 >
+<div class="flex justify-center mb-4">
+        <div class="bg-red-100 text-red-600 rounded-full p-4 text-xl w-12 h-12 flex justify-center items-center">
+          ✕
+        </div>
+      </div>
   <p class="text-lg font-semibold text-gray-700">
     {{ paymentLinkDetails?.message }}
   </p>
@@ -72,7 +77,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useEvents, useString } from "@packages/hooks";
+import { useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { countryCurrencies } from "@packages/constants";
 import { TableLoading } from "@packages/uikit";
@@ -112,11 +117,11 @@ const fetchPaymentLinkById = async () => {
     showAlert: false,
   });
 
-  if (response && response.code === 200 && response.data) {
+  if (response && response.code === 200 && response.data.status === "active") {
     paymentLinkDetails.value = response.data;
   } else {
     paymentLinkDetails.value = {
-      status: "unavailable",
+      status: "inactive",
       message: "This payment link is inactive or no longer available.",
     };
   }

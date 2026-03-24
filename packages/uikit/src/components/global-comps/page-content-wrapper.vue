@@ -93,7 +93,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
       @apply flex justify-start items-center gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl sm:text-xl sm:mt-2;
+        @apply font-bold text-grey-900 text-2xl sm:text-xl sm:mt-4 -mt-5 ;
       }
     }
 
@@ -106,7 +106,7 @@ watch(route, () => updatePageMeta(), { immediate: true });
     @apply w-full;
   }
   .has-custom-btn {
-  @apply sm:mt-12;
+  @apply sm:mt-12 mt-3;
 }
 
 }
