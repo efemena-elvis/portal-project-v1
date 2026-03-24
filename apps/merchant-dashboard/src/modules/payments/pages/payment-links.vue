@@ -131,6 +131,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "S/N", slug: "counter" },
   { title: "Date Created", slug: "date_created" },
   { title: "Link", slug: "link" },
+  { title: "Reusable", slug: "reusable" },
   { title: "Status", slug: "status" },
   { title: "", slug: "action" },
 ]);
@@ -217,6 +218,7 @@ const fetchAllPaymentLinks = async (filters: string) => {
       link: h(CopyLinkCell, {
         link: `${getDomain.value}/payment-links/${data.id}`,
       }),
+       reusable: data.is_reusable ? "Yes" : "No",
       status: getStatus(
         data.status === "active" ? "success" : "failed",
         data.status === "active" ? "Active" : "Inactive",

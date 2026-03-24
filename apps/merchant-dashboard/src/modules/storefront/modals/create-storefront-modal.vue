@@ -50,7 +50,7 @@
         <div class="storefront-display-block">
           <div class="top-row">
             <div class="icon icon-shop"></div>
-            <div class="ptimary-text">Storefront Domain URL</div>
+            <div class="primary-text">Storefront Domain URL</div>
           </div>
 
           <div class="bottom-row">
@@ -185,7 +185,7 @@ const handleCreateStorefront = async () => {
       @apply text-lg text-grey-600;
     }
 
-    .ptimary-text {
+    .primary-text {
       @apply text-[14px] text-grey-700 font-semibold;
     }
   }

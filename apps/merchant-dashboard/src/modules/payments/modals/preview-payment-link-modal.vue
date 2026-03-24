@@ -55,7 +55,6 @@ type IPaymentLinkType = {
   allow_amount_edit?: boolean;
   description: string;
   currency: string;
-  redirect_url: string;
   logo_url?: string;
   background_color?: string;
   is_Reusable: boolean;
@@ -119,13 +118,7 @@ const handleMakePayment = async () => {
   .bottom-row {
     @apply flex justify-start items-start text-sm;
 
-    .base-redirect-url {
-      @apply text-grey-500;
-    }
-
-    .secondary-redirect-url {
-      @apply text-grey-600 font-semibold break-all text-wrap whitespace-pre;
-    }
+   
   }
 
   .modal-cover-footer {
