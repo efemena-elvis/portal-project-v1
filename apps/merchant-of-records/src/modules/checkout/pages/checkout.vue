@@ -207,7 +207,7 @@ watch(
       method,
     } = transaction_details;
     const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
-    selectedPaymentMethod.value = method === "card" ? "card" : "mobileMoney";
+    selectedPaymentMethod.value = method === "card" ? "card" : "mobileMoney"; // method
 
     paymentCurrency.value = currency ?? null;
     paymentCountry.value =
