@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import {  ref } from "vue";
 import { useRouter } from "vue-router";
 import { useString, useFile, useEvents } from "@packages/hooks";
 
@@ -193,7 +193,7 @@ const processDocumentUpload = async ($event: Event) => {
     isDocUploaded.value = false;
   }
 
-  console.log(docPayload);
+
 };
 
 // Remove uploaded file handler

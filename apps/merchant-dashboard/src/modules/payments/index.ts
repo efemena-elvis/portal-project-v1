@@ -1,6 +1,3 @@
-/* This TypeScript code snippet is defining an array of route objects for Vesicash payments within a
-web application. Each route object contains information such as the path, component to render, child
-routes, and metadata like authentication requirements and page titles. */
 import { IRouteType } from "@packages/models";
 
 // *********** VESICASH PAYMENTS ROUTES *********** //
@@ -12,7 +9,6 @@ const overviewRoutes: IRouteType[] = [
         /* webpackChunkName: "payments-layout" */ "@/layouts/base-layout.vue"
       ),
     children: [
-      // *********** VESICASH PAYMENTS *********** //
       {
         path: "",
         name: "VesicashTransactions",
@@ -80,7 +76,94 @@ const overviewRoutes: IRouteType[] = [
           },
         },
       },
+
+    
+      {
+        path: "/payment-links",
+        name: "VesicashPaymentLinks",
+        component: () =>
+          import(
+            /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-links.vue"
+          ),
+        meta: {
+          requiresAuth: true,
+          title: "Merchant Payment Links",
+          pageMeta: {
+            title: "Payment Links",
+            description: "Merchant Payment Links",
+          },
+        },
+      },
     ],
+  },
+
+  // Standalone payment link details page (no sidebar/layout)
+  {
+    path: "/payment-links/:id",
+    name: "VesicashPaymentLinkDetails",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-link-details.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Link Details",
+      pageMeta: {
+        title: "Payment Link Details",
+        description: "Merchant Payment Link Details",
+      },
+    },
+  },
+  {
+    path: "/payment-links/pay/:id",
+    name: "VesicashPaymentDetails",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-details.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Details",
+      pageMeta: {
+        title: "Payment Details",
+        description: "Merchant Payment Details",
+      },
+    },
+  },
+
+    {
+    path: "/payment-links/success",
+    name: "VesicashPaymentSuccess",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-success.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Success",
+      pageMeta: {
+        title: "Payment Success",
+        description: "Merchant Payment Success",
+      },
+    },
+    
+  },
+      {
+    path: "/payment-links/failed",
+    name: "VesicashPaymentFailed",
+    component: () =>
+      import(
+        /* webpackChunkName: "payments-module" */ "@/modules/payments/pages/payment-failed.vue"
+      ),
+    meta: {
+      requiresAuth: false,
+      title: "Payment Failed",
+      pageMeta: {
+        title: "Payment Failed",
+        description: "Merchant Payment Failed",
+      },
+    },
+    
   },
 ];
 

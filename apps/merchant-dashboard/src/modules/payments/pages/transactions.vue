@@ -18,7 +18,7 @@
               v-model="selectedMethod"
               class="w-full p-4 bg-transparent appearance-none focus:outline-none"
             >
-              <option value="">Payment Method</option>
+              <option value="">Method</option>
               <option
                 v-for="(method, index) in paymentMethods"
                 :value="method.toLowerCase()"
@@ -230,7 +230,7 @@ const fetchPaymentTransactions = async (filters: string) => {
           (data.reason_for_failure || "-").toString().toLowerCase()
         ),
 
-         reference: data.client_reference ? data.client_reference : data.reference,
+        reference: data.client_reference ? data.client_reference : data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,

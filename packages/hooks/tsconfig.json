@@ -10,6 +10,12 @@
       "@packages/*": ["../../packages/*/src"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "vite.config.mjs", "index.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "vite.config.mjs",
+    "index.ts",
+    "../constants/storefrontNiches.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

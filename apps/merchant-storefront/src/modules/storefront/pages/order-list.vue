@@ -58,7 +58,6 @@
           title: 'No Orders yet',
           description:
             'You haven\'t received any orders on this store yet. Add a product to get started',
-       
         }"
         @onActionClicked="() => router.push('/products/create?redirect=orders')"
       >
@@ -125,7 +124,7 @@ const activeStore = ref<any>(
   getStorage({
     storage_name: "activeStore",
     storage_type: "object",
-  })
+  }),
 );
 
 const { processAPIRequest } = useEvents();
@@ -159,7 +158,7 @@ const getDateAdded = (date: string) => {
 const renderOrderQuantity = (order: any) => {
   const quantity = order.order_details.reduce(
     (acc: any, item: any) => acc + item.quantity,
-    0
+    0,
   );
   return `Total Quantity: ${quantity < 1 ? 1 : quantity}`;
 };
@@ -172,13 +171,12 @@ const toggleViewOrdersModal = () => {
 };
 
 const fetchStoreOrders = async () => {
-    isLoading.value = true;
+  isLoading.value = true;
   const response = await processAPIRequest({
     action: getStoreOrders,
     payload: { store_id: activeStore.value?.id },
     showAlert: false,
   });
-
 
   if (response.code === 200) {
     let allOrders = response?.data.orders;
@@ -187,11 +185,11 @@ const fetchStoreOrders = async () => {
 
     if (filter === "completed-orders") {
       allOrders = allOrders.filter(
-        (order: any) => order.status?.toLowerCase() === "completed"
+        (order: any) => order.status?.toLowerCase() === "completed",
       );
     } else if (filter === "pending-orders") {
       allOrders = allOrders.filter(
-        (order: any) => order.status?.toLowerCase() === "pending"
+        (order: any) => order.status?.toLowerCase() === "pending",
       );
     }
 
@@ -206,7 +204,7 @@ const fetchStoreOrders = async () => {
       order: h(TableDoubleColumn, {
         entry: {
           primaryText: getBoldTableText(
-            `${data.currency} ${formatNumber(data.amount)}`
+            `${data.currency} ${formatNumber(data.amount)}`,
           ),
           secondaryText: renderOrderQuantity({
             order_details: data.order_details.map((item: any) => ({
@@ -225,7 +223,7 @@ const fetchStoreOrders = async () => {
           : data.status.toLowerCase() === "pending"
             ? "pending"
             : "failed",
-        data.status
+        data.status,
       ),
       action: h(TableActionBtn, {
         showPrimaryBtn: true,
@@ -237,7 +235,6 @@ const fetchStoreOrders = async () => {
         isSecondaryActionDelete: false,
         onManageClick: () => {
           productOrderDetails.value = data;
-
           toggleManageOrdersModal();
         },
         onDeleteClick: () => {
@@ -262,7 +259,7 @@ watch(
       fetchStoreOrders();
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -271,6 +268,6 @@ watch(
     fetchStoreOrders();
   },
 
-  { immediate: true }
+  { immediate: true },
 );
 </script>

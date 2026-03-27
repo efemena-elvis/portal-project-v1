@@ -3,11 +3,8 @@
     <div class="w-full max-w-[694px]">
       <CheckoutCard v-if="store.payment_status === 'idle'" />
       <template v-else>
-        <PaymentStatusCard
-          :details="store.payment_details"
-          @retry="reset"
-          :status="store.payment_status"
-        />
+        <PaymentStatusCard :details="store.payment_details" @retry="reset"
+        :status="store.payment_status" />
       </template>
     </div>
   </div>

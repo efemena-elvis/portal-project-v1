@@ -37,7 +37,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, defineProps } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import { TaxBalanceCard } from "@/modules/payments/components";
 import { TableHeaderType } from "@packages/models";
 import { countryCurrencies } from "@packages/constants";
@@ -72,7 +72,6 @@ interface Wallet {
 }
 
 
-const { formatNumber, getStatus } = useString();
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
 const { getWallets } = useOverviewStore();

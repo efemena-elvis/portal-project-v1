@@ -175,8 +175,6 @@ export default function useString() {
       pending: "bg-yellow-100/60 text-yellow-700 border-yellow-300",
       failed: "bg-red-100/75 text-red-700 border-red-300",
       verified: "bg-green-100/75 text-green-700 border-green-300",
-      "in stock": "bg-green-100/75 text-green-800 border-green-300",
-      "out of stock": "bg-red-100/75 text-red-800 border-red-300",
     };
 
     return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${

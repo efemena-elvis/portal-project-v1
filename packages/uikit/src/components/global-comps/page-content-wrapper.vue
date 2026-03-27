@@ -12,7 +12,7 @@
     </div>
 
     <!-- BOTTOM ROW -->
-    <div class="bottom-row">
+    <div :class="['bottom-row', { 'has-custom-btn': customActionBtnText }]">
       <slot name="pageContent"></slot>
     </div>
 
@@ -26,12 +26,14 @@
       />
     </template>
     <template v-if="showCustomActionBtn">
-      <button
-        class="p-[1.1rem] rounded-lg btn-primary"
-        @click="$emit('customActionBtnClicked')"
-      >
-        {{ customActionBtnText }}
-      </button>
+      <div class="">
+        <button
+          class="p-[1.1rem] rounded-lg btn-primary absolute -top-6 right-0 sm:-top-1"
+          @click="$emit('customActionBtnClicked')"
+        >
+          {{ customActionBtnText }}
+        </button>
+      </div>
     </template>
   </div>
 </template>
@@ -77,11 +79,12 @@ const updatePageMeta = () => {
 };
 
 watch(route, () => updatePageMeta(), { immediate: true });
+
 </script>
 
 <style lang="scss">
 .page-content-wrapper {
-  @apply w-full h-full flex flex-col justify-between items-start gap-y-8 pb-9 relative bottom-[8px];
+  @apply w-full h-full flex flex-col justify-between items-start gap-y-8 pb-9 relative top-8 sm:top-4;
 
   .top-row {
     @apply flex sm:flex-wrap justify-between items-center gap-4 sm:gap-3 w-full -mb-3;
@@ -90,17 +93,21 @@ watch(route, () => updatePageMeta(), { immediate: true });
       @apply flex justify-start items-center gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl sm:-my-12;
+        @apply font-bold text-grey-900 text-2xl sm:text-xl sm:mt-4 -mt-5 ;
       }
     }
 
     &--right {
-      @apply flex justify-end items-center gap-3 sm:w-full sm:mt-7;
+      @apply flex justify-end items-center gap-3 sm:w-full sm:mt-3;
     }
   }
 
   .bottom-row {
     @apply w-full;
   }
+  .has-custom-btn {
+  @apply sm:mt-12 mt-3;
+}
+
 }
 </style>

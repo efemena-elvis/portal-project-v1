@@ -44,6 +44,13 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "payments",
     },
     {
+      link: "/payment-links",
+      title: "Payment Links",
+      icon: "icon-link",
+      active: true,
+      category: "payments",
+    },
+    {
       link: "/balance-history",
       title: "Balance history",
       icon: "icon-empty-wallet",
@@ -56,6 +63,13 @@ export const sidebarRoutes: ISidebarRouteType = {
       icon: "icon-export",
       active: true,
       category: "balances",
+    },
+    {
+      link: "/storefront",
+      title: "Storefront",
+      icon: "icon-shopping-cart",
+      active: true,
+      category: "commerce",
     },
   ],
 

@@ -3,7 +3,7 @@
   <div class="skeleton-input skeleton-title"></div>
   <div class="skeleton-input skeleton-subtitle"></div>
   <div class="skeleton-input skeleton-text"></div>
-  <div class="skeleton-button skeleton-cta"></div>
+  <div class="-button skeleton-cta"></div>
 </template>
 
 <script setup>
