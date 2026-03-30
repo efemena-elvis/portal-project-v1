@@ -1,0 +1,78 @@
+# === MERCHANT OF RECORDS ===
+# Caller workflow — mirrors GitLab's apps/merchant-of-records.yml
+# All pipeline logic lives in .github/workflows/templates/
+
+name: Deploy – Merchant of Records
+
+on:
+  push:
+    branches:
+      - staging
+      - main
+
+jobs:
+  # ── STAGING ────────────────────────────────────────────────────────────────
+
+  install_staging:
+    name: "[staging] Install"
+    if: github.ref == 'refs/heads/staging'
+    uses: ./.github/workflows/_template-install.yml
+
+  build_staging:
+    name: "[staging] Build"
+    if: github.ref == 'refs/heads/staging'
+    needs: install_staging
+    uses: ./.github/workflows/_template-build.yml
+    with:
+      build_script: build:staging:merchant-of-records
+      build_dir: apps/merchant-of-records/dist
+      artifact_name: merchant-of-records-staging-dist
+
+  deploy_staging:
+    name: "[staging] Deploy"
+    if: github.ref == 'refs/heads/staging'
+    needs: build_staging
+    uses: ./.github/workflows/_template-deploy.yml
+    with:
+      app_name: merchant-of-records
+      environment: staging
+      artifact_name: merchant-of-records-staging-dist
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_region: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_AWS_REGION }}
+      s3_bucket: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_S3_BUCKET }}
+      cloudfront_distribution: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION }}
+
+  # ── PRODUCTION ─────────────────────────────────────────────────────────────
+
+  install_production:
+    name: "[production] Install"
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/_template-install.yml
+
+  build_production:
+    name: "[production] Build"
+    if: github.ref == 'refs/heads/main'
+    needs: install_production
+    uses: ./.github/workflows/_template-build.yml
+    with:
+      build_script: build:prod:merchant-of-records
+      build_dir: apps/merchant-of-records/dist
+      artifact_name: merchant-of-records-production-dist
+
+  deploy_production:
+    name: "[production] Deploy"
+    if: github.ref == 'refs/heads/main'
+    needs: build_production
+    uses: ./.github/workflows/_template-deploy.yml
+    with:
+      app_name: merchant-of-records
+      environment: production
+      artifact_name: merchant-of-records-production-dist
+    secrets:
+      aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_region: ${{ secrets.MERCHANT_OF_RECORDS_PROD_AWS_REGION }}
+      s3_bucket: ${{ secrets.MERCHANT_OF_RECORDS_PROD_S3_BUCKET }}
+      cloudfront_distribution: ${{ secrets.MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION }}

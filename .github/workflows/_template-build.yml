@@ -1,0 +1,54 @@
+# Reusable Build Template
+# Equivalent to GitLab's .build_template
+# Restores the npm cache, runs the app-specific build script,
+# and uploads the dist folder as a workflow artifact.
+
+on:
+  workflow_call:
+    inputs:
+      build_script:
+        description: "npm script to run (e.g. build:staging:merchant-alexpay)"
+        required: true
+        type: string
+      build_dir:
+        description: "Path to the built output directory (e.g. apps/merchant-dashboard/dist)"
+        required: true
+        type: string
+      artifact_name:
+        description: "Name for the uploaded build artifact"
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build (${{ inputs.build_script }})
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Restore node_modules cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies (cache miss fallback)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm install --legacy-peer-deps
+
+      - name: Build
+        run: npm run ${{ inputs.build_script }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.build_dir }}/
+          retention-days: 1
