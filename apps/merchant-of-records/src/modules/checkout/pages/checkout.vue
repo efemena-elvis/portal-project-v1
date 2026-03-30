@@ -107,10 +107,13 @@ const { pushToastAlert } = useEvents();
 const reference = route.params.reference as string;
 
 const { renderImg } = useImage();
-const selectedPaymentMethod = ref("mobileMoney");
 
 const { fetchPaymentDetails, paymentDetails, paymentButtonRef, makePayment } =
   useMobileMoneyPayment();
+
+const selectedPaymentMethod = ref(
+  paymentDetails.value?.method === "card" ? "card" : "mobileMoney",
+);
 
 const customerDetails = computed(() => {
   return {
@@ -201,8 +204,10 @@ watch(
       customer_first_name: first_name,
       customer_last_name: last_name,
       email,
+      method,
     } = transaction_details;
     const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
+    selectedPaymentMethod.value = method === "card" ? "card" : "mobileMoney"; // method
 
     paymentCurrency.value = currency ?? null;
     paymentCountry.value =
