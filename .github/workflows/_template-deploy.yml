@@ -1,0 +1,64 @@
+# Reusable Deploy Template
+# Equivalent to GitLab's .deploy_template
+# Downloads the build artifact, syncs to S3, and invalidates CloudFront.
+# All AWS credentials + bucket/distribution details are passed as secrets by the caller.
+
+on:
+  workflow_call:
+    inputs:
+      app_name:
+        description: "Human-readable app name for logging (e.g. alexpay)"
+        required: true
+        type: string
+      environment:
+        description: "Deployment environment name (staging | production)"
+        required: true
+        type: string
+      artifact_name:
+        description: "Name of the build artifact to download"
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id:
+        required: true
+      aws_secret_access_key:
+        required: true
+      aws_region:
+        required: true
+      s3_bucket:
+        required: true
+      cloudfront_distribution:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.app_name }} → ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: dist/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+          aws-region: ${{ secrets.aws_region }}
+
+      - name: Sync to S3
+        run: |
+          echo "Deploying ${{ inputs.app_name }} to ${{ inputs.environment }}"
+          aws s3 sync dist/ s3://${{ secrets.s3_bucket }}/ \
+            --acl public-read \
+            --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.cloudfront_distribution }} \
+            --paths "/*"
