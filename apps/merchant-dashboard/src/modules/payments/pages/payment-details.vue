@@ -70,10 +70,9 @@
       labelTitle="Redirect Success URL"
       :labelCompact="false"
       :inputType="IInputType.Text"
-      :disabled="true"
+      :isDisabled="true"
       :inputValue="payload.redirect_success_url"
       isRequired
-      class="pointer-events-none"
     />
 
     <TextFieldInput
@@ -81,11 +80,10 @@
       labelId="redirect_failed"
       labelTitle="Redirect Failed URL"
       :labelCompact="false"
-      :disabled="true"
+      :isDisabled="true"
       :inputType="IInputType.Text"
       :inputValue="payload.redirect_failed_url"
       isRequired
-      class="pointer-events-none"
     />
 
     <TextFieldInput

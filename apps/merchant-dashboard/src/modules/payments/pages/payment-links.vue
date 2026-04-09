@@ -133,6 +133,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Link", slug: "link" },
   { title: "Reusable", slug: "reusable" },
   { title: "Status", slug: "status" },
+  { title: "Reference", slug: "reference" },
   { title: "", slug: "action" },
 ]);
 
@@ -223,6 +224,7 @@ const fetchAllPaymentLinks = async (filters: string) => {
         data.status === "active" ? "success" : "failed",
         data.status === "active" ? "Active" : "Inactive",
       ),
+      reference: data.reference,
       action: h(TableActionBtn, {
         showPrimaryBtn: true,
         showSecondaryBtn: true,

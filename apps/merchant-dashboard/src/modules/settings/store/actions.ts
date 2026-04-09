@@ -25,3 +25,7 @@ export const updateUserProfile = async (payload: any) => {
 export const updateUserPassword = async (payload: any) => {
   return await $api.push(settingsRoutes.userPassword, payload);
 };
+
+export const generatePublishableKey = async (payload: any) => {
+  return await $api.push(settingsRoutes.publishableKey, payload);
+};

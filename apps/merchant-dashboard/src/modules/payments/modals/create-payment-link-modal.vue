@@ -88,11 +88,10 @@
         <TextFieldInput
           labelId="redirect_url"
           labelTitle="Redirect URL"
-          :disabled="true"
+          :isDisabled="true"
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="paymentLinkPayload.redirect_url"
-          class ="pointer-events-none"
         />
 
         <!-- IS REUSABLE -->
