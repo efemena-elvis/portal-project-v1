@@ -6,7 +6,7 @@ import { ref } from "vue";
 export const useMobileMoneyPayment = () => {
   let pollingIntervalId: number | undefined = undefined;
   let pollingTimeoutId: number | undefined = undefined;
-  const POLLING_INTERVAL = 35 * 1000; // every 35 seconds (each call seems to take about 30 seconds to respond)
+  const POLLING_INTERVAL = 15 * 1000; // every 15 seconds (each call seems to take about 15 seconds to respond)
   const POLLING_DURATION = 60000 * 7; // 7 minutes
   const paymentButtonRef = ref(null);
 

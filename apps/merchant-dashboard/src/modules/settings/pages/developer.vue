@@ -1,13 +1,15 @@
 <template>
-   <template v-if="isLoading">
-        <ComplianceSkeleton />
-      </template>
-  <div class="developer-area" v-else >
+  <template v-if="isLoading">
+    <ComplianceSkeleton />
+  </template>
+  <div class="developer-area" v-else>
     <div class="developer-input">
       <div class="input-form mb-7">
         <TextFieldInput
           labelId="textSecretKey"
-          :labelTitle="getBusinessMode === `test` ? 'Test Secret Key' : 'Live Secret Key'"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Secret Key' : 'Live Secret Key'
+          "
           :labelCompact="false"
           :inputType="IInputType.Password"
           :inputValue="getKeys.secret"
@@ -21,7 +23,9 @@
 
         <TextFieldInput
           labelId="textPublicKey"
-          :labelTitle="getBusinessMode === `test` ? 'Test Public Key' : 'Live Public Key'"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Public Key' : 'Live Public Key'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           :inputValue="getKeys.public"
@@ -34,8 +38,40 @@
         />
 
         <TextFieldInput
+          labelId="textPublishableKey"
+          :labelTitle="
+            getBusinessMode === `test`
+              ? 'Test Publishable Key'
+              : 'Live Publishable Key'
+          "
+          :labelCompact="false"
+          :inputType="IInputType.Text"
+          :inputValue="publishableKey"
+          inputPlaceholder="Publishable key"
+          inputBaseColor="bg-grey-10"
+          :showTextCopy="true"
+          copiedText="Publishable key copied successfully"
+          :isRequired="false"
+          :isDisabled="true"
+        />
+        <div class="mt-3">
+          <button
+            ref="generateKeyBtnRef"
+            class="btn btn-sm btn-secondary w-full my-4"
+            :disabled="isLoading"
+            @click="handleGeneratePublishableKey"
+          >
+            Generate Publishable Key
+          </button>
+        </div>
+
+        <TextFieldInput
           labelId="textCallbackURL"
-          :labelTitle="getBusinessMode === `test` ? 'Test Callback URL' : 'Live Callback URL'"
+          :labelTitle="
+            getBusinessMode === `test`
+              ? 'Test Callback URL'
+              : 'Live Callback URL'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Callback URL"
@@ -44,12 +80,13 @@
           :inputValue="urlPayload.callback_url"
           @inputChanged="urlPayload.callback_url = $event"
           @inputValidated="payloadValidity.callback_url = $event"
-         
         />
 
         <TextFieldInput
           labelId="textWebhookURL"
-          :labelTitle="getBusinessMode === `test` ? 'Test Webhook URL' : 'Live Webhook URL'"
+          :labelTitle="
+            getBusinessMode === `test` ? 'Test Webhook URL' : 'Live Webhook URL'
+          "
           :labelCompact="false"
           :inputType="IInputType.Text"
           inputPlaceholder="Webhook URL"
@@ -58,7 +95,6 @@
           :inputValue="urlPayload.webhook_url"
           @inputChanged="urlPayload.webhook_url = $event"
           @inputValidated="payloadValidity.webhook_url = $event"
-      
         />
       </div>
 
@@ -70,23 +106,37 @@
       >
         Update API Keys
       </button>
+
+      <!-- Button to toggle CDN usage display -->
+      <button
+        class="w-full mt-4 btn btn-tertiary"
+        @click="showCDNUsage = !showCDNUsage"
+      >
+        {{ showCDNUsage ? "Hide Embedded Payment Usage" : "Show Embedded Payment Usage" }}
+      </button>
     </div>
 
-    <div class="developer-display">
-      <div class="help-area">
-        <div class="body-text text-grey-900">
-          Need help integrating our APIs on your platform?
+    <div class="flex flex-col gap-4 w-full">
+            <EmbeddedPaySnippet v-if = "showCDNUsage"/>
+      <div class="developer-display" >
+        <div class="help-area">
+          <div class="body-text text-grey-900">
+            Need help integrating our APIs on your platform?
+          </div>
+          <button
+            class="btn btn-sm btn-tertiary sm:mt-4"
+            @click="accessMerchantDeveloperAPI"
+          >
+            Explore our APIs
+          </button>
         </div>
-
-        <button
-          class="btn btn-sm btn-tertiary sm:mt-4"
-          @click="accessMerchantDeveloperAPI"
-        >
-          Explore our APIs
-        </button>
+      
       </div>
+   
     </div>
   </div>
+
+
 </template>
 
 <script setup lang="ts">
@@ -102,6 +152,7 @@ import {
   useString,
 } from "@packages/hooks";
 import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
+import {EmbeddedPaySnippet} from "@/modules/payments/components"
 
 type IURLType = {
   callback_url: string;
@@ -114,10 +165,12 @@ type IInputValidity = {
 };
 
 const appVariant = ref<string>(useAppVariant());
+
 const { createAndClickAnchor } = useString();
 
 const authStore = useAuthStore();
-const { fetchUserProfile, updateUserProfile } = useSettingsStore();
+const { fetchUserProfile, updateUserProfile, generatePublishableKey } =
+  useSettingsStore();
 
 const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
@@ -138,6 +191,9 @@ const urlPayload = ref<IURLType>({
 });
 
 const updateKeysBtnRef = ref<HTMLButtonElement | null>(null);
+const generateKeyBtnRef = ref<HTMLButtonElement | null>(null);
+const publishableKey = ref<string>("");
+const showCDNUsage = ref<boolean>(false);
 
 const payloadValidity = ref<IInputValidity>({
   callback_url: false,
@@ -153,7 +209,7 @@ const getKeys = computed(() => {
 });
 
 const getBusinessMode = computed(() => {
-return getBusinessProfile.value?.businessMode || "test";
+  return getBusinessProfile.value?.businessMode || "test";
 });
 
 const isActionReady = computed(() => {
@@ -211,15 +267,41 @@ const fetchProfileData = async () => {
     showAlert: false,
   });
 
-
   const developer = getProfileDeveloper.value;
   if (developer) {
-    urlPayload.value = { ...developer }; 
+    urlPayload.value = { ...developer };
   }
 
   isLoading.value = false;
 };
 
+const handleGeneratePublishableKey = async () => {
+  const response = await processAPIRequest({
+    action: generatePublishableKey,
+    btnRef: generateKeyBtnRef,
+    btnText: "Generate Publishable Key",
+    payload: {
+      regenerate_publishable_key: true,
+    },
+    alertHandler: {
+      200: {
+        message: "Publishable key generated successfully",
+        type: "success",
+      },
+      400: {
+        message: "Failed to generate publishable key",
+        type: "error",
+      },
+    },
+  });
+
+  const newKey =
+    response?.data?.publishable_key || response?.data?.data?.publishable_key;
+
+  if (newKey) {
+    publishableKey.value = newKey;
+  }
+};
 
 watch(
   getProfileDeveloper,
@@ -229,9 +311,11 @@ watch(
         callback_url: newValue.callback_url || "",
         webhook_url: newValue.webhook_url || "",
       };
+
+      // publishableKey.value = newValue.publishable_key || "";
     }
   },
-  { immediate: true}
+  { immediate: true },
 );
 
 fetchProfileData();
@@ -246,7 +330,7 @@ fetchProfileData();
   }
 
   .developer-display {
-    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block ;
+    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block;
 
     .help-area {
       @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
