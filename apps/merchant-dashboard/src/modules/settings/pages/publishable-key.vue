@@ -87,7 +87,7 @@
           :isDisabled="true"
         />
 
-        <p class="my-4 text-grey-500 text-[15px]">{{ message }}</p>
+        <p class="my-4 text-grey-500 text-[13px]">{{ message }}</p>
 
         <div class="flex justify-end gap-6 mt-6">
           <button
