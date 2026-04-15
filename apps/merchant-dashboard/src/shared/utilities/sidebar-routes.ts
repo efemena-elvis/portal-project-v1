@@ -108,4 +108,8 @@ export const settingsSidebarRoutes: ISideNavType[] = [
     routeTitle: "Developer",
     routeLinkName: "VesicashDeveloper",
   },
+  {
+    routeTitle: "Publishable Key",
+    routeLinkName: "VesicashPublishableKey",
+  },
 ];

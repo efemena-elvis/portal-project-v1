@@ -1,9 +1,9 @@
 <template>
-  <template v-if="isLoading">
-    <ComplianceSkeleton />
-  </template>
-  <div class="developer-area" v-else>
-    <div class="developer-input">
+  <div class="developer-area" >
+    <ComplianceSkeleton v-if="isLoading"/>
+ 
+
+    <div class="developer-input" v-else>
       <div class="input-form mb-7">
         <TextFieldInput
           labelId="textSecretKey"
@@ -36,34 +36,6 @@
           :isRequired="true"
           :isDisabled="true"
         />
-
-        <TextFieldInput
-          labelId="textPublishableKey"
-          :labelTitle="
-            getBusinessMode === `test`
-              ? 'Test Publishable Key'
-              : 'Live Publishable Key'
-          "
-          :labelCompact="false"
-          :inputType="IInputType.Text"
-          :inputValue="publishableKey"
-          inputPlaceholder="Publishable key"
-          inputBaseColor="bg-grey-10"
-          :showTextCopy="true"
-          copiedText="Publishable key copied successfully"
-          :isRequired="false"
-          :isDisabled="true"
-        />
-        <div class="mt-3">
-          <button
-            ref="generateKeyBtnRef"
-            class="btn btn-sm btn-secondary w-full my-4"
-            :disabled="isLoading"
-            @click="handleGeneratePublishableKey"
-          >
-            Generate Publishable Key
-          </button>
-        </div>
 
         <TextFieldInput
           labelId="textCallbackURL"
@@ -112,13 +84,17 @@
         class="w-full mt-4 btn btn-tertiary"
         @click="showCDNUsage = !showCDNUsage"
       >
-        {{ showCDNUsage ? "Hide Embedded Payment Usage" : "Show Embedded Payment Usage" }}
+        {{
+          showCDNUsage
+            ? "Hide Embedded Payment Usage"
+            : "Show Embedded Payment Usage"
+        }}
       </button>
     </div>
 
     <div class="flex flex-col gap-4 w-full">
-            <EmbeddedPaySnippet v-if = "showCDNUsage"/>
-      <div class="developer-display" >
+      <EmbeddedPaySnippet v-if="showCDNUsage" />
+      <div class="developer-display">
         <div class="help-area">
           <div class="body-text text-grey-900">
             Need help integrating our APIs on your platform?
@@ -130,13 +106,9 @@
             Explore our APIs
           </button>
         </div>
-      
       </div>
-   
     </div>
   </div>
-
-
 </template>
 
 <script setup lang="ts">
@@ -152,7 +124,7 @@ import {
   useString,
 } from "@packages/hooks";
 import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
-import {EmbeddedPaySnippet} from "@/modules/payments/components"
+import { EmbeddedPaySnippet } from "@/modules/payments/components";
 
 type IURLType = {
   callback_url: string;
@@ -169,8 +141,7 @@ const appVariant = ref<string>(useAppVariant());
 const { createAndClickAnchor } = useString();
 
 const authStore = useAuthStore();
-const { fetchUserProfile, updateUserProfile, generatePublishableKey } =
-  useSettingsStore();
+const { fetchUserProfile, updateUserProfile } = useSettingsStore();
 
 const profileUtil = new useProfile(authStore);
 const { processAPIRequest } = useEvents();
@@ -191,8 +162,6 @@ const urlPayload = ref<IURLType>({
 });
 
 const updateKeysBtnRef = ref<HTMLButtonElement | null>(null);
-const generateKeyBtnRef = ref<HTMLButtonElement | null>(null);
-const publishableKey = ref<string>("");
 const showCDNUsage = ref<boolean>(false);
 
 const payloadValidity = ref<IInputValidity>({
@@ -273,34 +242,6 @@ const fetchProfileData = async () => {
   }
 
   isLoading.value = false;
-};
-
-const handleGeneratePublishableKey = async () => {
-  const response = await processAPIRequest({
-    action: generatePublishableKey,
-    btnRef: generateKeyBtnRef,
-    btnText: "Generate Publishable Key",
-    payload: {
-      regenerate_publishable_key: true,
-    },
-    alertHandler: {
-      200: {
-        message: "Publishable key generated successfully",
-        type: "success",
-      },
-      400: {
-        message: "Failed to generate publishable key",
-        type: "error",
-      },
-    },
-  });
-
-  const newKey =
-    response?.data?.publishable_key || response?.data?.data?.publishable_key;
-
-  if (newKey) {
-    publishableKey.value = newKey;
-  }
 };
 
 watch(
