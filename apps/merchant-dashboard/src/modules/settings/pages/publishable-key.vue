@@ -6,8 +6,8 @@
       <div class="title-text">Manage Publishable Key</div>
 
       <p class="mt-3 text-sm text-grey-600">
-        Domains and IPs are optional. Use this separate action to update the
-        domain or IP address whitelist.
+        Domains and IPs are optional. Use the corresponding actions to generate a
+        publishable key or update the domain or IP address whitelist.
       </p>
 
       <div class="whitelist-block bg-grey-05 rounded-2xl mt-4">
@@ -68,9 +68,9 @@
             :isRequired="false"
             :isDisabled="true"
           />
-          <div class=" text-gray-500 text-[13px] relative -top-4 "
-            >Expires on:
-            {{ getExpirationDate(keyData?.old_key_expires_at) }}</div>
+          <div class="text-gray-500 text-[13px] relative -top-4">
+            Expires on: {{ getExpirationDate(keyData?.old_key_expires_at) }}
+          </div>
         </div>
 
         <TextFieldInput
@@ -102,11 +102,11 @@
     </div>
 
     <teleport to="body" v-if="showRevokeModal">
-    <RevokeKeyModal
-      @closeTriggered="toggleRevokeModal"
-       @reloadPublishableKeys="fetchPublishableKeyData"
-    />
-  </teleport>
+      <RevokeKeyModal
+        @closeTriggered="toggleRevokeModal"
+        @reloadPublishableKeys="fetchPublishableKeyData"
+      />
+    </teleport>
   </div>
 </template>
 
@@ -115,10 +115,7 @@ import { computed, onMounted, ref } from "vue";
 import { IInputType } from "@packages/models";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents, useDate } from "@packages/hooks";
-import {
-  TextFieldInput,
-  ComplianceSkeleton,
-} from "@packages/uikit";
+import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
 import RevokeKeyModal from "../modals/revoke-key-modal.vue";
 
 type IPublishableKeyPayload = {
@@ -151,7 +148,7 @@ const isActionReady = computed(() => {
 
 const getExpirationDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
-  const time = useDate.formatTime(date)
+  const time = useDate.formatTime(date);
   return `${w2}, ${d3} ${m3}, ${y1} - ${time}`;
 };
 
@@ -233,7 +230,6 @@ const handleWhitelistPublishableKey = async () => {
 const toggleRevokeModal = () => {
   showRevokeModal.value = !showRevokeModal.value;
 };
-
 
 const fetchPublishableKeyData = async () => {
   isLoading.value = true;
