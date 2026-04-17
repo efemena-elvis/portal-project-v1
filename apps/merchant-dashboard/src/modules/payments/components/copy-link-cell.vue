@@ -29,7 +29,7 @@ const copyLink = async () => {
     await navigator.clipboard.writeText(props.link);
     pushToastAlert({
       type: "success",
-      message: "Payment link copied to clipboard",
+      message: "Copied to clipboard",
     });
   } catch (e) {
     console.error("Copy failed");

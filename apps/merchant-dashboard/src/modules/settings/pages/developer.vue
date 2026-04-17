@@ -271,10 +271,10 @@ fetchProfileData();
   }
 
   .developer-display {
-    @apply w-[45%] lg:ml-auto flex justify-end sm:w-full sm:mt-6 sm:block;
+    @apply w-[45%] lg:ml-auto flex sm:w-full sm:mt-6 sm:block px-12;
 
     .help-area {
-      @apply w-[310px] h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply  h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }
