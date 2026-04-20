@@ -1,7 +1,6 @@
 <template>
-  <div class="developer-area" >
-    <ComplianceSkeleton v-if="isLoading"/>
- 
+  <div class="developer-area">
+    <ComplianceSkeleton v-if="isLoading" />
 
     <div class="developer-input" v-else>
       <div class="input-form mb-7">
@@ -78,22 +77,9 @@
       >
         Update API Keys
       </button>
-
-      <!-- Button to toggle CDN usage display -->
-      <button
-        class="w-full mt-4 btn btn-tertiary"
-        @click="showCDNUsage = !showCDNUsage"
-      >
-        {{
-          showCDNUsage
-            ? "Hide Embedded Payment Usage"
-            : "Show Embedded Payment Usage"
-        }}
-      </button>
     </div>
 
     <div class="flex flex-col gap-4 w-full">
-      <EmbeddedPaySnippet v-if="showCDNUsage" />
       <div class="developer-display">
         <div class="help-area">
           <div class="body-text text-grey-900">
@@ -124,7 +110,6 @@ import {
   useString,
 } from "@packages/hooks";
 import { TextFieldInput, ComplianceSkeleton } from "@packages/uikit";
-import { EmbeddedPaySnippet } from "@/modules/payments/components";
 
 type IURLType = {
   callback_url: string;
@@ -162,7 +147,6 @@ const urlPayload = ref<IURLType>({
 });
 
 const updateKeysBtnRef = ref<HTMLButtonElement | null>(null);
-const showCDNUsage = ref<boolean>(false);
 
 const payloadValidity = ref<IInputValidity>({
   callback_url: false,
@@ -252,8 +236,6 @@ watch(
         callback_url: newValue.callback_url || "",
         webhook_url: newValue.webhook_url || "",
       };
-
-      // publishableKey.value = newValue.publishable_key || "";
     }
   },
   { immediate: true },
@@ -274,7 +256,7 @@ fetchProfileData();
     @apply w-[45%] lg:ml-auto flex sm:w-full sm:mt-6 sm:block px-12;
 
     .help-area {
-      @apply  h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
+      @apply h-auto rounded-2xl p-6 text-[15px] sm:w-full sm:block bg-teal-50 border border-grey-100 flex flex-col justify-between items-start gap-y-6;
     }
   }
 }

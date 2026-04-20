@@ -107,10 +107,10 @@ const copyToClipboard = async (text: string) => {
 </script>
 
 <template>
-  <div class="max-w-4xl px-12 pb-4">
+  <div class="max-w-4xl py-12">
     <!-- Header -->
     <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Embedded Payment SDK</h1>
+      <h1 class="text-3xl font-bold text-gray-900">Embedded Payment User Guide</h1>
       <p class="text-gray-600 mt-2">Choose your preferred integration method</p>
     </div>
 

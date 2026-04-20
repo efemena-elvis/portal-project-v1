@@ -45,6 +45,14 @@ import { useSettingsStore } from "@/modules/settings/store";
 
 const emits = defineEmits(["closeTriggered", "reloadPublishableKeys"]);
 
+const props = defineProps<{
+  keyData: {
+    id: string;
+    key: string;
+    [key: string]: any;
+  };
+}>();
+
 const { processAPIRequest } = useEvents();
 const { revokePublishableKey } = useSettingsStore();
 
@@ -54,6 +62,9 @@ const handleConfirmRevokePublishableKey = async () => {
   const response = await processAPIRequest({
     action: revokePublishableKey,
     btnRef: revokeKeyBtnRef,
+    payload: {
+      key_id: props.keyData.id,
+    },
     btnText: "Revoke Publishable Key",
     alertHandler: {
       200: {

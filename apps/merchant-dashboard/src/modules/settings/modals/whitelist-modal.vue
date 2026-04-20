@@ -2,7 +2,7 @@
   <ModalDialog @closeModal="$emit('closeTriggered')">
     <template #modal-cover-header>
       <div class="modal-cover-header">
-        <div class="modal-cover-title">Manage Publishable Key</div>
+        <div class="modal-cover-title">Update Whitelist</div>
       </div>
     </template>
 
@@ -37,20 +37,12 @@
 
             <div class="flex sm:flex-col gap-4 mt-8 mr-3">
               <button
-                class="w-1/2 btn btn-primary"
+                class="w-full btn btn-primary"
                 ref="whitelistKeyBtnRef"
                 :disabled="!isActionReady || isLoading"
                 @click="handleWhitelistPublishableKey"
               >
                 Update whitelist
-              </button>
-
-              <button
-                class=" w-1/2 btn btn-alert"
-                :disabled="!keyData?.key || isLoading"
-                @click="toggleRevokeModal"
-              >
-                Revoke key
               </button>
             </div>
           </div>
@@ -62,13 +54,6 @@
       <div class="modal-cover-footer"></div>
     </template>
   </ModalDialog>
-
-  <teleport to="body" v-if="showRevokeModal">
-    <RevokeKeyModal
-      @closeTriggered="toggleRevokeModal"
-      @reloadPublishableKeys="reloadPublishableKeys"
-    />
-  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -77,7 +62,6 @@ import { IInputType } from "@packages/models";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents} from "@packages/hooks";
 import { TextFieldInput, ModalDialog as UiModalDialog } from "@packages/uikit";
-import RevokeKeyModal from "./revoke-key-modal.vue";
 
 const ModalDialog = UiModalDialog as any;
 
@@ -88,13 +72,11 @@ type IPublishableKeyPayload = {
 
 const emits = defineEmits(["closeTriggered", "reloadPublishableKeys"]);
 
-const { fetchPublishableKey, whitelistPublishableKey } = useSettingsStore();
+const { whitelistPublishableKey } = useSettingsStore();
 const { processAPIRequest } = useEvents();
 
 const keyPayload = ref<IPublishableKeyPayload>({ domains: "", ips: "" });
-const keyData = ref<any>(null);
 const message = ref<string>("");
-const showRevokeModal = ref<boolean>(false);
 const whitelistKeyBtnRef = ref<HTMLButtonElement | null>(null);
 const isLoading = ref<boolean>(false);
 
@@ -121,29 +103,28 @@ const getPublishableKeyPayload = () => {
   return payload;
 };
 
-const normalizeResponse = (response: any) => response.data?.data;
 
-const fetchPublishableKeyData = async () => {
-  isLoading.value = true;
-  const response: any = await processAPIRequest({
-    action: fetchPublishableKey,
-    showAlert: false,
-  });
-  isLoading.value = false;
+// const fetchPublishableKeyData = async () => {
+//   isLoading.value = true;
+//   const response: any = await processAPIRequest({
+//     action: fetchPublishableKey,
+//     showAlert: false,
+//   });
+//   isLoading.value = false;
 
-  if (!response) return;
+//   if (!response) return;
 
-  const keyInfo = normalizeResponse(response);
-  keyPayload.value = {
-    domains: Array.isArray(keyInfo?.allowed_domains)
-      ? keyInfo.allowed_domains.join(", ")
-      : keyInfo?.allowed_domains || "",
-    ips: Array.isArray(keyInfo?.allowed_ips)
-      ? keyInfo.allowed_ips.join(", ")
-      : keyInfo?.allowed_ips || "",
-  };
-  keyData.value = keyInfo;
-};
+//   const keyInfo = normalizeResponse(response);
+//   keyPayload.value = {
+//     domains: Array.isArray(keyInfo?.allowed_domains)
+//       ? keyInfo.allowed_domains.join(", ")
+//       : keyInfo?.allowed_domains || "",
+//     ips: Array.isArray(keyInfo?.allowed_ips)
+//       ? keyInfo.allowed_ips.join(", ")
+//       : keyInfo?.allowed_ips || "",
+//   };
+//   keyData.value = keyInfo;
+// };
 
 const handleWhitelistPublishableKey = async () => {
   const response = await processAPIRequest({
@@ -165,20 +146,11 @@ const handleWhitelistPublishableKey = async () => {
 
   if (!response) return;
   message.value = response?.message || "Whitelist updated successfully";
-  await fetchPublishableKeyData();
   emits("reloadPublishableKeys");
 };
 
-const toggleRevokeModal = () => {
-  showRevokeModal.value = !showRevokeModal.value;
-};
 
-const reloadPublishableKeys = () => {
-  fetchPublishableKeyData();
-  emits("reloadPublishableKeys");
-};
 
-onMounted(fetchPublishableKeyData);
 </script>
 
 <style lang="scss" scoped>

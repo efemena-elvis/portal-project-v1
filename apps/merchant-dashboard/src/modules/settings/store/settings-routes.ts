@@ -5,5 +5,4 @@ export const settingsRoutes = {
   publishableKey: "keys/publishable",
   publishableKeyWhitelist: "keys/publishable/whitelist",
   publishableKeyRegenerate: "keys/publishable",
-  publishableKeyRevoke: "keys/publishable/revoke",
 };

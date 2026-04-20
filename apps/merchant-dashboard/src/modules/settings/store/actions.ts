@@ -50,10 +50,10 @@ const getPublishableKeyHeaders = () => {
   return headers;
 };
 
-export const fetchPublishableKey = async () => {
+export const fetchPublishableKeys = async () => {
   try {
     const response = await axios.get(
-      `${PROD_BASE_URL}/v1/${settingsRoutes.publishableKey}`,
+      `${PROD_BASE_URL}/v1/${settingsRoutes.publishableKey}/all`,
       { headers: getPublishableKeyHeaders() },
     );
 
@@ -123,6 +123,31 @@ export const regeneratePublishableKey = async () => {
   }
 };
 
+export const updatePublishableKey = async (payload: any) => {
+  try {
+    const response = await axios.put(
+      `${PROD_BASE_URL}/v1/${settingsRoutes.publishableKey}/${payload.id}`,
+      payload,
+      { headers: getPublishableKeyHeaders() },
+    );
+
+    return {
+      code: response.status,
+      data: response.data,
+      message: response.data?.message,
+    };
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const data = error?.response?.data;
+
+    return {
+      code: status || 500,
+      data: data || null,
+      message: data?.message || error.message,
+    };
+  }
+};
+
 export const whitelistPublishableKey = async (payload: any) => {
   try {
     const response = await axios.put(
@@ -148,11 +173,11 @@ export const whitelistPublishableKey = async (payload: any) => {
   }
 };
 
-export const revokePublishableKey = async () => {
+export const revokePublishableKey = async (payload: { key_id: string }) => {
   try {
-    const response = await axios.post(
-      `${PROD_BASE_URL}/v1/${settingsRoutes.publishableKeyRevoke}`,
-      null,
+    const response = await axios.delete(
+      `${PROD_BASE_URL}/v1/${settingsRoutes.publishableKey}/${payload.key_id}`,
+
       { headers: getPublishableKeyHeaders() },
     );
 
