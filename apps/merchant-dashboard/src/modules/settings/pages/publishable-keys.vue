@@ -28,7 +28,6 @@
       <div
         v-else
         class="grid sm:grid-cols-1 md:grid-cols-2 grid-cols-3 gap-6"
-        @click="activeDropdown = null"
       >
         <div
           v-for="(key, index) in publishableKeys"
