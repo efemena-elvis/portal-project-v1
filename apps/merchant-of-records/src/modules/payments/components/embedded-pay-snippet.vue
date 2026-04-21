@@ -16,8 +16,8 @@ const tabs: { key: Tab; label: string }[] = [
 
 const codeSnippets: Record<Tab, string> = {
   js: `<script
-  src="https://cdn.alexpay.com/embedpay.js"
-  data-key="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  src="https://cdn.vesicash.com/embedpay.js"
+  data-key="pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   data-amount-var="cartTotal"
 ><\/script>
 
@@ -35,7 +35,7 @@ const codeSnippets: Record<Tab, string> = {
   }
 <\/script>`,
 
-  react: `import { EmbedPayButton } from '@alexpay/embedpay-react';
+  react: `import { EmbedPayButton } from '@vesicash/embedpay-react';
 import { useState } from 'react';
 
 export default function CheckoutPage() {
@@ -49,7 +49,7 @@ export default function CheckoutPage() {
       {errorMsg && <p style={{ color: 'red' }}>{errorMsg}<\/p>}
 
       <EmbedPayButton
-        publishableKey="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        publishableKey="pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         amount={cartTotal}
         narration="My Store Order"
         onError={setErrorMsg}
@@ -62,7 +62,7 @@ export default function CheckoutPage() {
 
   vue: `<script setup>
 import { ref } from 'vue';
-import { EmbedPayButton } from '@alexpay/embedpay-vue';
+import { EmbedPayButton } from '@vesicash/embedpay-vue';
 
 const cartTotal = ref(0);
 const errorMsg = ref('');
@@ -75,7 +75,7 @@ const errorMsg = ref('');
     <p v-if="errorMsg" style="color: red">{{ errorMsg }}<\/p>
 
     <EmbedPayButton
-      :publishable-key="'pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
+      :publishable-key="'pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
       :amount="cartTotal"
       narration="My Store Order"
       @error="(msg) => errorMsg = msg"
@@ -87,7 +87,7 @@ const errorMsg = ref('');
 
   nextjs: `'use client';
 
-import { EmbedPayButton } from '@alexpay/embedpay-react';
+import { EmbedPayButton } from '@vesicash/embedpay-react';
 import { useState } from 'react';
 
 export default function CheckoutPage() {
@@ -101,7 +101,7 @@ export default function CheckoutPage() {
       {errorMsg && <p style={{ color: 'red' }}>{errorMsg}<\/p>}
 
       <EmbedPayButton
-        publishableKey="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        publishableKey="pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         amount={cartTotal}
         narration="My Store Order"
         onError={setErrorMsg}
@@ -131,8 +131,8 @@ export default function CheckoutPage() {
 <!-- 1. Go to Project Settings → Custom Code -->
 <!-- 2. Paste this in the "Before </head>" section: -->
 <script
-  src="https://cdn.alexpay.com/embedpay.js"
-  data-key="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  src="https://cdn.vesicash.com/embedpay.js"
+  data-key="pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   data-amount-var="cartTotal"
 ><\/script>
 
@@ -170,7 +170,7 @@ const copyToClipboard = async (text: string) => {
 
 <template>
   <div class="max-w-4xl py-12">
-  
+
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-gray-900">
         Embedded Payment User Guide
@@ -178,7 +178,6 @@ const copyToClipboard = async (text: string) => {
       <p class="text-gray-600 mt-2">Choose your preferred integration method</p>
     </div>
 
-  
     <div class="flex flex-wrap gap-2 mb-6">
       <button
         v-for="tab in tabs"
@@ -200,6 +199,8 @@ const copyToClipboard = async (text: string) => {
       <pre class="overflow-x-auto text-sm text-gray-100">
 <code>{{ codeSnippets[activeTab] }}</code>
       </pre>
+
+  
       <button
         @click="copyToClipboard(codeSnippets[activeTab])"
         class="absolute top-3 right-3 text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded-md"
@@ -208,91 +209,42 @@ const copyToClipboard = async (text: string) => {
       </button>
     </div>
 
-
+   
     <div class="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-      <h2 class="text-lg font-semibold text-blue-900 mb-3">
-        Implementation Notes
-      </h2>
+      <h2 class="text-lg font-semibold text-blue-900 mb-3">Implementation Notes</h2>
       <div class="space-y-2 text-sm text-blue-800">
         <div v-if="activeTab === 'js'">
-          <p>
-            <strong>Plain JavaScript:</strong> No installation needed. Just add
-            the script tag and mark your button with <code>data-checkout</code>.
-          </p>
-          <p class="mt-2">
-            Replace <code>cartTotal</code> with your JavaScript variable name
-            that holds the amount.
-          </p>
+          <p><strong>Plain JavaScript:</strong> No installation needed. Just add the script tag and mark your button with <code>data-checkout</code>.</p>
+          <p class="mt-2">Replace <code>cartTotal</code> with your JavaScript variable name that holds the amount.</p>
         </div>
         <div v-else-if="activeTab === 'react'">
-          <p>
-            <strong>React:</strong> Install package first:
-            <code>npm install @alexpay/embedpay-react</code>
-          </p>
-          <p class="mt-2">
-            The component handles all security checks and amount validation
-            automatically.
-          </p>
+          <p><strong>React:</strong> Install package first: <code>npm install @vesicash/embedpay-react</code></p>
+          <p class="mt-2">The component handles all security checks and amount validation automatically.</p>
         </div>
         <div v-else-if="activeTab === 'vue'">
-          <p>
-            <strong>Vue 3:</strong> Install package first:
-            <code>npm install @alexpay/embedpay-vue</code>
-          </p>
-          <p class="mt-2">
-            Remember to use <code>:amount</code> and
-            <code>:publishable-key</code> with the colon for prop binding.
-          </p>
+          <p><strong>Vue 3:</strong> Install package first: <code>npm install @vesicash/embedpay-vue</code></p>
+          <p class="mt-2">Remember to use <code>:amount</code> and <code>:publishable-key</code> with the colon for prop binding.</p>
         </div>
         <div v-else-if="activeTab === 'nextjs'">
-          <p>
-            <strong>Next.js:</strong> Always add
-            <code>'use client'</code> directive at the top since EmbedPay runs
-            only in the browser.
-          </p>
-          <p class="mt-2">
-            Works with both App Router and Pages Router. Use it like a regular
-            React component.
-          </p>
-          <p class="mt-2">
-            Package: <code>npm install @alexpay/embedpay-react</code>
-          </p>
+          <p><strong>Next.js:</strong> Always add <code>'use client'</code> directive at the top since EmbedPay runs only in the browser.</p>
+          <p class="mt-2">Works with both App Router and Pages Router. Use it like a regular React component.</p>
+          <p class="mt-2">Package: <code>npm install @vesicash/embedpay-react</code></p>
         </div>
         <div v-else-if="activeTab === 'wordpress'">
-          <p>
-            <strong>WordPress:</strong> Download the plugin from your dashboard
-            and upload it via WordPress Admin.
-          </p>
-          <p class="mt-2">
-            • <strong>WooCommerce:</strong> Auto-detects and adds button to cart
-            (no extra config needed)
-          </p>
-          <p class="mt-2">
-            • <strong>Non-WooCommerce:</strong> Use the shortcode or Gutenberg
-            block on any page/post
-          </p>
-          <p class="mt-2">
-            Go to <strong>Settings → EmbedPay</strong> to configure your
-            Publishable Key and payment settings.
-          </p>
+          <p><strong>WordPress:</strong> Download the plugin from your dashboard and upload it via WordPress Admin.</p>
+          <p class="mt-2">• <strong>WooCommerce:</strong> Auto-detects and adds button to cart (no extra config needed)</p>
+          <p class="mt-2">• <strong>Non-WooCommerce:</strong> Use the shortcode or Gutenberg block on any page/post</p>
+          <p class="mt-2">Go to <strong>Settings → EmbedPay</strong> to configure your Publishable Key and payment settings.</p>
         </div>
         <div v-else-if="activeTab === 'webflow'">
-          <p>
-            <strong>Webflow:</strong> Add the script to Project Settings →
-            Custom Code section.
-          </p>
-          <p class="mt-2">
-            Mark your button with <code>data-checkout</code> attribute via
-            Element Settings → Custom Attributes.
-          </p>
-          <p class="mt-2">
-            Set <code>window.cartTotal</code> in your Webflow interactions or
-            custom code.
-          </p>
+          <p><strong>Webflow:</strong> Add the script to Project Settings → Custom Code section.</p>
+          <p class="mt-2">Mark your button with <code>data-checkout</code> attribute via Element Settings → Custom Attributes.</p>
+          <p class="mt-2">Set <code>window.cartTotal</code> in your Webflow interactions or custom code.</p>
         </div>
       </div>
     </div>
-    
+
+ 
     <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
       <h3 class="text-sm font-semibold text-green-900 mb-2">⚡ Quick Start</h3>
       <ul class="text-sm text-green-800 space-y-1">

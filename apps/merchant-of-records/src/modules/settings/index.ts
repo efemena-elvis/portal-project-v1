@@ -67,6 +67,22 @@ const overviewRoutes: IRouteType[] = [
               },
             },
           },
+          {
+            path: "publishable-keys",
+            name: "VesicashPublishableKeys",
+            component: () =>
+              import(
+                /* webpackChunkName: "settings-module" */ "@/modules/settings/pages/publishable-keys.vue"
+              ),
+            meta: {
+              requiresAuth: true,
+              title: "Publishable Keys",
+              pageMeta: {
+                title: "Settings - Publishable Keys",
+                description: "Generate Publishable Keys",
+              },
+            },
+          },
         ],
       },
     ],

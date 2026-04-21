@@ -34,13 +34,14 @@
               :isRequired="true"
             />
 
-            <TextFieldInput
-              labelId="textCurrency"
+            <SelectFieldInput
+              labelId="currency"
               labelTitle="Currency"
-              :labelCompact="false"
-              :inputType="IInputType.Text"
-              :inputValue="getCurrency"
-              :isDisabled="true"
+              inputPlaceholder="Select currency"
+              :inputValue="keyPayload.currency"
+              :selectData="currencyOptions"
+              @onSelectionChange="onCurrencyChange"
+              isRequired
             />
             <SelectFieldInput
               labelId="method"
@@ -156,14 +157,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { useSettingsStore } from "@/modules/settings/store";
-import { useAppVariant, useEvents } from "@packages/hooks";
+import { useEvents } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
-
-const appVariant = ref<string>(useAppVariant());
 
 type IPublishableKeyPayload = {
   name?: string;
@@ -192,10 +191,6 @@ const paymentMethods = [
   { name: "Card", value: "card" },
   { name: "Mobile Money", value: "mobilemoney" },
 ];
-
-const getCurrency = computed(() =>
-  appVariant.value === "alexpay" ? "GHS" : "ZMW",
-);
 
 const keyPayload = ref<IPublishableKeyPayload>({
   name: "",
@@ -243,6 +238,13 @@ const formFields: (keyof IPublishableKeyPayload)[] = [
   "webhook_url",
 ];
 
+const currencyOptions = [
+  { name: "USD", value: "USD" },
+  { name: "GHS", value: "GHS" },
+  { name: "ZMW", value: "ZMW" },
+  { name: "TZS", value: "TZS" },
+];
+
 const parseList = (value?: string) =>
   (value ?? "")
     .split(",")
@@ -264,10 +266,6 @@ const getPublishableKeyPayload = () => {
   if (domains.length) payload.domains = domains;
   if (ips.length) payload.ips = ips;
 
-  if (source.payment_method === "card") {
-    payload.operator = "mpgs";
-  }
-
   if (props.isUpdate && props.keyData?.id) {
     payload.id = props.keyData.id;
   }
@@ -280,6 +278,10 @@ const buttonText = computed(() => {
   if (props.isUpdate) return "Update Publishable Key";
   return "Generate Publishable Key";
 });
+
+const onCurrencyChange = (currency: string) => {
+  keyPayload.value.currency = currency;
+};
 
 const handleGeneratePublishableKey = async () => {
   const response = await processAPIRequest({
@@ -339,7 +341,7 @@ watch(
 
     keyPayload.value = {
       name: newData.name ?? "",
-      currency: newData.currency ?? getCurrency.value,
+      currency: newData.currency ?? "",
       payment_method: newData.payment_method ?? "",
       callback_url: newData.callback_url ?? "",
       cancel_url: newData.cancel_url ?? "",
@@ -357,15 +359,8 @@ watch(
   },
   { immediate: true },
 );
-watch(
-  getCurrency,
-  (val) => {
-    if (!props.isUpdate) {
-      keyPayload.value.currency = val;
-    }
-  },
-  { immediate: true },
-);
+
+
 </script>
 <style scoped lang="scss">
 .publishable-key-area {
