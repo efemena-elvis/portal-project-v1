@@ -1,9 +1,40 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
+
+import { useAppVariant, useEvents } from "@packages/hooks";
+
+const { pushToastAlert } = useEvents();
 
 type Tab = "js" | "react" | "vue" | "nextjs" | "wordpress" | "webflow";
 
 const activeTab = ref<Tab>("js");
+
+const variantConfig = {
+  alexpay: {
+    name: "AlexPay",
+    cdn: "https://cdn.alexpay.com/embedpay.js",
+    reactPkg: "@alexpay/embedpay-react",
+    vuePkg: "@alexpay/embedpay-vue",
+    keyPrefix: "pk_live_alexpay_",
+  },
+  redstonepgs: {
+    name: "Redstone",
+    cdn: "https://cdn.redstonepgs.com/embedpay.js",
+    reactPkg: "@redstone/embedpay-react",
+    vuePkg: "@redstone/embedpay-vue",
+    keyPrefix: "pk_live_redstone_",
+  },
+} as const;
+
+type AppVariant = keyof typeof variantConfig;
+
+const rawVariant = useAppVariant();
+
+const appVariant = ref<AppVariant>(
+  rawVariant in variantConfig ? (rawVariant as AppVariant) : "alexpay",
+);
+
+const current = computed(() => variantConfig[appVariant.value]);
 
 const tabs: { key: Tab; label: string }[] = [
   { key: "js", label: "JavaScript" },
@@ -17,7 +48,7 @@ const tabs: { key: Tab; label: string }[] = [
 const codeSnippets: Record<Tab, string> = {
   js: `<script
   src="https://cdn.alexpay.com/embedpay.js"
-  data-key="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+   :publishable-key="'${current.value.keyPrefix}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
   data-amount-var="cartTotal"
 ><\/script>
 
@@ -35,7 +66,7 @@ const codeSnippets: Record<Tab, string> = {
   }
 <\/script>`,
 
-  react: `import { EmbedPayButton } from '@alexpay/embedpay-react';
+  react: `import { EmbedPayButton } from '${current.value.reactPkg}';
 import { useState } from 'react';
 
 export default function CheckoutPage() {
@@ -49,7 +80,7 @@ export default function CheckoutPage() {
       {errorMsg && <p style={{ color: 'red' }}>{errorMsg}<\/p>}
 
       <EmbedPayButton
-        publishableKey="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        publishableKey="'${current.value.keyPrefix}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
         amount={cartTotal}
         narration="My Store Order"
         onError={setErrorMsg}
@@ -62,7 +93,7 @@ export default function CheckoutPage() {
 
   vue: `<script setup>
 import { ref } from 'vue';
-import { EmbedPayButton } from '@alexpay/embedpay-vue';
+import { EmbedPayButton } from '${current.value.vuePkg}';
 
 const cartTotal = ref(0);
 const errorMsg = ref('');
@@ -75,8 +106,8 @@ const errorMsg = ref('');
     <p v-if="errorMsg" style="color: red">{{ errorMsg }}<\/p>
 
     <EmbedPayButton
-      :publishable-key="'pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
-      :amount="cartTotal"
+      publishableKey="'${current.value.keyPrefix}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'"
+      amount="cartTotal"
       narration="My Store Order"
       @error="(msg) => errorMsg = msg"
     >
@@ -87,7 +118,7 @@ const errorMsg = ref('');
 
   nextjs: `'use client';
 
-import { EmbedPayButton } from '@alexpay/embedpay-react';
+import { EmbedPayButton } from '${current.value.reactPkg}';
 import { useState } from 'react';
 
 export default function CheckoutPage() {
@@ -112,48 +143,74 @@ export default function CheckoutPage() {
   );
 }`,
 
-  wordpress: `<!-- Shortcode Method (Easiest) -->
-[embedpay_button amount="5000" narration="My Store Order"]
-  Proceed to Payment
-[\/embedpay_button]
+wordpress: `METHOD 1: Shortcode (Recommended)
 
-<!-- Alternative: Using Plugin -->
-<!-- 1. Go to WordPress Admin → Plugins → Add New -->
-<!-- 2. Upload embedpay-v1.1.0.zip from your dashboard -->
-<!-- 3. Activate the plugin -->
-<!-- 4. Go to Settings → EmbedPay -->
-<!-- 5. Paste your Publishable Key -->
-<!-- 6. Configure currency, callback URL, and other settings -->
-<!-- 7. For WooCommerce: Auto-detects cart and injects button -->
-<!-- 8. For Gutenberg: Add "EmbedPay Checkout Button" block to any page -->`,
+[embedpay_button amount="5000"]Pay Now[/embedpay_button]
 
-  webflow: `<!-- Step 1: Add EmbedPay Script -->
-<!-- 1. Go to Project Settings → Custom Code -->
-<!-- 2. Paste this in the "Before </head>" section: -->
-<script
-  src="https://cdn.alexpay.com/embedpay.js"
-  data-key="pk_live_alexpay_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-  data-amount-var="cartTotal"
-><\/script>
+Dynamic Amount Example
 
-<!-- Step 2: Configure Your Checkout Button -->
-<!-- 1. Select your checkout button in the designer -->
-<!-- 2. Go to Element Settings → Custom Attributes -->
-<!-- 3. Add attribute: data-checkout -->
-<!-- 4. Optional: Add data-narration="Order Payment" -->
+[embedpay_button amount_from="#price-input"]Pay Now[/embedpay_button]
 
-<!-- Step 3: Set Cart Total Variable -->
-<!-- 1. Create a JavaScript interaction or custom code -->
-<!-- 2. Set window.cartTotal = 5000; (or your amount) -->
+Full Configuration Example
 
-<!-- Example Button Attribute: -->
-<!-- data-checkout="true" -->
-<!-- data-narration="Order Payment" -->`,
+[embedpay_button
+  amount="10000"
+  narration="Product Purchase"
+  label="Buy Now"
+  currency="NGN"
+  method="card"
+  callback="https://yoursite.com/success"
+  cancel="https://yoursite.com/cancel"
+  checkout_url="/checkout"
+  force_mock="true"
+]
+
+METHOD 2: JavaScript SDK (Advanced Users)
+
+<script src="https://cdn.vesicash.com/embedpay.js"><\/script>
+
+<script>
+window.EMBEDPAY = {
+  key: '${current.value.keyPrefix}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+  currency: 'NGN',
+  narration: 'Order Payment',
+  method: 'card',
+  callback: 'https://yoursite.com/success',
+  cancel: 'https://yoursite.com/cancel',
+  forceMock: false
 };
+<\/script>
 
-import { useEvents } from "@packages/hooks";
+<button
+  data-checkout
+  data-amount-from="#amount-input"
+  data-narration="Order Payment"
+>
+  Pay Now
+<\/button>
 
-const { pushToastAlert } = useEvents();
+METHOD 3: WooCommerce
+
+1. Install EmbedPay WooCommerce Gateway plugin
+2. Go to WooCommerce Settings Payments
+3. Enable EmbedPay by Vesicash
+4. Add your Publishable Key
+5. Done appears automatically on checkout
+
+METHOD 4: Plugin Setup
+
+1. Upload embedpay plugin to wp-content/plugins/
+2. Activate plugin
+3. Go to Settings EmbedPay
+4. Add your Publishable Key and configure options
+
+METHOD 5: Elementor
+
+1. Install Elementor EmbedPay Widget plugin
+2. Drag EmbedPay Button widget into page
+3. Configure amount narration and callbacks
+`,
+};
 
 const copyToClipboard = async (text: string) => {
   try {
@@ -170,7 +227,6 @@ const copyToClipboard = async (text: string) => {
 
 <template>
   <div class="max-w-4xl py-12">
-  
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-gray-900">
         Embedded Payment User Guide
@@ -178,7 +234,6 @@ const copyToClipboard = async (text: string) => {
       <p class="text-gray-600 mt-2">Choose your preferred integration method</p>
     </div>
 
-  
     <div class="flex flex-wrap gap-2 mb-6">
       <button
         v-for="tab in tabs"
@@ -195,7 +250,6 @@ const copyToClipboard = async (text: string) => {
       </button>
     </div>
 
-   
     <div class="bg-gray-900 rounded-xl p-4 relative">
       <pre class="overflow-x-auto text-sm text-gray-100">
 <code>{{ codeSnippets[activeTab] }}</code>
@@ -207,7 +261,6 @@ const copyToClipboard = async (text: string) => {
         Copy
       </button>
     </div>
-
 
     <div class="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
       <h2 class="text-lg font-semibold text-blue-900 mb-3">
@@ -292,7 +345,7 @@ const copyToClipboard = async (text: string) => {
         </div>
       </div>
     </div>
-    
+
     <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
       <h3 class="text-sm font-semibold text-green-900 mb-2">⚡ Quick Start</h3>
       <ul class="text-sm text-green-800 space-y-1">

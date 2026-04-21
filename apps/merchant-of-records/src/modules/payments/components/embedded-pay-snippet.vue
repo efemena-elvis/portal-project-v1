@@ -112,43 +112,73 @@ export default function CheckoutPage() {
   );
 }`,
 
-  wordpress: `<!-- Shortcode Method (Easiest) -->
-[embedpay_button amount="5000" narration="My Store Order"]
-  Proceed to Payment
-[\/embedpay_button]
+wordpress: `METHOD 1: Shortcode (Recommended)
 
-<!-- Alternative: Using Plugin -->
-<!-- 1. Go to WordPress Admin → Plugins → Add New -->
-<!-- 2. Upload embedpay-v1.1.0.zip from your dashboard -->
-<!-- 3. Activate the plugin -->
-<!-- 4. Go to Settings → EmbedPay -->
-<!-- 5. Paste your Publishable Key -->
-<!-- 6. Configure currency, callback URL, and other settings -->
-<!-- 7. For WooCommerce: Auto-detects cart and injects button -->
-<!-- 8. For Gutenberg: Add "EmbedPay Checkout Button" block to any page -->`,
+[embedpay_button amount="5000"]Pay Now[/embedpay_button]
 
-  webflow: `<!-- Step 1: Add EmbedPay Script -->
-<!-- 1. Go to Project Settings → Custom Code -->
-<!-- 2. Paste this in the "Before </head>" section: -->
-<script
-  src="https://cdn.vesicash.com/embedpay.js"
-  data-key="pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-  data-amount-var="cartTotal"
-><\/script>
+Dynamic Amount Example
 
-<!-- Step 2: Configure Your Checkout Button -->
-<!-- 1. Select your checkout button in the designer -->
-<!-- 2. Go to Element Settings → Custom Attributes -->
-<!-- 3. Add attribute: data-checkout -->
-<!-- 4. Optional: Add data-narration="Order Payment" -->
+[embedpay_button amount_from="#price-input"]Pay Now[/embedpay_button]
 
-<!-- Step 3: Set Cart Total Variable -->
-<!-- 1. Create a JavaScript interaction or custom code -->
-<!-- 2. Set window.cartTotal = 5000; (or your amount) -->
+Full Configuration Example
 
-<!-- Example Button Attribute: -->
-<!-- data-checkout="true" -->
-<!-- data-narration="Order Payment" -->`,
+[embedpay_button
+  amount="10000"
+  narration="Product Purchase"
+  label="Buy Now"
+  currency="NGN"
+  method="card"
+  callback="https://yoursite.com/success"
+  cancel="https://yoursite.com/cancel"
+  checkout_url="/checkout"
+  force_mock="true"
+]
+
+METHOD 2: JavaScript SDK (Advanced Users)
+
+<script src="https://cdn.vesicash.com/embedpay.js"><\/script>
+
+<script>
+window.EMBEDPAY = {
+  key: "pk_live_vesicash_a1b2c3d4_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  currency: 'NGN',
+  narration: 'Order Payment',
+  method: 'card',
+  callback: 'https://yoursite.com/success',
+  cancel: 'https://yoursite.com/cancel',
+  forceMock: false
+};
+<\/script>
+
+<button
+  data-checkout
+  data-amount-from="#amount-input"
+  data-narration="Order Payment"
+>
+  Pay Now
+<\/button>
+
+METHOD 3: WooCommerce
+
+1. Install EmbedPay WooCommerce Gateway plugin
+2. Go to WooCommerce Settings Payments
+3. Enable EmbedPay by Vesicash
+4. Add your Publishable Key
+5. Done appears automatically on checkout
+
+METHOD 4: Plugin Setup
+
+1. Upload embedpay plugin to wp-content/plugins/
+2. Activate plugin
+3. Go to Settings EmbedPay
+4. Add your Publishable Key and configure options
+
+METHOD 5: Elementor
+
+1. Install Elementor EmbedPay Widget plugin
+2. Drag EmbedPay Button widget into page
+3. Configure amount narration and callbacks
+`,
 };
 
 import { useEvents } from "@packages/hooks";

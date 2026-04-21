@@ -53,13 +53,14 @@
             />
 
             <TextFieldInput
-              labelId="textCallbackUrl"
-              labelTitle="Callback URL"
+              v-if="keyPayload.payment_method === 'mobilemoney'"
+              labelId="textRedirectUrl"
+              labelTitle="Redirect URL"
               :labelCompact="false"
               :inputType="IInputType.Text"
               inputPlaceholder="https://mystore.com/thank-you"
-              :inputValue="keyPayload.callback_url"
-              @inputChanged="keyPayload.callback_url = $event"
+              :inputValue="keyPayload.redirect_url"
+              @inputChanged="keyPayload.redirect_url = $event"
               :errorHandler="{
                 validator: 'validateURL',
                 message: 'Enter a valid url.',
@@ -75,6 +76,36 @@
               inputPlaceholder="https://mystore.com/cart"
               :inputValue="keyPayload.cancel_url"
               @inputChanged="keyPayload.cancel_url = $event"
+              :errorHandler="{
+                validator: 'validateURL',
+                message: 'Enter a valid url.',
+              }"
+            />
+
+            <TextFieldInput
+              v-if="keyPayload.payment_method === 'card'"
+              labelId="textRedirectSuccess"
+              labelTitle="Redirect Success URL"
+              :labelCompact="false"
+              :inputType="IInputType.Text"
+              inputPlaceholder="https://mystore.com/success"
+              :inputValue="keyPayload.redirect_success_url"
+              @inputChanged="keyPayload.redirect_success_url = $event"
+              :errorHandler="{
+                validator: 'validateURL',
+                message: 'Enter a valid url.',
+              }"
+            />
+
+            <TextFieldInput
+              v-if="keyPayload.payment_method === 'card'"
+              labelId="textRedirectFailed"
+              labelTitle="Redirect Failed URL"
+              :labelCompact="false"
+              :inputType="IInputType.Text"
+              inputPlaceholder="https://mystore.com/failed"
+              :inputValue="keyPayload.redirect_failed_url"
+              @inputChanged="keyPayload.redirect_failed_url = $event"
               :errorHandler="{
                 validator: 'validateURL',
                 message: 'Enter a valid url.',
@@ -162,6 +193,7 @@ import { useSettingsStore } from "@/modules/settings/store";
 import { useAppVariant, useEvents } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
+import { el } from "date-fns/locale";
 
 const appVariant = ref<string>(useAppVariant());
 
@@ -169,12 +201,15 @@ type IPublishableKeyPayload = {
   name?: string;
   currency?: string;
   payment_method?: string;
-  callback_url?: string;
+  redirect_url?: string;
   cancel_url?: string;
   narration?: string;
   webhook_url?: string;
   domains?: string;
   ips?: string;
+
+  redirect_success_url?: string;
+  redirect_failed_url?: string;
 };
 
 const emits = defineEmits(["closeTriggered", "reloadPublishableKeys"]);
@@ -201,10 +236,12 @@ const keyPayload = ref<IPublishableKeyPayload>({
   name: "",
   currency: "",
   payment_method: "",
-  callback_url: "",
+  redirect_url: "",
   cancel_url: "",
   narration: "",
   webhook_url: "",
+  redirect_success_url: "",
+  redirect_failed_url: "",
   domains: "",
   ips: "",
 });
@@ -215,18 +252,24 @@ const isLoading = ref<boolean>(false);
 const isActionReady = computed(() => {
   if (props.isRegenerate) return true;
 
-  const { name, currency, callback_url, webhook_url, domains, ips } =
-    keyPayload.value;
+  const payload = keyPayload.value;
 
-  const hasRequiredFields =
-    Boolean(name) &&
-    Boolean(currency) &&
-    Boolean(callback_url) &&
-    Boolean(webhook_url);
+  const baseValid =
+    Boolean(payload.name) &&
+    Boolean(payload.currency) &&
+    Boolean(payload.payment_method) &&
+    Boolean(payload.webhook_url);
 
-  const hasWhitelist = Boolean(domains) || Boolean(ips);
+  const hasWhitelist = Boolean(payload.domains) || Boolean(payload.ips);
 
-  return hasRequiredFields && hasWhitelist;
+  const isCardValid =
+    payload.payment_method !== "card" ||
+    (Boolean(payload.redirect_url) && Boolean(payload.cancel_url));
+
+  const isMomoValid =
+    payload.payment_method !== "mobilemoney" || Boolean(payload.redirect_url);
+
+  return baseValid && hasWhitelist && isCardValid && isMomoValid;
 });
 
 const onMethodChange = (method: string) => {
@@ -237,10 +280,12 @@ const formFields: (keyof IPublishableKeyPayload)[] = [
   "name",
   "currency",
   "payment_method",
-  "callback_url",
+  "redirect_url",
   "cancel_url",
   "narration",
   "webhook_url",
+  "redirect_success_url",
+  "redirect_failed_url",
 ];
 
 const parseList = (value?: string) =>
@@ -266,6 +311,14 @@ const getPublishableKeyPayload = () => {
 
   if (source.payment_method === "card") {
     payload.operator = "mpgs";
+
+    payload.redirect_success_url = source.redirect_success_url;
+
+    payload.redirect_failed_url = source.redirect_failed_url;
+  }
+
+  else{
+    payload.redirect_url = source.redirect_url;
   }
 
   if (props.isUpdate && props.keyData?.id) {
@@ -314,7 +367,6 @@ const handleRegeneratePublishableKey = async () => {
     action: regeneratePublishableKey,
     btnRef: generateKeyBtnRef,
     btnText: "Regenerate Publishable Key",
-    // payload: { id: props.keyData?.id },
     alertHandler: {
       200: {
         message: "Publishable key regenerated successfully",
@@ -341,10 +393,12 @@ watch(
       name: newData.name ?? "",
       currency: newData.currency ?? getCurrency.value,
       payment_method: newData.payment_method ?? "",
-      callback_url: newData.callback_url ?? "",
+      redirect_url: newData.redirect_url ?? "",
       cancel_url: newData.cancel_url ?? "",
       narration: newData.narration ?? "",
       webhook_url: newData.webhook_url ?? "",
+      redirect_success_url: newData.redirect_success_url ?? "",
+      redirect_failed_url: newData.redirect_failed_url ?? "",
 
       domains: Array.isArray(newData.allowed_domains)
         ? newData.allowed_domains.join(", ")
