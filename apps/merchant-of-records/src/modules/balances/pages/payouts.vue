@@ -1,6 +1,8 @@
 <template>
   <PageContentWrapper
     :pagingData="tablePaging"
+    searchInputPlaceholder="Search by payout reference id"
+    @searchEntered="processSearchEntry"
     pageDescription="All Payouts"
     @updatePage="(currentPage) => (page = currentPage)"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
@@ -122,6 +124,11 @@ const isLoading = ref(true);
 const selectedStatus = ref("");
 const selectedCurrency = ref("");
 const showInitiatePayoutModal = ref(false);
+const searchQuery = ref("");
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const toggleInitiatePayoutModal = () => {
   showInitiatePayoutModal.value = !showInitiatePayoutModal.value;
@@ -145,7 +152,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
 );
 
 const getDateCreated = (date: string) => {
@@ -171,7 +178,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 };
 
 const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
+  selectedRange: [Date | string, Date | string],
 ) => {
   if (selectedRange && selectedRange.length === 2) {
     const normalizedRange: [Date, Date] = [
@@ -209,12 +216,12 @@ const fetchPayouts = async (filters: string) => {
         }),
         reference: data.reference,
         amount_requested: getBoldTableText(
-          `${data.currency} ${formatNumber(data.amount)}`
+          `${data.currency} ${formatNumber(data.amount)}`,
         ),
 
         status: getStatus(data.status, data.status),
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         raw: {
@@ -223,7 +230,7 @@ const fetchPayouts = async (filters: string) => {
           amount: formattedAmount,
           status: data.status ?? "-",
           reason_for_failure: capitalizeFirstLetter(
-            (data.reason_for_failure || "-").toString().toLowerCase()
+            (data.reason_for_failure || "-").toString().toLowerCase(),
           ),
 
           reference: data.reference ?? "-",
@@ -257,7 +264,7 @@ const fetchAllPayoutPages = async () => {
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         reference: data.reference ?? "-",

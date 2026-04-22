@@ -1,6 +1,8 @@
 <template>
   <PageContentWrapper
     :pagingData="tablePaging"
+    searchInputPlaceholder="Search by payout reference id"
+    @searchEntered="processSearchEntry"
     pageDescription="All Payouts"
     @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
@@ -32,7 +34,6 @@
               class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
             ></div>
           </div>
-          
         </div>
         <div class="flex items-center w-full gap-4">
           <DatePicker
@@ -110,7 +111,10 @@ const toggleInitiatePayoutModal = () => {
 const activePeriod = ref<[Date, Date] | null>(null);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
-
+const searchQuery = ref("");
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_created" },
@@ -126,7 +130,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`
 );
 
 const getDateCreated = (date: string) => {
@@ -152,7 +156,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 };
 
 const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
+  selectedRange: [Date | string, Date | string],
 ) => {
   if (selectedRange && selectedRange.length === 2) {
     const normalizedRange: [Date, Date] = [
@@ -190,12 +194,12 @@ const fetchPayouts = async (filters: string) => {
         }),
         reference: data.reference,
         amount_requested: getBoldTableText(
-          `${data.currency} ${formatNumber(data.amount)}`
+          `${data.currency} ${formatNumber(data.amount)}`,
         ),
 
         status: getStatus(data.status, data.status),
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         raw: {
@@ -204,7 +208,7 @@ const fetchPayouts = async (filters: string) => {
           amount: formattedAmount,
           status: data.status ?? "-",
           reason_for_failure: capitalizeFirstLetter(
-            (data.reason_for_failure || "-").toString().toLowerCase()
+            (data.reason_for_failure || "-").toString().toLowerCase(),
           ),
 
           reference: data.reference ?? "-",
@@ -238,7 +242,7 @@ const fetchAllPayoutPages = async () => {
         amount: `${formatNumber(data.amount)}`,
         status: data.status ?? "-",
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         reference: data.reference ?? "-",
@@ -262,14 +266,12 @@ const exportToExcel = async () => {
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;
 
-
     const matchesStatus = selectedStatus.value
       ? status === selectedStatus.value
       : true;
     const matchesDate = date ? isWithinRange(date, activePeriod.value) : true;
 
-
-    return matchesStatus && matchesDate
+    return matchesStatus && matchesDate;
   });
 
   const cleanData = filtered.map((tx) => ({

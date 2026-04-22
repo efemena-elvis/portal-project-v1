@@ -2,6 +2,8 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Refunds"
+       searchInputPlaceholder="Search by refund reference id"
+       @searchEntered="processSearchEntry"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
@@ -85,6 +87,8 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 
+
+
 const { getBoldTableText, formatNumber, getStatus, capitalizeFirstLetter } =
   useString();
 const { getRefunds, fetchAllRefunds } = usePaymentStore();
@@ -92,8 +96,12 @@ const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
+const searchQuery = ref("");
 
 const activePeriod = ref<[Date, Date] | null>(null);
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 
@@ -113,7 +121,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`
 );
 
 const getDateCreated = (date: string) => {

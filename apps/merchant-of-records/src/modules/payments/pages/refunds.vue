@@ -3,6 +3,8 @@
     :pagingData="tablePaging"
     pageDescription="All Refunds"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
+      @searchEntered="processSearchEntry"
+          searchInputPlaceholder="Search by refund reference id"
      @updatePage="(currentPage) => (page = currentPage)"
     :showCustomActionBtn="false"
   >
@@ -132,10 +134,15 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
+const searchQuery = ref("");
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&currency=${selectedCurrency.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&status=${selectedStatus.value}&currency=${selectedCurrency.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`
 );
 
 const getDateCreated = (date: string) => {
