@@ -181,7 +181,7 @@
 import { computed, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { useSettingsStore } from "@/modules/settings/store";
-import { useAppVariant, useEvents } from "@packages/hooks";
+import { useAppVariant, useEvents, useString } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
 
@@ -210,7 +210,8 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest} = useEvents();
+const { processAPIRequest, pushToastAlert} = useEvents();
+const {capitalizeFirstLetter} = useString()
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -336,6 +337,14 @@ const handleGeneratePublishableKey = async () => {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
   }
+
+    else{
+    pushToastAlert({
+      message: "Key creation failed",
+      description: capitalizeFirstLetter(response.error.message),
+      type: "error",
+    });
+  }
 };
 
 const handleRegeneratePublishableKey = async () => {
@@ -355,9 +364,16 @@ const handleRegeneratePublishableKey = async () => {
     },
   });
 
-  if (response.code === 200) {
+  if (response.code === 200 || response.code === 201) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
+  }
+    else{
+    pushToastAlert({
+      message: "key creation failed",
+      description: capitalizeFirstLetter(response.error.message),
+      type: "error",
+    });
   }
 };
 watch(

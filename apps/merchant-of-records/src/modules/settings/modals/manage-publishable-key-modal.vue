@@ -171,6 +171,7 @@ import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
+import useString from '../../../../../../packages/hooks/src/useString';
 
 type IPublishableKeyPayload = {
   name: string;
@@ -193,7 +194,8 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest, pushToastAlert } = useEvents();
+const { processAPIRequest, pushToastAlert} = useEvents();
+const {capitalizeFirstLetter} = useString()
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -252,7 +254,6 @@ const currencyOptions = [
   { name: "TZS", value: "TZS" },
 ];
 
-
 const parseList = (value?: string) =>
   (value ?? "")
     .split(",")
@@ -291,15 +292,6 @@ const onCurrencyChange = (currency: string) => {
   keyPayload.value.currency = currency;
 };
 const handleGeneratePublishableKey = async () => {
-  if (!isActionReady.value) {
-    pushToastAlert({
-      message: "Key creation failed",
-      description:
-        "Please fill in all required fields and ensure the URLs are valid.",
-      type: "error",
-    });
-    return;
-  }
 
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
@@ -328,9 +320,17 @@ const handleGeneratePublishableKey = async () => {
     },
   });
 
-  if (response.code === 201) {
+  if (response.code === 201 || response.code === 200) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
+  }
+
+    else{
+    pushToastAlert({
+      message: "Key creation failed",
+      description: capitalizeFirstLetter(response.error.message),
+      type: "error",
+    });
   }
 };
 
@@ -356,12 +356,20 @@ const handleRegeneratePublishableKey = async () => {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
   }
+
+  else{
+    pushToastAlert({
+      message: "Key creation failed",
+      description: capitalizeFirstLetter(response.error.message),
+      type: "error",
+    });
+  }
 };
 watch(
   () => props.keyData,
 
   (newData) => {
-      console.log(newData)
+    console.log(newData);
     if (!props.isUpdate || !newData) return;
 
     keyPayload.value = {
