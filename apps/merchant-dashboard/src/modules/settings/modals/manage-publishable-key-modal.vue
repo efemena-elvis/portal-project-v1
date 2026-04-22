@@ -26,7 +26,7 @@
           <div class="whitelist-block rounded-2xl" v-if="!isRegenerate">
             <TextFieldInput
               labelId="textName"
-              labelTitle="Name"
+           labelTitle="Key Name (Your key identifier name)"
               :labelCompact="false"
               :inputType="IInputType.Text"
               inputPlaceholder="e.g., My Store"
@@ -54,6 +54,7 @@
             />
 
             <TextFieldInput
+               v-if="keyPayload.payment_method === 'mobilemoney'"
               labelId="textRedirectUrl"
               labelTitle="Redirect URL"
               :labelCompact="false"
@@ -83,6 +84,7 @@
             />
 
             <TextFieldInput
+               v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectSuccess"
               labelTitle="Redirect Success URL"
               :labelCompact="false"
@@ -97,6 +99,7 @@
             />
 
             <TextFieldInput
+               v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectFailed"
               labelTitle="Redirect Failed URL"
               :labelCompact="false"
@@ -112,7 +115,7 @@
 
             <TextFieldInput
               labelId="textNarration"
-              labelTitle="Narration"
+              labelTitle="Narration (Optional)"
               :labelCompact="false"
               :inputType="IInputType.Text"
               inputPlaceholder="e.g., Store order"
@@ -137,12 +140,12 @@
 
             <TextFieldInput
               labelId="textDomains"
-              labelTitle="Domains"
+              labelTitle="Your Website Domain"
               :labelCompact="false"
               :inputType="IInputType.Text"
-              inputPlaceholder="Enter allowed domains, separated by commas"
-              :inputValue="keyPayload.domains"
-              @inputChanged="keyPayload.domains = $event"
+              inputPlaceholder="Enter website domains"
+              :inputValue="keyPayload.allowed_domains"
+              @inputChanged="keyPayload.allowed_domains = $event"
               :errorHandler="{
                 validator: 'validateURL',
                 message: 'Enter a valid url.',
@@ -164,6 +167,7 @@
             </button>
           </div>
         </div>
+      </div>
       </div>
     </template>
 
@@ -189,9 +193,9 @@ type IPublishableKeyPayload = {
   payment_method: string;
   redirect_url: string;
   cancel_url: string;
-  narration: string;
+  narration?: string;
   webhook_url: string;
-  domains: string;
+  allowed_domains: string;
 
   redirect_success_url: string;
   redirect_failed_url: string;
@@ -219,15 +223,15 @@ const getCurrency = computed(() =>
 
 const keyPayload = ref<IPublishableKeyPayload>({
   name: "",
-  currency: "",
-  payment_method: "",
+  currency: "USD",
+  payment_method: "card",
   redirect_url: "",
   cancel_url: "",
   narration: "",
   webhook_url: "",
   redirect_success_url: "",
   redirect_failed_url: "",
-  domains: "",
+  allowed_domains: "",
 
 });
 
@@ -244,7 +248,7 @@ const isActionReady = computed(() => {
     Boolean(payload.currency) &&
     Boolean(payload.payment_method) &&
     Boolean(payload.webhook_url) &&
-    Boolean(payload.domains) 
+    Boolean(payload.allowed_domains) 
 
   return baseValid
 });
@@ -262,7 +266,7 @@ const formFields: (keyof IPublishableKeyPayload)[] = [
   "webhook_url",
   "redirect_success_url",
   "redirect_failed_url",
-  "domains"
+  "allowed_domains"
 ];
 
 const parseList = (value?: string) =>
@@ -280,9 +284,9 @@ const getPublishableKeyPayload = () => {
     if (value) payload[field] = value;
   });
 
-  const domains = parseList(source.domains);
+  const domains = parseList(source.allowed_domains);
 
-  if (domains.length) payload.domains = domains;
+  if (domains.length) payload.allowed_domains = domains;
 
   payload.operator = source.payment_method === "card" ? "mpgs" : "";
 
@@ -372,7 +376,7 @@ watch(
       redirect_success_url: newData.redirect_success_url ?? "",
       redirect_failed_url: newData.redirect_failed_url ?? "",
 
-      domains: Array.isArray(newData.allowed_domains)
+      allowed_domains: Array.isArray(newData.allowed_domains)
         ? newData.allowed_domains.join(", ")
         : (newData.allowed_domains ?? ""),
     };
