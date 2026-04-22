@@ -2,8 +2,10 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Transactions"
+    searchInputPlaceholder="Search transaction by reference id"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
+    @searchEntered="processSearchEntry"
   >
     <template #pageOptions>
       <div
@@ -91,7 +93,7 @@
       </TableContainer>
     </template>
   </PageContentWrapper>
-    <teleport to="body" v-if="showTransactionDetailsModal">
+  <teleport to="body" v-if="showTransactionDetailsModal">
     <TransactionDetailsModal
       @closeTriggered="toggleTransactionDetailsModal"
       :transaction="selectedTransaction"
@@ -125,9 +127,13 @@ const activePeriod = ref<[Date, Date] | null>(null);
 const page = ref(1);
 const selectedTransaction = ref(null);
 const showTransactionDetailsModal = ref(false);
+const searchQuery = ref<string>("");
 
 const filters = computed(
-  () => `?page=${page.value}&method=${selectedMethod.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+  () =>
+    `?page=${page.value}&method=${selectedMethod.value}
+    &status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}
+    &to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
 );
 
 const statusOptions = ["Successful", "Pending", "Failed"];
@@ -146,6 +152,10 @@ const tableHeader = ref<TableHeaderType[]>([
 const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
 const tablePaging = ref<any>({});
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -168,7 +178,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 };
 
 const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
+  selectedRange: [Date | string, Date | string],
 ) => {
   if (selectedRange && selectedRange.length === 2) {
     const normalizedRange: [Date, Date] = [
@@ -227,10 +237,12 @@ const fetchPaymentTransactions = async (filters: string) => {
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
-        reference: data.client_reference ? data.client_reference : data.reference,
+        reference: data.client_reference
+          ? data.client_reference
+          : data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
@@ -238,7 +250,9 @@ const fetchPaymentTransactions = async (filters: string) => {
           amount: formatNumber(data.amount),
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
-          reference: data.client_reference ? data.client_reference : data.reference,
+          reference: data.client_reference
+            ? data.client_reference
+            : data.reference,
         },
       };
     });
@@ -276,10 +290,12 @@ const fetchAllTransactions = async () => {
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
-        reference: data.client_reference ? data.client_reference : data.reference,
+        reference: data.client_reference
+          ? data.client_reference
+          : data.reference,
         currency: data.currency,
       };
     });
@@ -298,7 +314,7 @@ const exportToExcel = async () => {
 
   if (!allTransactions || allTransactions.length === 0) return;
 
-    const filtered = allTransactions.filter((tx) => {
+  const filtered = allTransactions.filter((tx) => {
     const method = tx.payment_details.toLowerCase();
     const status = tx.status.toLowerCase();
     const date = tx.raw_date ? new Date(tx.raw_date) : null;

@@ -5,22 +5,7 @@
         <div class="icon icon-menu"></div>
       </div>
 
-      <div class="topbar--left-wrapper">
-        <!-- Search bar -->
-        <div class="search-bar">
-          <div class="search-area">
-            <div class="icon icon-search-normal"></div>
-            <input
-              type="search"
-              class="form-control"
-              placeholder="Search by transactions, customer or currency data"
-            />
-          </div>
-
-          <!-- Search result -->
-          <div class="search-result"></div>
-        </div>
-      </div>
+  
     </div>
 
     <div class="topbar--right">
@@ -192,7 +177,6 @@ const isBusinessActivated = computed(() =>
   profileUtil.getBusinessActivatedStatus()
 );
 
-const searchQuery = ref<string>("");
 
 watch(route, () => {
   toggleNotificationDropdown(false);
@@ -253,10 +237,6 @@ const triggerMenuSidebar = () => {
   eventBus?.emit("triggerSidebar");
 };
 
-// SETUP DROPDOWN FUNCTIONALITY
-const dialogModeRef = ref<HTMLElement | null>(null);
-const togglerModeRef = ref<HTMLElement | null>(null);
-
 const showNotificationDropdown = ref(false);
 const dialogNotificationRef = ref<HTMLElement | null>(null);
 const togglerNotificationRef = ref<HTMLElement | null>(null);
@@ -299,24 +279,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
     &-wrapper {
       @apply flex flex-col justify-center items-start mdLg:gap-y-0.5 w-full;
 
-      .search-bar {
-        @apply relative w-[500px] sm:w-full sm:my-4;
-
-        .search-area {
-          @apply relative;
-
-          .icon {
-            @apply absolute top-1/2 -translate-y-1/2 left-4 text-base text-grey-700 z-10;
-          }
-
-          .form-control {
-            @apply bg-grey-50/75 h-11 pl-11 py-5 border border-grey-100 rounded-lg focus:border-green-500/60 focus:bg-grey-50/50 placeholder:text-grey-700 w-full text-sm sm:h-10 sm:text-xs;
-          }
-        }
-
-        .search-result {
-        }
-      }
+    
     }
   }
 

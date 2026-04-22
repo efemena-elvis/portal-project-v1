@@ -10,6 +10,7 @@
       <button
         class="size-8 bg-white hover:bg-gray-50 transition-colors rounded-full"
         title="Close checkout"
+        
       >
         <div class="icon icon-times"></div>
       </button>

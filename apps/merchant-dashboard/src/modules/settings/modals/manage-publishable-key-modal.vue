@@ -1,6 +1,7 @@
 <template>
   <ModalDialog
     @closeModal="$emit('closeTriggered')"
+    @reloadPublishableKeys="$emit('reloadPublishableKeys')"
     :place_side="!isRegenerate"
   >
     <template #modal-cover-header>
@@ -166,7 +167,7 @@
             <button
               class="btn btn-primary w-full mt-3"
               ref="generateKeyBtnRef"
-              :disabled="!isActionReady || isLoading"
+              :disabled="isLoading"
               @click="
                 isRegenerate
                   ? handleRegeneratePublishableKey()
@@ -187,24 +188,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch } from "vue";
 import { IInputType } from "@packages/models";
 import { useSettingsStore } from "@/modules/settings/store";
 import { useAppVariant, useEvents } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
-import { el } from "date-fns/locale";
 
 const appVariant = ref<string>(useAppVariant());
 
 type IPublishableKeyPayload = {
-  name?: string;
-  currency?: string;
-  payment_method?: string;
-  redirect_url?: string;
-  cancel_url?: string;
-  narration?: string;
-  webhook_url?: string;
+  name: string;
+  currency: string;
+  payment_method: string;
+  redirect_url: string;
+  cancel_url: string;
+  narration: string;
+  webhook_url: string;
   domains?: string;
   ips?: string;
 
@@ -221,7 +221,7 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -315,9 +315,7 @@ const getPublishableKeyPayload = () => {
     payload.redirect_success_url = source.redirect_success_url;
 
     payload.redirect_failed_url = source.redirect_failed_url;
-  }
-
-  else{
+  } else {
     payload.redirect_url = source.redirect_url;
   }
 
@@ -335,6 +333,16 @@ const buttonText = computed(() => {
 });
 
 const handleGeneratePublishableKey = async () => {
+  if (!isActionReady.value) {
+    pushToastAlert({
+      message: "Key creation failed",
+      description:
+        "Please fill in all required fields and ensure the URLs are valid.",
+      type: "error",
+    });
+    return; 
+  }
+
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
     btnRef: generateKeyBtnRef,
@@ -356,7 +364,7 @@ const handleGeneratePublishableKey = async () => {
     },
   });
 
-  if (response.code === 200) {
+  if (response.code === 201) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
   }

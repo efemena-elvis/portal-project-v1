@@ -1,6 +1,7 @@
 <template>
   <ModalDialog
     @closeModal="$emit('closeTriggered')"
+    @reloadPublishableKeys="$emit('reloadPublishableKeys')"
     :place_side="!isRegenerate"
   >
     <template #modal-cover-header>
@@ -167,7 +168,7 @@
             <button
               class="btn btn-primary w-full mt-3"
               ref="generateKeyBtnRef"
-              :disabled="!isActionReady || isLoading"
+              :disabled="isLoading"
               @click="
                 isRegenerate
                   ? handleRegeneratePublishableKey()
@@ -196,19 +197,20 @@ import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
 
 type IPublishableKeyPayload = {
-  name?: string;
-  currency?: string;
-  payment_method?: string;
-  redirect_url?: string;
-  cancel_url?: string;
-  narration?: string;
-  webhook_url?: string;
+  name: string;
+  currency: string;
+  payment_method: string;
+  redirect_url: string;
+  cancel_url: string;
+  narration: string;
+  webhook_url: string;
   domains?: string;
   ips?: string;
 
   redirect_success_url?: string;
   redirect_failed_url?: string;
 };
+
 
 const emits = defineEmits(["closeTriggered", "reloadPublishableKeys"]);
 
@@ -219,7 +221,7 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -333,8 +335,17 @@ const buttonText = computed(() => {
 const onCurrencyChange = (currency: string) => {
   keyPayload.value.currency = currency;
 };
-
 const handleGeneratePublishableKey = async () => {
+  if (!isActionReady.value) {
+    pushToastAlert({
+      message: "Key creation failed",
+      description:
+        "Please fill in all required fields and ensure the URLs are valid.",
+      type: "error",
+    });
+    return; 
+  }
+
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
     btnRef: generateKeyBtnRef,
@@ -356,13 +367,20 @@ const handleGeneratePublishableKey = async () => {
     },
   });
 
-  if (response.code === 200) {
+  if (response.code === 201) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
   }
 };
 
 const handleRegeneratePublishableKey = async () => {
+   if(isActionReady.value === false) {
+      pushToastAlert({
+      message: "Key creation failed",
+      description: "Please fill in all required fields and ensure the URLs are valid.",
+      type: "error",
+    });
+    }
   const response = await processAPIRequest({
     action: regeneratePublishableKey,
     btnRef: generateKeyBtnRef,

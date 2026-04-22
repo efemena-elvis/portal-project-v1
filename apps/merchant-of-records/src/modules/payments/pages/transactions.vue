@@ -1,9 +1,11 @@
 <template>
   <PageContentWrapper
+    searchInputPlaceholder="Search transaction by reference id"
     :pagingData="tablePaging"
     pageDescription="All Transactions"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
+    @searchEntered="processSearchEntry"
   >
     <template #pageOptions>
       <div
@@ -112,7 +114,7 @@
       </TableContainer>
     </template>
   </PageContentWrapper>
-   <teleport to="body" v-if="showTransactionDetailsModal">
+  <teleport to="body" v-if="showTransactionDetailsModal">
     <TransactionDetailsModal
       @closeTriggered="toggleTransactionDetailsModal"
       :transaction="selectedTransaction"
@@ -128,13 +130,12 @@ import { useDate, useString, useEvents } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import { DatePicker } from "@packages/uikit";
 import TransactionDetailsModal from "@/modules/payments/modals/transaction-details-modal.vue";
-import {  
+import {
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
   PageContentWrapper,
 } from "@packages/uikit";
-
 
 const { formatNumber, getStatus, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
@@ -147,6 +148,7 @@ const selectedCurrency = ref("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const selectedTransaction = ref(null);
 const showTransactionDetailsModal = ref(false);
+const searchQuery = ref<string>("");
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
@@ -162,8 +164,6 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Transaction Reference", slug: "reference" },
 ]);
 
-
-
 const tableBody = ref<any[]>([]);
 const tableBodyRaw = ref<any[]>([]);
 const tablePaging = ref<any>({});
@@ -171,8 +171,14 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&method=${selectedMethod.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&method=${selectedMethod.value}&currency=${selectedCurrency.value}
+    &status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}
+    &to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
 );
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -195,7 +201,7 @@ const isWithinRange = (date: Date, range: [Date, Date] | null): boolean => {
 };
 
 const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
+  selectedRange: [Date | string, Date | string],
 ) => {
   if (selectedRange && selectedRange.length === 2) {
     const normalizedRange: [Date, Date] = [
@@ -207,8 +213,6 @@ const processFilterSelection = (
     activePeriod.value = null;
   }
 };
-
-
 
 const openTransactionLog = (row: any) => {
   selectedTransaction.value = row.raw;
@@ -256,7 +260,7 @@ const fetchPaymentTransactions = async (filters: string) => {
         payment_details: capitalizeFirstLetter(data.method),
         status: getStatus(data.status, data.status),
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         reference: data.reference,
@@ -306,7 +310,7 @@ const fetchAllTransactions = async () => {
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
         reason_for_failure: capitalizeFirstLetter(
-          (data.reason_for_failure || "-").toString().toLowerCase()
+          (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
         reference: data.reference,

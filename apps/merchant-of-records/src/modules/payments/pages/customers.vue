@@ -1,9 +1,11 @@
 <template>
   <PageContentWrapper
     :pagingData="tablePaging"
+    searchInputPlaceholder="Search by customer email"
     pageDescription="All Customers"
     :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
     @updatePage="(currentPage) => (page = currentPage)"
+    @searchEntered="processSearchEntry"
   >
     <template #pageOptions v-if="!isLoading">
       <div
@@ -70,12 +72,13 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 
-const { formatNumber, getStatus, notAvailable } = useString();
+const {  getStatus, notAvailable } = useString();
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
 const isLoading = ref(true);
 const selectedStatus = ref("");
+const searchQuery = ref<string>("");
 const activePeriod = ref<[Date, Date] | null>(null);
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Added On", slug: "date_created" },
@@ -92,8 +95,12 @@ const page = ref<number>(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`
 );
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();

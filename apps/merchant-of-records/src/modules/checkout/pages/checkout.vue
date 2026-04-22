@@ -1,7 +1,7 @@
 <template>
   <div class="checkout-background">
     <!-- CLOSE ACTION -->
-    <div class="close-icon">
+    <div class="close-icon" @click="router.push('/')" title="Close checkout">
       <div class="icon icon-times"></div>
     </div>
 

@@ -1,9 +1,11 @@
 <template>
   <PageContentWrapper
     :pagingData="tablePaging"
+    searchInputPlaceholder="Search by customer email"
     pageDescription="All Customers"
     :pageKeys="{ green: 'Active', red: 'Blacklisted' }"
-   @updatePage="(currentPage) => (page = currentPage)"
+    @updatePage="(currentPage) => (page = currentPage)"
+    @searchEntered="processSearchEntry"
   >
     <template #pageOptions v-if="!isLoading">
       <div
@@ -70,7 +72,7 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 
-const {  getStatus, notAvailable } = useString();
+const { getStatus, notAvailable } = useString();
 const { getCustomers } = usePaymentStore();
 const { processAPIRequest } = useEvents();
 
@@ -84,16 +86,24 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Phone Number", slug: "phone_number" },
   { title: "Status", slug: "status" },
 ]);
-const statusOptions = [{key:"Active", value:"false"}, {key:"Blacklisted", value:"true"}];
+const statusOptions = [
+  { key: "Active", value: "false" },
+  { key: "Blacklisted", value: "true" },
+];
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const page = ref<number>(1);
+const searchQuery = ref<string>("");
 
 const filters = computed(
   () =>
-    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}`
+    `?page=${page.value}&blacklisted=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
 );
+
+const processSearchEntry = (searchValue: string) => {
+  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+};
 
 const getDateAdded = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -101,7 +111,7 @@ const getDateAdded = (date: string) => {
 };
 
 const processFilterSelection = (
-  selectedRange: [Date | string, Date | string]
+  selectedRange: [Date | string, Date | string],
 ) => {
   if (selectedRange && selectedRange.length === 2) {
     const normalizedRange: [Date, Date] = [
@@ -147,7 +157,7 @@ const fetchCustomers = async (filters: string) => {
           : notAvailable("No phone number"),
         status: getStatus(
           data.blacklisted ? "danger" : "success",
-          data.blacklisted ? "Blacklisted" : "Active"
+          data.blacklisted ? "Blacklisted" : "Active",
         ),
         raw: {
           customer_details: `${customerName} (${customerEmail})`,
