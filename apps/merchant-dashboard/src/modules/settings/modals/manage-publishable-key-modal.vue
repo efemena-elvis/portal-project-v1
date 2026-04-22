@@ -54,7 +54,6 @@
             />
 
             <TextFieldInput
-              v-if="keyPayload.payment_method === 'mobilemoney'"
               labelId="textRedirectUrl"
               labelTitle="Redirect URL"
               :labelCompact="false"
@@ -84,7 +83,6 @@
             />
 
             <TextFieldInput
-              v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectSuccess"
               labelTitle="Redirect Success URL"
               :labelCompact="false"
@@ -99,7 +97,6 @@
             />
 
             <TextFieldInput
-              v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectFailed"
               labelTitle="Redirect Failed URL"
               :labelCompact="false"
@@ -152,22 +149,11 @@
               }"
             />
 
-            <TextFieldInput
-              labelId="textIPs"
-              labelTitle="IPs"
-              :labelCompact="false"
-              :inputType="IInputType.Text"
-              inputPlaceholder="Enter allowed IP addresses, separated by commas"
-              :inputValue="keyPayload.ips"
-              @inputChanged="keyPayload.ips = $event"
-            />
-          </div>
-
           <div class="px-4">
             <button
               class="btn btn-primary w-full mt-3"
               ref="generateKeyBtnRef"
-              :disabled="isLoading"
+              :disabled="isLoading || !isActionReady"
               @click="
                 isRegenerate
                   ? handleRegeneratePublishableKey()
@@ -205,11 +191,10 @@ type IPublishableKeyPayload = {
   cancel_url: string;
   narration: string;
   webhook_url: string;
-  domains?: string;
-  ips?: string;
+  domains: string;
 
-  redirect_success_url?: string;
-  redirect_failed_url?: string;
+  redirect_success_url: string;
+  redirect_failed_url: string;
 };
 
 const emits = defineEmits(["closeTriggered", "reloadPublishableKeys"]);
@@ -221,7 +206,7 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest, pushToastAlert } = useEvents();
+const { processAPIRequest} = useEvents();
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -243,7 +228,7 @@ const keyPayload = ref<IPublishableKeyPayload>({
   redirect_success_url: "",
   redirect_failed_url: "",
   domains: "",
-  ips: "",
+
 });
 
 const generateKeyBtnRef = ref<HTMLButtonElement | null>(null);
@@ -258,18 +243,10 @@ const isActionReady = computed(() => {
     Boolean(payload.name) &&
     Boolean(payload.currency) &&
     Boolean(payload.payment_method) &&
-    Boolean(payload.webhook_url);
+    Boolean(payload.webhook_url) &&
+    Boolean(payload.domains) 
 
-  const hasWhitelist = Boolean(payload.domains) || Boolean(payload.ips);
-
-  const isCardValid =
-    payload.payment_method !== "card" ||
-    (Boolean(payload.redirect_url) && Boolean(payload.cancel_url));
-
-  const isMomoValid =
-    payload.payment_method !== "mobilemoney" || Boolean(payload.redirect_url);
-
-  return baseValid && hasWhitelist && isCardValid && isMomoValid;
+  return baseValid
 });
 
 const onMethodChange = (method: string) => {
@@ -281,11 +258,11 @@ const formFields: (keyof IPublishableKeyPayload)[] = [
   "currency",
   "payment_method",
   "redirect_url",
-  "cancel_url",
   "narration",
   "webhook_url",
   "redirect_success_url",
   "redirect_failed_url",
+  "domains"
 ];
 
 const parseList = (value?: string) =>
@@ -304,20 +281,10 @@ const getPublishableKeyPayload = () => {
   });
 
   const domains = parseList(source.domains);
-  const ips = parseList(source.ips);
 
   if (domains.length) payload.domains = domains;
-  if (ips.length) payload.ips = ips;
 
-  if (source.payment_method === "card") {
-    payload.operator = "mpgs";
-
-    payload.redirect_success_url = source.redirect_success_url;
-
-    payload.redirect_failed_url = source.redirect_failed_url;
-  } else {
-    payload.redirect_url = source.redirect_url;
-  }
+  payload.operator = source.payment_method === "card" ? "mpgs" : "";
 
   if (props.isUpdate && props.keyData?.id) {
     payload.id = props.keyData.id;
@@ -333,15 +300,6 @@ const buttonText = computed(() => {
 });
 
 const handleGeneratePublishableKey = async () => {
-  if (!isActionReady.value) {
-    pushToastAlert({
-      message: "Key creation failed",
-      description:
-        "Please fill in all required fields and ensure the URLs are valid.",
-      type: "error",
-    });
-    return; 
-  }
 
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
@@ -350,6 +308,12 @@ const handleGeneratePublishableKey = async () => {
     payload: getPublishableKeyPayload(),
     alertHandler: {
       200: {
+        message: props.isUpdate
+          ? "Publishable key updated successfully"
+          : "Publishable key generated successfully",
+        type: "success",
+      },
+         201: {
         message: props.isUpdate
           ? "Publishable key updated successfully"
           : "Publishable key generated successfully",
@@ -411,10 +375,6 @@ watch(
       domains: Array.isArray(newData.allowed_domains)
         ? newData.allowed_domains.join(", ")
         : (newData.allowed_domains ?? ""),
-
-      ips: Array.isArray(newData.allowed_ips)
-        ? newData.allowed_ips.join(", ")
-        : (newData.allowed_ips ?? ""),
     };
   },
   { immediate: true },
