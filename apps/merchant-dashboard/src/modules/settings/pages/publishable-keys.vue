@@ -77,6 +77,7 @@
             <div class="text-sm text-grey-600 mb-1">Key</div>
             <CopyLinkCell
               :link="key.key"
+              :isText="true"
               class="text-sm font-mono bg-grey-50 p-2 rounded truncate"
             />
           </div>
