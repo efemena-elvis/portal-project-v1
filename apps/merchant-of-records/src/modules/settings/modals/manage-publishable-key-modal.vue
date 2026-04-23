@@ -171,7 +171,7 @@ import { useSettingsStore } from "@/modules/settings/store";
 import { useEvents } from "@packages/hooks";
 import { TextFieldInput, ModalDialog, SelectFieldInput } from "@packages/uikit";
 import { updatePublishableKey } from "../store/actions";
-import useString from '../../../../../../packages/hooks/src/useString';
+import useString from "../../../../../../packages/hooks/src/useString";
 
 type IPublishableKeyPayload = {
   name: string;
@@ -194,8 +194,8 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest, pushToastAlert} = useEvents();
-const {capitalizeFirstLetter} = useString()
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { capitalizeFirstLetter } = useString();
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -292,7 +292,6 @@ const onCurrencyChange = (currency: string) => {
   keyPayload.value.currency = currency;
 };
 const handleGeneratePublishableKey = async () => {
-
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
     btnRef: generateKeyBtnRef,
@@ -323,9 +322,7 @@ const handleGeneratePublishableKey = async () => {
   if (response.code === 201 || response.code === 200) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
-  }
-
-    else{
+  } else {
     pushToastAlert({
       message: "Key creation failed",
       description: capitalizeFirstLetter(response.error.message),
@@ -355,9 +352,7 @@ const handleRegeneratePublishableKey = async () => {
   if (response.code === 200) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
-  }
-
-  else{
+  } else {
     pushToastAlert({
       message: "Key creation failed",
       description: capitalizeFirstLetter(response.error.message),

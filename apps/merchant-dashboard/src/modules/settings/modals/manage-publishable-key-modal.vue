@@ -26,7 +26,7 @@
           <div class="whitelist-block rounded-2xl" v-if="!isRegenerate">
             <TextFieldInput
               labelId="textName"
-           labelTitle="Key Name (Your key identifier name)"
+              labelTitle="Key Name (Your key identifier name)"
               :labelCompact="false"
               :inputType="IInputType.Text"
               inputPlaceholder="e.g., My Store"
@@ -54,7 +54,7 @@
             />
 
             <TextFieldInput
-               v-if="keyPayload.payment_method === 'mobilemoney'"
+              v-if="keyPayload.payment_method === 'mobilemoney'"
               labelId="textRedirectUrl"
               labelTitle="Redirect URL"
               :labelCompact="false"
@@ -70,21 +70,7 @@
             />
 
             <TextFieldInput
-              labelId="textCancelUrl"
-              labelTitle="Cancel URL"
-              :labelCompact="false"
-              :inputType="IInputType.Text"
-              inputPlaceholder="https://mystore.com/cart"
-              :inputValue="keyPayload.cancel_url"
-              @inputChanged="keyPayload.cancel_url = $event"
-              :errorHandler="{
-                validator: 'validateURL',
-                message: 'Enter a valid url.',
-              }"
-            />
-
-            <TextFieldInput
-               v-if="keyPayload.payment_method === 'card'"
+              v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectSuccess"
               labelTitle="Redirect Success URL"
               :labelCompact="false"
@@ -99,7 +85,7 @@
             />
 
             <TextFieldInput
-               v-if="keyPayload.payment_method === 'card'"
+              v-if="keyPayload.payment_method === 'card'"
               labelId="textRedirectFailed"
               labelTitle="Redirect Failed URL"
               :labelCompact="false"
@@ -143,7 +129,7 @@
               labelTitle="Your Website Domain"
               :labelCompact="false"
               :inputType="IInputType.Text"
-              inputPlaceholder="Enter website domains"
+              inputPlaceholder="Enter website domain"
               :inputValue="keyPayload.allowed_domains"
               @inputChanged="keyPayload.allowed_domains = $event"
               :errorHandler="{
@@ -151,10 +137,10 @@
                 message: 'Enter a valid url.',
               }"
             />
-
+          </div>
           <div class="px-4">
             <button
-              class="btn btn-primary w-full mt-3"
+              class="btn btn-primary w-full"
               ref="generateKeyBtnRef"
               :disabled="isLoading || !isActionReady"
               @click="
@@ -167,7 +153,6 @@
             </button>
           </div>
         </div>
-      </div>
       </div>
     </template>
 
@@ -192,7 +177,6 @@ type IPublishableKeyPayload = {
   currency: string;
   payment_method: string;
   redirect_url: string;
-  cancel_url: string;
   narration?: string;
   webhook_url: string;
   allowed_domains: string;
@@ -210,8 +194,8 @@ const props = defineProps<{
 }>();
 
 const { generatePublishableKey, regeneratePublishableKey } = useSettingsStore();
-const { processAPIRequest, pushToastAlert} = useEvents();
-const {capitalizeFirstLetter} = useString()
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { capitalizeFirstLetter } = useString();
 
 const paymentMethods = [
   { name: "Card", value: "card" },
@@ -227,13 +211,11 @@ const keyPayload = ref<IPublishableKeyPayload>({
   currency: "USD",
   payment_method: "card",
   redirect_url: "",
-  cancel_url: "",
   narration: "",
   webhook_url: "",
   redirect_success_url: "",
   redirect_failed_url: "",
   allowed_domains: "",
-
 });
 
 const generateKeyBtnRef = ref<HTMLButtonElement | null>(null);
@@ -249,9 +231,9 @@ const isActionReady = computed(() => {
     Boolean(payload.currency) &&
     Boolean(payload.payment_method) &&
     Boolean(payload.webhook_url) &&
-    Boolean(payload.allowed_domains) 
+    Boolean(payload.allowed_domains);
 
-  return baseValid
+  return baseValid;
 });
 
 const onMethodChange = (method: string) => {
@@ -267,7 +249,7 @@ const formFields: (keyof IPublishableKeyPayload)[] = [
   "webhook_url",
   "redirect_success_url",
   "redirect_failed_url",
-  "allowed_domains"
+  "allowed_domains",
 ];
 
 const parseList = (value?: string) =>
@@ -305,7 +287,6 @@ const buttonText = computed(() => {
 });
 
 const handleGeneratePublishableKey = async () => {
-
   const response = await processAPIRequest({
     action: props.isUpdate ? updatePublishableKey : generatePublishableKey,
     btnRef: generateKeyBtnRef,
@@ -318,7 +299,7 @@ const handleGeneratePublishableKey = async () => {
           : "Publishable key generated successfully",
         type: "success",
       },
-         201: {
+      201: {
         message: props.isUpdate
           ? "Publishable key updated successfully"
           : "Publishable key generated successfully",
@@ -336,9 +317,7 @@ const handleGeneratePublishableKey = async () => {
   if (response.code === 201) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
-  }
-
-    else{
+  } else {
     pushToastAlert({
       message: "Key creation failed",
       description: capitalizeFirstLetter(response.error.message),
@@ -367,8 +346,7 @@ const handleRegeneratePublishableKey = async () => {
   if (response.code === 200 || response.code === 201) {
     emits("reloadPublishableKeys");
     emits("closeTriggered");
-  }
-    else{
+  } else {
     pushToastAlert({
       message: "key creation failed",
       description: capitalizeFirstLetter(response.error.message),
@@ -386,7 +364,7 @@ watch(
       currency: newData.currency ?? getCurrency.value,
       payment_method: newData.payment_method ?? "",
       redirect_url: newData.redirect_url ?? "",
-      cancel_url: newData.cancel_url ?? "",
+
       narration: newData.narration ?? "",
       webhook_url: newData.webhook_url ?? "",
       redirect_success_url: newData.redirect_success_url ?? "",
