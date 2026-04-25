@@ -171,9 +171,7 @@ const page = ref(1);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&method=${selectedMethod.value}&currency=${selectedCurrency.value}
-    &status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}
-    &to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
+    `?page=${page.value}&method=${selectedMethod.value}&currency=${selectedCurrency.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
 );
 
 const processSearchEntry = (searchValue: string) => {

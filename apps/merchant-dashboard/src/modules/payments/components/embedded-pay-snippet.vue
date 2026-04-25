@@ -5,7 +5,7 @@ import { useAppVariant, useEvents } from "@packages/hooks";
 
 const { pushToastAlert } = useEvents();
 
-type Tab = "js" | "react" | "vue" | "nextjs" | "wordpress" | "webflow";
+type Tab = "js" | "react" | "vue" | "nextjs" | "wordpress";
 
 const activeTab = ref<Tab>("js");
 
@@ -42,7 +42,7 @@ const tabs: { key: Tab; label: string }[] = [
   { key: "vue", label: "Vue" },
   { key: "nextjs", label: "Next.js" },
   { key: "wordpress", label: "WordPress" },
-  { key: "webflow", label: "Webflow" },
+  // { key: "webflow", label: "Webflow" },
 ];
 
 const codeSnippets: Record<Tab, string> = {
@@ -143,72 +143,52 @@ export default function CheckoutPage() {
   );
 }`,
 
-wordpress: `METHOD 1: Shortcode (Recommended)
+wordpress: `SHORTCODE (RECOMMENDED)
 
-[embedpay_button amount="5000"]Pay Now[/embedpay_button]
+[portalpay_button amount="5000"]Pay Now[/portalpay_button]
 
-Dynamic Amount Example
+BUTTON WITH NARRATION
 
-[embedpay_button amount_from="#price-input"]Pay Now[/embedpay_button]
+[portalpay_button amount="10000" narration="Order #123"]Pay for Order[/portalpay_button]
 
-Full Configuration Example
+DYNAMIC AMOUNT FROM PAGE ELEMENT
 
-[embedpay_button
-  amount="10000"
-  narration="Product Purchase"
-  label="Buy Now"
-  currency="NGN"
-  method="card"
-  callback="https://yoursite.com/success"
-  cancel="https://yoursite.com/cancel"
-  checkout_url="/checkout"
-  force_mock="true"
+[portalpay_button amount_from="#order-total"]Pay Now[/portalpay_button]
+
+FULL SHORTCODE WITH REDIRECTS
+
+[portalpay_button
+  amount="2500"
+  narration="Product purchase"
+  redirect_success_url="https://yoursite.com/success"
+  redirect_failed_url="https://yoursite.com/try-again"
+  class="btn btn-primary"
 ]
+Pay with Card
+[/portalpay_button]
 
-METHOD 2: JavaScript SDK (Advanced Users)
+WORDPRESS PLUGIN SETUP
 
-<script src="https://cdn.vesicash.com/embedpay.js"><\/script>
+1. Download portalpay-v1.0.1.zip
+2. Go to WordPress Admin → Plugins → Add New → Upload
+3. Upload and activate the plugin
+4. Go to Settings → PortalPay
+5. Enter your Publishable Key
+6. Configure redirect URLs based on payment method
+7. Save settings
 
-<script>
-window.EMBEDPAY = {
-  key: '${current.value.keyPrefix}XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-  currency: 'NGN',
-  narration: 'Order Payment',
-  method: 'card',
-  callback: 'https://yoursite.com/success',
-  cancel: 'https://yoursite.com/cancel',
-  forceMock: false
-};
-<\/script>
+WOOCOMMERCE INTEGRATION
 
-<button
-  data-checkout
-  data-amount-from="#amount-input"
-  data-narration="Order Payment"
->
-  Pay Now
-<\/button>
+1. Enable "Payment Gateway" in PortalPay settings
+2. Go to WooCommerce → Settings → Payments
+3. Enable "PortalPay" and configure
+4. PortalPay button will appear on cart and checkout pages
 
-METHOD 3: WooCommerce
+NOTES
 
-1. Install EmbedPay WooCommerce Gateway plugin
-2. Go to WooCommerce Settings Payments
-3. Enable EmbedPay by Vesicash
-4. Add your Publishable Key
-5. Done appears automatically on checkout
-
-METHOD 4: Plugin Setup
-
-1. Upload embedpay plugin to wp-content/plugins/
-2. Activate plugin
-3. Go to Settings EmbedPay
-4. Add your Publishable Key and configure options
-
-METHOD 5: Elementor
-
-1. Install Elementor EmbedPay Widget plugin
-2. Drag EmbedPay Button widget into page
-3. Configure amount narration and callbacks
+• Use Redirect URL for Mobile Money.
+• Use Success Redirect URL and Failed Redirect URL for card payments.
+• The plugin supports cards, mobile money, and bank transfers.
 `,
 };
 
