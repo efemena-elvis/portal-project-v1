@@ -4,7 +4,6 @@ import { useEvents } from "@packages/hooks";
 import { useCheckoutStore } from "../store";
 import { MobileMoneyPaymentRequest } from "../types";
 
-// --- Constants ---
 const POLLING_INTERVAL = 5 * 1000;
 const POLLING_DURATION = 5 * 60000;
 
@@ -14,33 +13,31 @@ export const useMobileMoneyPayment = () => {
   const router = useRouter();
   const { processAPIRequest } = useEvents();
 
-  // --- Internal State ---
+  const appendQueryParam = (url: string, key: string, value: string) => {
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}${key}=${encodeURIComponent(value)}`;
+  };
+
+  const getCheckoutStatusPath = (redirectUrl: string) => {
+    return `/checkout/payment-status?reference=${
+      getPaymentReference.value
+    }&status=pending&redirect_url=${encodeURIComponent(redirectUrl)}`;
+  };
+
   let pollingIntervalId: number | undefined;
   let pollingTimeoutId: number | undefined;
 
   const paymentButtonRef = ref<HTMLButtonElement | null>(null);
   const isPolling = ref(false);
 
-  // --- Computed Getters ---
   const paymentDetails = computed(() => store.payment_details);
   const isFetchingDetails = computed(() => store.fetching_payment_details);
   const isInitiatingPayment = computed(() => store.initiating_payment);
 
-  /**
-   * @description Reactive getter for the payment reference from the current route's query params.
-   */
   const getPaymentReference = computed(
-    () => (route.params.reference as string) || route.query.reference || ""
+    () => (route.params.reference as string) || route.query.reference || "",
   );
 
-  // --- Helper Methods ---
-  const getCheckoutStatusPath = (redirectUrl: string): string => {
-    return `/checkout/payment-status?reference=${
-      getPaymentReference.value
-    }&status=pending&redirect_url=${encodeURIComponent(redirectUrl)}`;
-  };
-
-  // --- Core Methods ---
   const fetchPaymentDetails = async (showAlert = true) => {
     store.updateFetchingPaymentDetails(true);
 
@@ -52,13 +49,16 @@ export const useMobileMoneyPayment = () => {
 
     store.updateFetchingPaymentDetails(false);
 
-    if (response && response?.data) store.updatePaymentDetails(response.data);
+    if (response && response.data) {
+      store.updatePaymentDetails(response.data);
+    }
+
     return response;
   };
 
   const makePayment = async (
     requestPayload: MobileMoneyPaymentRequest,
-    redirectUrl: string
+    redirectUrl: string,
   ): Promise<boolean> => {
     store.updatingInitiatingPayment(true);
 
@@ -78,7 +78,7 @@ export const useMobileMoneyPayment = () => {
         },
       });
 
-      if (response && (response?.code === 200 || response?.code === 201)) {
+      if (response && (response.code === 200 || response.code === 201)) {
         router.push(getCheckoutStatusPath(redirectUrl));
         return true;
       }
@@ -87,7 +87,7 @@ export const useMobileMoneyPayment = () => {
     } finally {
       store.updatingInitiatingPayment(false);
     }
-    // If we reach here, it means the initiation failed.
+
     return false;
   };
 
@@ -108,13 +108,12 @@ export const useMobileMoneyPayment = () => {
     };
 
     const poll = async () => {
-      // console.log("polling 1...");
       const response = await fetchPaymentDetails(false);
-      // console.log("polling 2...");
 
       if (!response || !response.data) return;
 
       const status = response.data.status?.toLowerCase();
+
       if (
         status === "success" ||
         status === "successful" ||
@@ -126,19 +125,36 @@ export const useMobileMoneyPayment = () => {
 
         updateRouteStatus(isSuccess ? "success" : "failed");
 
+            if (status === "failed") {
         const baseUrl =
-          (isSuccess
-            ? response.data.redirect_success_url
-            : response.data.redirect_failed_url) ||
-          response.data.redirect_url ||
-          (route.query.redirect_url as string);
+          response.data.redirect_failed_url 
 
-        const url = new URL(baseUrl, window.location.origin);
-        url.searchParams.set("reference", String(getPaymentReference.value));
+        const redirectUrl = appendQueryParam(
+          baseUrl,
+          "reference",
+          String(getPaymentReference.value),
+        );
 
-        setTimeout(() => {
-          window.location.replace(url.toString());
-        }, 2000);
+        window.location.replace(redirectUrl);
+        return;
+      }
+
+        if (status === "success" || status === "successful") {
+          const baseUrl =
+            response.data?.redirect_success_url ||
+            response.data?.redirect_url ||
+            "";
+
+          const redirectUrl = appendQueryParam(
+            baseUrl,
+            "reference",
+            String(getPaymentReference.value),
+          );
+
+          setTimeout(() => {
+            window.location.replace(redirectUrl);
+          }, 2000);
+        }
       }
     };
 
@@ -146,7 +162,7 @@ export const useMobileMoneyPayment = () => {
 
     pollingIntervalId = setInterval(
       poll,
-      POLLING_INTERVAL
+      POLLING_INTERVAL,
     ) as unknown as number;
 
     pollingTimeoutId = setTimeout(() => {
@@ -164,23 +180,17 @@ export const useMobileMoneyPayment = () => {
 
   onUnmounted(stopPaymentPolling);
 
-  // --- Exposed API ---
   return {
-    // Computed Getters
     paymentDetails,
     isFetchingDetails,
     isInitiatingPayment,
     isPolling,
     getPaymentReference,
-
-    // Methods
     fetchPaymentDetails,
     makePayment,
     startPaymentPolling,
     stopPaymentPolling,
     resetPaymentState,
-
-    // Refs
     paymentButtonRef,
   };
 };

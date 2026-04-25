@@ -12,6 +12,15 @@ export const useMobileMoneyPayment = () => {
 
   const paymentButtonRef = ref(null);
 
+  const appendQueryParam = (
+    url: string,
+    key: string,
+    value: string,
+  ): string => {
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}${key}=${encodeURIComponent(value)}`;
+  };
+
   const store = useCheckoutStore();
   const {
     fetchPaymentDetails: fetchPayment,
@@ -24,10 +33,7 @@ export const useMobileMoneyPayment = () => {
 
   const { processAPIRequest } = useEvents();
 
-  const fetchPaymentDetails = async (
-    reference: string,
-    showAlert = true,
-  ) => {
+  const fetchPaymentDetails = async (reference: string, showAlert = true) => {
     updateFetchingPaymentDetails(true);
 
     const paymentDetailsResponse = await processAPIRequest({
@@ -38,7 +44,7 @@ export const useMobileMoneyPayment = () => {
 
     updateFetchingPaymentDetails(false);
 
-    if (paymentDetailsResponse?.data) {
+    if (paymentDetailsResponse && paymentDetailsResponse.data) {
       updatePaymentDetails(paymentDetailsResponse.data);
     }
 
@@ -84,7 +90,9 @@ export const useMobileMoneyPayment = () => {
     const poll = async () => {
       const response = await fetchPaymentDetails(reference, false);
 
-      const status = response?.data?.status?.toLowerCase();
+      if (!response || !response.data) return;
+
+      const status = response.data.status?.toLowerCase();
 
       if (!status) return;
 
@@ -92,14 +100,15 @@ export const useMobileMoneyPayment = () => {
         stopPaymentStatusPolling();
 
         const baseUrl =
-          response.data?.redirect_failed_url ||
-          response.data?.redirect_url ||
-          "/";
+          response.data.redirect_failed_url 
 
-        const url = new URL(baseUrl, window.location.origin);
-        url.searchParams.set("reference", String(reference));
+        const redirectUrl = appendQueryParam(
+          baseUrl,
+          "reference",
+          String(reference),
+        );
 
-        window.location.replace(url.toString());
+        window.location.replace(redirectUrl);
         return;
       }
 
@@ -107,31 +116,36 @@ export const useMobileMoneyPayment = () => {
         stopPaymentStatusPolling();
 
         const baseUrl =
-          response.data?.redirect_success_url ||
-          response.data?.redirect_url ||
-          "/";
+          response.data.redirect_success_url ||
+          response.data.redirect_url ||
+          "";
 
-        const url = new URL(baseUrl, window.location.origin);
-        url.searchParams.set("reference", String(reference));
+        const redirectUrl = appendQueryParam(
+          baseUrl,
+          "reference",
+          String(reference),
+        );
 
         setTimeout(() => {
-          window.location.replace(url.toString());
+          window.location.replace(redirectUrl);
         }, 2500);
       }
     };
 
     poll();
 
-    pollingIntervalId = setInterval(poll, POLLING_INTERVAL) as unknown as number;
+    pollingIntervalId = setInterval(
+      poll,
+      POLLING_INTERVAL,
+    ) as unknown as number;
 
     pollingTimeoutId = setTimeout(() => {
       stopPaymentStatusPolling();
       updatePaymentStatus("failed");
 
-      const url = new URL("/", window.location.origin);
-      url.searchParams.set("reference", String(reference));
+      const redirectUrl = appendQueryParam("/", "reference", String(reference));
 
-      window.location.replace(url.toString());
+      window.location.replace(redirectUrl);
     }, POLLING_DURATION) as unknown as number;
   };
 
