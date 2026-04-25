@@ -108,18 +108,37 @@ export const useMobileMoneyPayment = () => {
     };
 
     const poll = async () => {
-      console.log("polling 1...");
+      // console.log("polling 1...");
       const response = await fetchPaymentDetails(false);
-      console.log("polling 2...");
-      const status = response && response?.data?.status?.toLowerCase();
+      // console.log("polling 2...");
 
+      if (!response || !response.data) return;
+
+      const status = response.data.status?.toLowerCase();
       if (
         status === "success" ||
         status === "successful" ||
         status === "failed"
       ) {
         stopPaymentPolling();
-        updateRouteStatus(status.includes("success") ? "success" : "failed");
+
+        const isSuccess = status.includes("success");
+
+        updateRouteStatus(isSuccess ? "success" : "failed");
+
+        const baseUrl =
+          (isSuccess
+            ? response.data.redirect_success_url
+            : response.data.redirect_failed_url) ||
+          response.data.redirect_url ||
+          (route.query.redirect_url as string);
+
+        const url = new URL(baseUrl, window.location.origin);
+        url.searchParams.set("reference", String(getPaymentReference.value));
+
+        setTimeout(() => {
+          window.location.replace(url.toString());
+        }, 2000);
       }
     };
 

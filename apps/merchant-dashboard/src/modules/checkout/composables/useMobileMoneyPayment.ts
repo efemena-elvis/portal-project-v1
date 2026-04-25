@@ -4,10 +4,12 @@ import { MobileMoneyPaymentRequest } from "../types";
 import { ref } from "vue";
 
 export const useMobileMoneyPayment = () => {
-  let pollingIntervalId: number | undefined = undefined;
-  let pollingTimeoutId: number | undefined = undefined;
-  const POLLING_INTERVAL = 15 * 1000; // every 15 seconds (each call seems to take about 15 seconds to respond)
-  const POLLING_DURATION = 60000 * 7; // 7 minutes
+  let pollingIntervalId: number | undefined;
+  let pollingTimeoutId: number | undefined;
+
+  const POLLING_INTERVAL = 15 * 1000;
+  const POLLING_DURATION = 60000 * 7;
+
   const paymentButtonRef = ref(null);
 
   const store = useCheckoutStore();
@@ -22,16 +24,24 @@ export const useMobileMoneyPayment = () => {
 
   const { processAPIRequest } = useEvents();
 
-  const fetchPaymentDetails = async (reference: string, showAlert = true) => {
+  const fetchPaymentDetails = async (
+    reference: string,
+    showAlert = true,
+  ) => {
     updateFetchingPaymentDetails(true);
+
     const paymentDetailsResponse = await processAPIRequest({
       action: fetchPayment,
       payload: reference,
       showAlert,
     });
+
     updateFetchingPaymentDetails(false);
-    if (paymentDetailsResponse && paymentDetailsResponse.data)
+
+    if (paymentDetailsResponse?.data) {
       updatePaymentDetails(paymentDetailsResponse.data);
+    }
+
     return paymentDetailsResponse;
   };
 
@@ -40,39 +50,23 @@ export const useMobileMoneyPayment = () => {
     request: MobileMoneyPaymentRequest,
   ) => {
     updatingInitiatingPayment(true);
+
     const response = await processAPIRequest({
       action: makeMobileMoneyPayment,
-      payload: {
-        reference,
-        request,
-      },
+      payload: { reference, request },
       showAlert: true,
       btnRef: paymentButtonRef,
       btnText: "Pay",
       alertHandler: {
-        201: {
-          message: "Processing Payment",
-          description: "Your payment is being processed",
-          type: "success",
-        },
-
-        200: {
-          message: "Processing Payment",
-          description: "Your payment is being processed",
-          type: "success",
-        },
-
-        400: {
-          message: "Payment Failed",
-          type: "error",
-        },
-        500: {
-          message: "Something went wrong",
-          type: "error",
-        },
+        201: { message: "Processing Payment", type: "success" },
+        200: { message: "Processing Payment", type: "success" },
+        400: { message: "Payment Failed", type: "error" },
+        500: { message: "Something went wrong", type: "error" },
       },
     });
+
     updatingInitiatingPayment(false);
+
     if (response && response.code === 200) {
       updatePaymentStatus("pending");
       pollPaymentStatus(reference);
@@ -90,32 +84,54 @@ export const useMobileMoneyPayment = () => {
     const poll = async () => {
       const response = await fetchPaymentDetails(reference, false);
 
-      if (response && response.data?.status.toLowerCase() === "failed") {
+      const status = response?.data?.status?.toLowerCase();
+
+      if (!status) return;
+
+      if (status === "failed") {
         stopPaymentStatusPolling();
+
+        const baseUrl =
+          response.data?.redirect_failed_url ||
+          response.data?.redirect_url ||
+          "/";
+
+        const url = new URL(baseUrl, window.location.origin);
+        url.searchParams.set("reference", String(reference));
+
+        window.location.replace(url.toString());
+        return;
       }
 
-      if (
-        response &&
-        (response.data?.status.toLowerCase() === "success" ||
-          response.data?.status.toLowerCase() === "successful")
-      ) {
+      if (status === "success" || status === "successful") {
         stopPaymentStatusPolling();
 
+        const baseUrl =
+          response.data?.redirect_success_url ||
+          response.data?.redirect_url ||
+          "/";
+
+        const url = new URL(baseUrl, window.location.origin);
+        url.searchParams.set("reference", String(reference));
+
         setTimeout(() => {
-          const redirectUrl = response.data?.redirect_url || "/";
-          window.location.replace(redirectUrl);
+          window.location.replace(url.toString());
         }, 2500);
       }
     };
+
     poll();
-    pollingIntervalId = setInterval(
-      poll,
-      POLLING_INTERVAL,
-    ) as unknown as number;
+
+    pollingIntervalId = setInterval(poll, POLLING_INTERVAL) as unknown as number;
 
     pollingTimeoutId = setTimeout(() => {
       stopPaymentStatusPolling();
       updatePaymentStatus("failed");
+
+      const url = new URL("/", window.location.origin);
+      url.searchParams.set("reference", String(reference));
+
+      window.location.replace(url.toString());
     }, POLLING_DURATION) as unknown as number;
   };
 

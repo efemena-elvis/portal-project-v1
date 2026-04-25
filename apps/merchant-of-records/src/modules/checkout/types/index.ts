@@ -12,6 +12,8 @@ export type PaymentDetails = {
   created_at: string;
   environment: string;
   redirect_url: string;
+  redirect_success_url: string;
+  redirect_failed_url: string;
   email: string;
   customer?: any;
   customer_first_name: string;
