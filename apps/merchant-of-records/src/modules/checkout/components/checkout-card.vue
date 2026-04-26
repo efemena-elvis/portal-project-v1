@@ -10,13 +10,12 @@
       <button
         class="size-8 bg-white hover:bg-gray-50 transition-colors rounded-full"
         title="Close checkout"
-        
       >
         <div class="icon icon-times"></div>
       </button>
     </div>
 
-    <template v-if="store.fetching_payment_details">
+    <template v-if="isFetchingDetails">
       <div class="space-y-10 my-6">
         <div class="h-12 bg-slate-300 animate-pulse rounded-md"></div>
 
@@ -32,23 +31,25 @@
       <div class="my-6 space-y-1">
         <div class="flex flex-wrap justify-between items-center gap-4">
           <div class="bg-white text-green-700 font-bold text-lg p-4 rounded-lg">
-            {{ store?.payment_details?.currency }} {{ formatNumber(totalCost) }}
+            {{ paymentDetails?.currency }} {{ formatNumber(totalCost) }}
           </div>
           <div class="text-teal-800 font-medium">
-            {{ store?.payment_details?.email }}
+            {{ paymentDetails?.email }}
           </div>
         </div>
         <div class="text-sm text-gray-500" v-if="hasCharge">
           This total cost includes a
           <b
-            >{{ store.payment_details?.currency
-            }}{{ formatNumber(store.payment_details?.charge ?? 0) }}</b
+            >{{ paymentDetails?.currency
+            }}{{ formatNumber(paymentDetails?.charge ?? 0) }}</b
           >
           charge
         </div>
       </div>
 
-      <div class="grid grid-cols-[repeat(auto-fit,_minmax(145.5px,_1fr))] gap-4 my-6">
+      <div
+        class="grid grid-cols-[repeat(auto-fit,_minmax(145.5px,_1fr))] gap-4 my-6"
+      >
         <div
           :class="[
             'rounded-lg h-[69px] border-2 grid items-center px-4 transition-colors',
@@ -188,13 +189,14 @@ const first_name = ref("");
 const last_name = ref("");
 const {
   fetchPaymentDetails,
-  store,
+  paymentDetails,
+  isFetchingDetails,
   paymentButtonRef,
   makePayment,
 } = useMobileMoneyPayment();
 
 watch(
-  () => store.payment_details,
+  () => paymentDetails.value,
   (details) => {
     if (!details) return;
     const {
@@ -207,34 +209,38 @@ watch(
     first_name.value = customer_first_name;
     last_name.value = customer_last_name;
     if (!mobile_money_phone_number.value && phone_number) {
-      mobile_money_phone_number.value = phone_number.replace(dialingCodeRegex, "");
+      mobile_money_phone_number.value = phone_number.replace(
+        dialingCodeRegex,
+        "",
+      );
       mobile_country_code.value = getDialingCode(phone_number);
     }
-  }
+  },
 );
 
-const mobile_money_phone_number = ref(store.payment_details?.phone_number ?? "");
+const mobile_money_phone_number = ref(paymentDetails.value?.phone_number ?? "");
 const route = useRoute();
 const reference = route.params.reference as string;
 onMounted(() => {
-  fetchPaymentDetails(reference);
+  fetchPaymentDetails();
 });
 
 const totalCost = computed(() => {
-  return (store.payment_details?.amount ?? 0) + (store.payment_details?.charge ?? 0);
+  return (
+    (paymentDetails.value?.amount ?? 0) + (paymentDetails.value?.charge ?? 0)
+  );
 });
 
-const hasCharge = computed(() => (store.payment_details?.charge ? true : false));
+const hasCharge = computed(() => (paymentDetails.value?.charge ? true : false));
 
 const handlePayment = () => {
   const payload: MobileMoneyPaymentRequest = {
-    account_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
-    customer_first_name: first_name.value ?? "",
-    customer_last_name: last_name.value ?? "",
-    email: email.value,
-    method: "mobilemoney",
     phone_number: `${mobile_country_code.value}${mobile_money_phone_number.value}`,
+    method: "mobilemoney",
+    country: paymentDetails.value?.country ?? "",
+    business_name: paymentDetails.value?.business_name ?? "",
+    reference: reference,
   };
-  makePayment(reference, payload);
+  makePayment(payload, paymentDetails.value?.redirect_url ?? "");
 };
 </script>

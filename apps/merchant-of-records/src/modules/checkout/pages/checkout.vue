@@ -23,7 +23,7 @@
             {{ paymentEmail || "Amount to pay" }}
           </div>
           <div class="payment-info-amount">
-            <span>{{ paymentCurrency }} {{ paymentAmount.toFixed(2) }}</span>
+            <span>{{ paymentCurrency }} {{ formatNumber(paymentAmount) }}</span>
           </div>
         </div>
       </header>
@@ -98,11 +98,12 @@ import {
   getCountryByCurrencyShort,
   getCountryByCode,
 } from "@packages/constants";
-import { useEvents } from "@packages/hooks";
+import { useEvents, useString } from '@packages/hooks';
 
 const router = useRouter();
 const route = useRoute();
 const { pushToastAlert } = useEvents();
+const {formatNumber} = useString();
 
 const reference = route.params.reference as string;
 

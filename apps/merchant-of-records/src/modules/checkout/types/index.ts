@@ -9,6 +9,7 @@ export type PaymentDetails = {
   currency: string;
   reference: string;
   business_id: string;
+  business_name?: string;
   created_at: string;
   environment: string;
   redirect_url: string;
