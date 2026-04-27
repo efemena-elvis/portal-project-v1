@@ -49,6 +49,7 @@
           v-if="selectedPaymentMethod === 'card'"
           :redirect_url="paymentDetails?.redirect_url"
           :currency="paymentCurrency"
+          :amount="paymentAmount"
         />
       </main>
 
@@ -60,7 +61,7 @@
           @click="processPayment"
           v-if="selectedPaymentMethod === 'mobileMoney'"
         >
-          Pay {{ paymentCurrency }} {{ paymentAmount.toFixed(2) }}
+          Pay {{ paymentCurrency }} {{ formatNumber(paymentAmount) }}
         </button>
 
         <div class="security-badge">

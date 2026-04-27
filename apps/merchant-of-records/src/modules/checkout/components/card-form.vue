@@ -50,8 +50,7 @@
       ref="paymentButtonRef"
       type="submit"
     >
-      Pay {{ store.payment_details?.currency ?? "" }}
-      {{ store.payment_details?.amount.toFixed(2) ?? "" }}
+      Pay {{ currency || "" }} {{ (amount ?? 0).toFixed(2) }}
     </button>
   </form>
   <form @submit.prevent="handleCustomerDetailsCollection" v-else>
@@ -130,6 +129,7 @@ const {
   reference: string;
   redirect_url?: string;
   currency?: string;
+  amount?: number;
 }>();
 
 const monthOptions = [
