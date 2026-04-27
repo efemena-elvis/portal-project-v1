@@ -50,7 +50,7 @@
       ref="paymentButtonRef"
       type="submit"
     >
-      Pay {{ currency || "" }} {{ (amount ?? 0).toFixed(2) }}
+      Pay {{ currency || "" }} {{ formatNumber(amount ?? 0) }}
     </button>
   </form>
   <form @submit.prevent="handleCustomerDetailsCollection" v-else>
@@ -100,7 +100,7 @@ import {
   start3DSChallenge,
 } from "@/shared/utilities/mpgs";
 import { useCheckoutStore } from "../store";
-import { useEvents } from "@packages/hooks";
+import { useEvents,useString } from "@packages/hooks";
 import { ref } from "vue";
 import { CardGTIPaymentRequest } from "../types";
 
@@ -114,6 +114,7 @@ const customerForm = ref<{
 } | null>(null);
 
 const { processAPIRequest, clickHandler } = useEvents();
+const { formatNumber } = useString();
 const {
   customer_details,
   reference,
