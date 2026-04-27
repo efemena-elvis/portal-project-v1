@@ -84,6 +84,11 @@ export const useMobileMoneyPayment = () => {
       }
     } catch (error) {
       console.error("Payment initiation failed:", error);
+      const failedUrl =
+        paymentDetails.value?.payment_method_data?.redirect_failed_url;
+      if (failedUrl) {
+        router.push(failedUrl);
+      }
     } finally {
       store.updatingInitiatingPayment(false);
     }
@@ -125,19 +130,18 @@ export const useMobileMoneyPayment = () => {
 
         updateRouteStatus(isSuccess ? "success" : "failed");
 
-            if (status === "failed") {
-        const baseUrl =
-          response.data.redirect_failed_url 
+        if (status === "failed") {
+          const baseUrl = response.data.redirect_failed_url;
 
-        const redirectUrl = appendQueryParam(
-          baseUrl,
-          "reference",
-          String(getPaymentReference.value),
-        );
+          const redirectUrl = appendQueryParam(
+            baseUrl,
+            "reference",
+            String(getPaymentReference.value),
+          );
 
-        window.location.replace(redirectUrl);
-        return;
-      }
+          window.location.replace(redirectUrl);
+          return;
+        }
 
         if (status === "success" || status === "successful") {
           const baseUrl =

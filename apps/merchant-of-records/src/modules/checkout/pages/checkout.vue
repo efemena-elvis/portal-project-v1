@@ -48,7 +48,7 @@
           :reference="reference"
           v-if="selectedPaymentMethod === 'card'"
           :redirect_url="paymentDetails?.redirect_url"
-          :currency="paymentDetails?.currency"
+          :currency="paymentCurrency"
         />
       </main>
 
@@ -98,12 +98,12 @@ import {
   getCountryByCurrencyShort,
   getCountryByCode,
 } from "@packages/constants";
-import { useEvents, useString } from '@packages/hooks';
+import { useEvents, useString } from "@packages/hooks";
 
 const router = useRouter();
 const route = useRoute();
 const { pushToastAlert } = useEvents();
-const {formatNumber} = useString();
+const { formatNumber } = useString();
 
 const reference = route.params.reference as string;
 
@@ -206,17 +206,27 @@ watch(
       customer_last_name: last_name,
       email,
       method,
+      payment_method_data,
     } = transaction_details;
-    const countryPayload = getCountryByCurrencyShort(currency || "ZMW");
+
+    // Use DCC base currency and amount if available
+    const dcc = payment_method_data?.dcc;
+    const effectiveCurrency = dcc?.base_currency || currency;
+    const effectiveAmount = dcc?.base_amount || amount;
+
+    const countryPayload = getCountryByCurrencyShort(
+      effectiveCurrency || "ZMW",
+    );
     selectedPaymentMethod.value = method === "card" ? "card" : "mobileMoney"; // method
 
-    paymentCurrency.value = currency ?? null;
+    paymentCurrency.value = effectiveCurrency ?? null;
     paymentCountry.value =
       country || (getCountryByCode(country_code)?.country as string);
     paymentCountryCode.value = countryPayload?.dialing_code || "260";
 
-    paymentRedirectURL.value = redirect_url;
-    paymentAmount.value = amount ?? 0;
+    paymentRedirectURL.value =
+      redirect_url || payment_method_data?.redirect_success_url;
+    paymentAmount.value = effectiveAmount ?? 0;
     mobileMoneyPhoneNumber.value = phone_number || "";
     customer_first_name.value = first_name || "";
     customer_last_name.value = last_name || "";

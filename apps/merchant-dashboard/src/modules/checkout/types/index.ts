@@ -21,6 +21,18 @@ export type PaymentDetails = {
   attempts: number;
   attempt_again: number;
   charge: number;
+  payment_method_data?: {
+    dcc?: {
+      base_amount: number;
+      base_currency: string;
+      converted_amount: number;
+      converted_currency: string;
+      fx_rate: number;
+    };
+    integration_type: string;
+    redirect_failed_url: string;
+    redirect_success_url: string;
+  };
 };
 
 export type PaymentStatus = "pending" | "failed" | "success" | "successful";
