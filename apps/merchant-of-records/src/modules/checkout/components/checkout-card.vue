@@ -46,7 +46,6 @@
           charge
         </div>
       </div>
-
       <div
         class="grid grid-cols-[repeat(auto-fit,_minmax(145.5px,_1fr))] gap-4 my-6"
       >

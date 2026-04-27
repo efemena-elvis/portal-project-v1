@@ -191,7 +191,7 @@ const getPayoutCurrencies = computed(() => {
     getLocalCurrencyCode.value.currency,
   ];
   return currencyList.filter((currency) =>
-    deployedWallets.includes(currency.value)
+    deployedWallets.includes(currency.value),
   );
 });
 
@@ -210,7 +210,7 @@ const isActionReady = computed(() => {
 
 const updateBusinessPayloadData = (
   payloadKey: string,
-  payloadValue: string
+  payloadValue: string,
 ) => {
   businessPayload.value = {
     ...businessPayload.value,
@@ -238,15 +238,14 @@ const fetchAllBanks = async () => {
       action: getBanks,
       payload: { country: "GH" },
     });
-    let data = null;
-    if (response && typeof response.json === "function") {
-      data = await response.json();
-      if (data.code === 200) {
-        allBanks.value = data.data.map((bank: any) => ({
-          value: bank.code,
-          name: bank.name,
-        }));
-      }
+    if (response && response.code === 200) {
+      allBanks.value = response.data.map((bank: any) => ({
+        value: bank.code,
+        name: bank.name,
+      }));
+    } else {
+      console.error("Failed to fetch banks:", response);
+      allBanks.value = [];
     }
   } catch (err) {
     console.error("Failed to fetch banks:", err);
@@ -255,7 +254,6 @@ const fetchAllBanks = async () => {
 };
 
 const updateBankAccount = async () => {
-
   const response = await processAPIRequest({
     action: updateUserProfile,
     btnRef: updateBankBtnRef,
@@ -276,16 +274,20 @@ const updateBankAccount = async () => {
 
 watch(
   bankCurrency,
-  (currency) => {
+  async (currency) => {
     if (currency) {
       isBankAccountLoading.value = true;
       const result = payoutConfig.getBankDetailsByCurrency(currency);
       bankDetailsFields.value = payoutConfig.getBankDetailsFields(result);
 
+      if (currency === "GHS") {
+        await fetchAllBanks();
+      }
+
       setTimeout(() => (isBankAccountLoading.value = false), 700);
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Fetch all profile data
@@ -309,15 +311,12 @@ watch(
       };
     }
   },
-  { immediate: true, deep: true }
+  { immediate: true, deep: true },
 );
 
 onMounted(async () => {
   await fetchProfileData();
   bankCurrency.value = getLocalCurrencyCode.value.currency;
-  if (appVariant.value === "alexpay") {
-    await fetchAllBanks();
-  }
 });
 </script>
 
