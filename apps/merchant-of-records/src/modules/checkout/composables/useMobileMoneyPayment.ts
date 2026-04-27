@@ -131,7 +131,7 @@ export const useMobileMoneyPayment = () => {
         updateRouteStatus(isSuccess ? "success" : "failed");
 
         if (status === "failed") {
-          const baseUrl = response.data.redirect_failed_url;
+          const baseUrl = response.data.payment_method_data?.redirect_failed_url || "";
 
           const redirectUrl = appendQueryParam(
             baseUrl,
@@ -145,7 +145,7 @@ export const useMobileMoneyPayment = () => {
 
         if (status === "success" || status === "successful") {
           const baseUrl =
-            response.data?.redirect_success_url ||
+            response.data?.payment_method_data?.redirect_success_url ||
             response.data?.redirect_url ||
             "";
 

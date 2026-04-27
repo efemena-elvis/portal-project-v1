@@ -225,7 +225,7 @@ watch(
     paymentCountryCode.value = countryPayload?.dialing_code || "260";
 
     paymentRedirectURL.value =
-      redirect_url || payment_method_data?.redirect_success_url;
+      redirect_url || payment_method_data?.redirect_success_url || "";
     paymentAmount.value = effectiveAmount ?? 0;
     mobileMoneyPhoneNumber.value = phone_number || "";
     customer_first_name.value = first_name || "";

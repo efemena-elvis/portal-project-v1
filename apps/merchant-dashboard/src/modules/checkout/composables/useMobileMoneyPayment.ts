@@ -100,7 +100,7 @@ export const useMobileMoneyPayment = () => {
         stopPaymentStatusPolling();
 
         const baseUrl =
-          response.data.redirect_failed_url 
+          response.data.payment_method_data?.redirect_failed_url || "";
 
         const redirectUrl = appendQueryParam(
           baseUrl,
@@ -116,7 +116,7 @@ export const useMobileMoneyPayment = () => {
         stopPaymentStatusPolling();
 
         const baseUrl =
-          response.data.redirect_success_url ||
+          response.data.payment_method_data?.redirect_success_url ||
           response.data.redirect_url ||
           "";
 
