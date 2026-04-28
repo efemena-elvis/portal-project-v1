@@ -80,7 +80,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted} from "vue";
 import { ModalDialog } from "@packages/uikit";
 import { useEvents, useDate, useString } from "@packages/hooks";
 import { usePaymentStore } from "../store";
@@ -126,11 +126,14 @@ const fetchSingleTransaction = async () => {
   isLoading.value = true;
   const response = await processAPIRequest({
     action: getSingleTransaction,
-    payload: { ref: props.transaction?.reference },
+    payload: { ref: props.transaction?.client_reference || props.transaction?.reference },
   });
 
-  transactionData.value =
-    response.code === 200 ? response.data : props.transaction;
+  const transaction = response?.code === 200 ? response.data : props.transaction;
+  transactionData.value = {
+    ...transaction,
+    reference: transaction?.client_reference || transaction?.reference,
+  };
   isLoading.value = false;
 };
 

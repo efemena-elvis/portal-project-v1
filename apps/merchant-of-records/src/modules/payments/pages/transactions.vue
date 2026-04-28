@@ -286,9 +286,7 @@ const fetchPaymentTransactions = async (filters: string) => {
           (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
-        reference: data.client_reference
-          ? data.client_reference
-          : data.reference,
+        reference: data.client_reference || data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
@@ -297,9 +295,8 @@ const fetchPaymentTransactions = async (filters: string) => {
           amount: formatNumber(effectiveAmount),
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
-          reference: data.client_reference
-            ? data.client_reference
-            : data.reference,
+          reference: data.client_reference || data.reference,
+          client_reference: data.client_reference,
         },
       };
     });
