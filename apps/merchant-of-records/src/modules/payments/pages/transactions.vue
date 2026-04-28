@@ -152,7 +152,7 @@ const searchQuery = ref<string>("");
 
 const statusOptions = ["Successful", "Pending", "Failed"];
 const paymentMethods = ["Card", "Mobilemoney"];
-const currencyOptions = ["GHS", "TZS", "ZMW"];
+const currencyOptions = ["GHS", "TZS", "ZMW", "NGN", "USD"];
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Transaction Date", slug: "date_created" },
@@ -181,6 +181,29 @@ const processSearchEntry = (searchValue: string) => {
 const getTransactionDate = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
+};
+
+const getEffectiveTransactionAmount = (data: any) => {
+  const dcc = data.provider_method_data?.dcc || data.payment_method_data?.dcc;
+
+  if (dcc?.base_amount != null && dcc?.base_currency) {
+    return {
+      currency: dcc.base_currency,
+      amount: dcc.base_amount,
+    };
+  }
+
+  if (dcc?.converted_amount != null && dcc?.converted_currency) {
+    return {
+      currency: dcc.converted_currency,
+      amount: dcc.converted_amount,
+    };
+  }
+
+  return {
+    currency: data.currency,
+    amount: data.amount,
+  };
 };
 
 const normalizeDate = (date: Date) => {
@@ -232,10 +255,12 @@ const fetchPaymentTransactions = async (filters: string) => {
 
   isLoading.value = false;
 
-  if (response?.code === 200) {
+  if (response && response.code === 200) {
     tableBody.value = response.data.map((data: any) => {
-      const formattedAmount = `${data.currency} ${formatNumber(data.amount)}`;
-      const chargeAmount = `Charge: ${data.currency} ${formatNumber(data.charge)}`;
+      const { currency: effectiveCurrency, amount: effectiveAmount } =
+        getEffectiveTransactionAmount(data);
+      const formattedAmount = `${effectiveCurrency} ${formatNumber(effectiveAmount)}`;
+      const chargeAmount = `Charge: ${effectiveCurrency} ${formatNumber(data.charge)}`;
       const customerName = data.customer
         ? `${data.customer.firstname} ${data.customer.lastname}`
         : "No customer info";
@@ -261,16 +286,20 @@ const fetchPaymentTransactions = async (filters: string) => {
           (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
-        reference: data.reference,
+        reference: data.client_reference
+          ? data.client_reference
+          : data.reference,
         raw: {
           date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
           raw_date: createdDate,
-          currency: data.currency,
+          currency: effectiveCurrency,
           customer_details: `${customerName} (${customerEmail})`,
-          amount: formatNumber(data.amount),
+          amount: formatNumber(effectiveAmount),
           payment_details: capitalizeFirstLetter(data.method),
           status: data.status,
-          reference: data.reference,
+          reference: data.client_reference
+            ? data.client_reference
+            : data.reference,
         },
       };
     });
@@ -292,9 +321,11 @@ const fetchAllTransactions = async () => {
       showAlert: false,
     });
 
-    if (response?.code !== 200) break;
+    if (!response || response.code !== 200) break;
 
     const mapped = response.data.map((data: any) => {
+      const { currency: effectiveCurrency, amount: effectiveAmount } =
+        getEffectiveTransactionAmount(data);
       const customerName = data.customer
         ? `${data.customer.firstname} ${data.customer.lastname}`
         : "No customer info";
@@ -304,15 +335,17 @@ const fetchAllTransactions = async () => {
         date_created: `${getTransactionDate(data.created_at)} - ${useDate.formatTime(data.created_at)}`,
         raw_date: new Date(data.created_at),
         customer_details: `${customerName} (${customerEmail})`,
-        amount: formatNumber(data.amount),
+        amount: formatNumber(effectiveAmount),
         payment_details: capitalizeFirstLetter(data.method),
         status: data.status,
         reason_for_failure: capitalizeFirstLetter(
           (data.reason_for_failure || "-").toString().toLowerCase(),
         ),
 
-        reference: data.reference,
-        currency: data.currency,
+        reference: data.client_reference
+          ? data.client_reference
+          : data.reference,
+        currency: effectiveCurrency,
       };
     });
 

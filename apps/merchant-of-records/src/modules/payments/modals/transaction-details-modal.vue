@@ -112,13 +112,36 @@ const displayFields = [
   { label: "Type", key: "type" },
   { label: "Attempts", key: "attempts" },
   { label: "Status", key: "status" },
-
 ];
 
 const getTransactionDate = (date: string) => {
   let { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
+
+const getEffectiveTransactionAmount = (data: any) => {
+  const dcc = data.provider_method_data?.dcc || data.payment_method_data?.dcc;
+
+  if (dcc?.base_amount != null && dcc?.base_currency) {
+    return {
+      currency: dcc.base_currency,
+      amount: dcc.base_amount,
+    };
+  }
+
+  if (dcc?.converted_amount != null && dcc?.converted_currency) {
+    return {
+      currency: dcc.converted_currency,
+      amount: dcc.converted_amount,
+    };
+  }
+
+  return {
+    currency: data.currency,
+    amount: data.amount,
+  };
+};
+
 const capitalize = (text: string) =>
   text ? text.charAt(0).toUpperCase() + text.slice(1) : "";
 
@@ -130,7 +153,7 @@ const fetchSingleTransaction = async () => {
   });
 
   transactionData.value =
-  response.code === 200 ? response.data : props.transaction;
+    response.code === 200 ? response.data : props.transaction;
   isLoading.value = false;
 };
 
@@ -138,8 +161,14 @@ const formatValue = (key: string) => {
   if (!transactionData.value) return "";
 
   switch (key) {
-    case "amount":
-      return `${transactionData.value.currency}${formatNumber(transactionData.value.amount).toLocaleString()}`;
+    case "amount": {
+      const { currency, amount } = getEffectiveTransactionAmount(
+        transactionData.value,
+      );
+      return `${currency} ${formatNumber(amount)}`;
+    }
+    case "currency":
+      return getEffectiveTransactionAmount(transactionData.value).currency;
     case "created_at":
       return getTransactionDate(transactionData.value.created_at);
     case "created_at_time":
