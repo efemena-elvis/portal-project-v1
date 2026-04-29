@@ -2,7 +2,7 @@
   <PageContentWrapper
     :pagingData="tablePaging"
     pageDescription="All Transactions"
-    searchInputPlaceholder="Search transaction by reference id"
+    searchInputPlaceholder="Search transaction by reference id or email"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
     @updatePage="(currentPage) => (page = currentPage)"
     @searchEntered="processSearchEntry"

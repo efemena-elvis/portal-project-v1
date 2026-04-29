@@ -1,6 +1,6 @@
 <template>
   <PageContentWrapper
-    searchInputPlaceholder="Search transaction by reference id"
+    searchInputPlaceholder="Search transaction by reference id or email"
     :pagingData="tablePaging"
     pageDescription="All Transactions"
     :pageKeys="{ green: 'Successful', yellow: 'Pending', red: 'Failed' }"
