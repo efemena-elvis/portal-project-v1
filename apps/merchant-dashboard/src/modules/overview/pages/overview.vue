@@ -3,7 +3,7 @@
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
       <div class="overflow-row">
-        <!-- <OverviewCard :wallet="walletBalance" /> -->
+        <OverviewCard :wallet="walletBalance" />
           <div class="tax-row--right">
         <TransactionMetrics :transactionStats="transactionStats" />
       </div>
