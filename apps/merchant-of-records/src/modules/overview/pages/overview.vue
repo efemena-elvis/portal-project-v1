@@ -21,7 +21,7 @@
         <AggregatorMetrics />
       </template>
 
-      <template v-else>
+      <!-- <template v-else>
         <div class="overflow-row">
           <OverviewCard
             v-for="(wallet, index) in walletBalance"
@@ -29,7 +29,7 @@
             :wallet="wallet"
           />
         </div>
-      </template>
+      </template> -->
 
       <!-- TAX ROW -->
       <!-- <template v-if="morAccountType === 'aggregator'">

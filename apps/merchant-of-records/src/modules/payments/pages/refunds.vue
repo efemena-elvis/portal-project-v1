@@ -120,7 +120,7 @@ const activePeriod = ref<[Date, Date] | null>(null);
 const page = ref(1);
 
 const statusOptions = ["Successful", "Pending", "Failed"];
-const currencyOptions = ["GHS", "TZS", "ZMW"];
+const currencyOptions = ["GHS", "TZS", "ZMW", "NGN"];
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Initiated", slug: "date_initiated" },
