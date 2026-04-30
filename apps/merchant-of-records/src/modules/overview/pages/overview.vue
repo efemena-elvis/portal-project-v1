@@ -14,7 +14,6 @@
         </router-link>
       </div>
     </template>
-
     <template v-slot:pageContent>
       <!-- OVERFLOW ROW -->
       <template v-if="morAccountType === 'aggregator'">
