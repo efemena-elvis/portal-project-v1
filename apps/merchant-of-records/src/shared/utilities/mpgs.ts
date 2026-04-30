@@ -28,7 +28,7 @@ export function perform3DSMethod(acsUrl: string, methodPostData: string) {
   }, 5_000);
 }
 
-export function starthallenge(acsUrl: string, creq: string) {
+export function start3DSChallenge(acsUrl: string, creq: string) {
   const form = document.createElement("form");
   form.method = "POST";
   form.action = acsUrl;
