@@ -1,9 +1,7 @@
 import { walletBalance, taxBalance } from "./state";
 import {
   IWalletBalance,
-  ITaxBalance,
-  IWalletBalance,
-  ITaxBalance,
+  ITaxBalance
 } from "./state";
 
 export function useOverviewMutations() {
