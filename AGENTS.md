@@ -52,8 +52,7 @@ Not npm workspaces — resolved via TypeScript path aliases:
 
 - Both GitLab CI (`.gitlab-ci.yml`) and GitHub Actions (`.github/workflows/`) configured
 - Deploys to S3 + CloudFront on push to `staging` or `main`
-- Two apps defined in CI: **merchant-of-records** and **alexpay**
-- CI references `apps/merchant-of-records/` and `apps/merchant-dashboard/` dirs and `build:staging:*` / `build:prod:*` scripts that **do not exist yet** in `package.json` — this is future multi-app scaffolding
+- Single portal-backoffice app with standard build scripts
 
 ## Style conventions
 

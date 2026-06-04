@@ -7,11 +7,11 @@ on:
   workflow_call:
     inputs:
       build_script:
-        description: "npm script to run (e.g. build:staging:merchant-alexpay)"
+        description: "npm script to run (e.g. build or build --mode staging)"
         required: true
         type: string
       build_dir:
-        description: "Path to the built output directory (e.g. apps/merchant-dashboard/dist)"
+        description: "Path to the built output directory (e.g. dist)"
         required: true
         type: string
       artifact_name:
