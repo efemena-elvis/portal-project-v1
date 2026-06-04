@@ -1,0 +1,306 @@
+<!-- eslint-disable no-undef, vue/valid-define-props, vue/valid-define-emits -->
+<template>
+  <ModalDialog
+    place_center
+    :modal_style="{
+      shape: 'rounded-2xl',
+      size: 'modal-md',
+      background: 'bg-white',
+    }"
+    @closeModal="$emit('closeTriggered')"
+  >
+    <template #modal-cover-header>
+      <div class="fee-modal-header">
+        <h2>Update fee config</h2>
+        <p>Merchant: {{ merchantDisplayName }}</p>
+      </div>
+    </template>
+
+    <template #modal-cover-body>
+      <div class="modal-cover-body fee-modal-body">
+        <p class="merchant-field-readonly">
+          <span class="readonly-label">Merchant</span>
+          <span class="readonly-value">{{ merchantDisplayName || "-" }}</span>
+        </p>
+
+        <SelectFieldInput
+          labelId="paymentMethod"
+          labelTitle="Payment Method"
+          :labelCompact="false"
+          inputPlaceholder="Select method"
+          :selectData="paymentMethodOptions"
+          :inputValue="feePayload.payment_method"
+          isRequired
+          @onSelectionChange="feePayload.payment_method = $event"
+        />
+
+        <SelectFieldInput
+          labelId="method"
+          labelTitle="Payment Type"
+          :labelCompact="false"
+          inputPlaceholder="Select type"
+          :selectData="methodOptions"
+          :inputValue="feePayload.method"
+          isRequired
+          @onSelectionChange="feePayload.method = $event"
+        />
+
+        <div class="field-grid">
+          <SelectFieldInput
+            labelId="country"
+            labelTitle="Country"
+            :labelCompact="false"
+            inputPlaceholder="Select country"
+            :selectData="countryOptions"
+            :inputValue="feePayload.country"
+            isRequired
+            @onSelectionChange="feePayload.country = $event"
+          />
+
+          <SelectFieldInput
+            labelId="type"
+            labelTitle="Fee Type"
+            :labelCompact="false"
+            inputPlaceholder="Select type"
+            :selectData="typeOptions"
+            :inputValue="feePayload.fee_type"
+            isRequired
+            @onSelectionChange="feePayload.fee_type = $event"
+          />
+        </div>
+
+        <div class="field-grid">
+          <TextFieldInput
+            labelId="amount"
+            labelTitle="Amount"
+            :labelCompact="false"
+            :inputType="IInputType.Number"
+            inputPlaceholder="Enter amount"
+            :inputValue="feePayload.amount"
+            isRequired
+            @inputChanged="feePayload.amount = $event"
+            :errorHandler="{
+              validator: 'validateNumberEntry',
+              message: 'Please enter a valid amount',
+            }"
+          />
+
+          <TextFieldInput
+            labelId="capAmount"
+            labelTitle="Cap Amount"
+            :labelCompact="false"
+            :inputType="IInputType.Number"
+            inputPlaceholder="Enter cap amount"
+            :inputValue="feePayload.cap_amount"
+            isRequired
+            @inputChanged="feePayload.cap_amount = $event"
+            :errorHandler="{
+              validator: 'validateNumberEntry',
+              message: 'Please enter a valid cap amount',
+            }"
+          />
+        </div>
+      </div>
+    </template>
+
+    <template #modal-cover-footer>
+      <div class="modal-cover-footer fee-modal-footer">
+        <button
+          class="btn btn-sm btn-secondary"
+          type="button"
+          @click="$emit('closeTriggered')"
+        >
+          Cancel
+        </button>
+        <button
+          ref="editFeeBtnRef"
+          class="btn btn-sm btn-primary"
+          type="button"
+          :disabled="isActionReady"
+          @click="handleUpdateFee"
+        >
+          Update config
+        </button>
+      </div>
+    </template>
+  </ModalDialog>
+</template>
+
+<script lang="ts" setup>
+import { computed, ref, onMounted } from "vue";
+import { IInputType } from "@packages/models";
+import { useEvents } from "@packages/hooks";
+import { useFeeStore } from "@/modules/fees/store";
+import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
+
+type IFeePayload = {
+  method: string;
+  country: string;
+  fee_type: string;
+  amount: number;
+  payment_method: string;
+  cap_amount: number;
+};
+
+const props = defineProps<{
+  feeId: string;
+  feeData: Record<string, any> | null;
+}>();
+
+const emits = defineEmits<{
+  closeTriggered: [];
+  feeUpdated: [];
+}>();
+
+const { processAPIRequest } = useEvents();
+const { getSingleFee, updateFee } = useFeeStore();
+
+const editFeeBtnRef = ref(null);
+const merchantDisplayName = ref("");
+
+const methodOptions = [
+  { value: "payin", name: "Payin" },
+  { value: "payout", name: "Payout" },
+];
+
+const paymentMethodOptions = [
+  { value: "mobilemoney", name: "Mobile Money" },
+  { value: "card", name: "Card" },
+];
+
+const countryOptions = [
+  { value: "nigeria", name: "Nigeria" },
+  { value: "tanzania", name: "Tanzania" },
+  { value: "ghana", name: "Ghana" },
+  { value: "zambia", name: "Zambia" },
+];
+const typeOptions = [
+  { value: "percentage", name: "Percentage" },
+  { value: "fixed", name: "Fixed" },
+];
+
+const feePayload = ref<IFeePayload>({
+  method: "payin",
+  payment_method: "",
+  country: "",
+  fee_type: "percentage",
+  amount: "",
+  cap_amount: "",
+});
+
+const isActionReady = computed(() => {
+  return !(
+    feePayload.value.method &&
+    feePayload.value.country &&
+    feePayload.value.fee_type &&
+    feePayload.value.amount !== "" &&
+    feePayload.value.cap_amount !== "" &&
+    feePayload.value.payment_method !== ""
+  );
+});
+
+const normalizeIncomingFee = (data: Record<string, any>) => {
+  return {
+    method: (data?.method ?? "payin").toString().toLowerCase(),
+    country: (data?.country ?? "nigeria").toString().toLowerCase(),
+    fee_type: (data?.type ?? "percentage").toString().toLowerCase(),
+    amount: data?.amount ?? "",
+    cap_amount: data?.cap_amount ?? data?.cap_mount ?? "",
+    payment_method: data?.payment_method ?? "",
+  };
+};
+
+const initialiseFromFeeData = () => {
+  if (!props.feeData) return;
+
+  merchantDisplayName.value = props.feeData.name || "";
+
+  feePayload.value = normalizeIncomingFee(props.feeData);
+};
+
+const fetchFeeDetail = async () => {
+  if (!props.feeId) return;
+
+  const response = await processAPIRequest({
+    action: async () => getSingleFee(props.feeId),
+    showAlert: false,
+  });
+
+  if (response?.code === 200 && response.data) {
+    merchantDisplayName.value = response.data?.name || "";
+    feePayload.value = normalizeIncomingFee(response.data);
+  }
+};
+
+const handleUpdateFee = async () => {
+  const payload = {
+    ...feePayload.value,
+    country: feePayload.value.country.toLowerCase(),
+  };
+
+  const response = await processAPIRequest({
+    action: async () => updateFee(props.feeId, payload),
+    payload,
+    btnRef: editFeeBtnRef,
+    btnText: "Update config",
+    alertHandler: {
+      200: {
+        message: "Fee configuration updated successfully",
+        type: "success",
+      },
+      400: {
+        message: "Unable to update fee configuration",
+        type: "error",
+      },
+    },
+  });
+
+  if (response.code === 200) {
+    emits("feeUpdated");
+    emits("closeTriggered");
+  }
+};
+
+onMounted(() => {
+  initialiseFromFeeData();
+  fetchFeeDetail();
+});
+</script>
+
+<style scoped lang="scss">
+.fee-modal-header {
+  @apply px-10 pt-9 sm:px-5 sm:pt-6;
+
+  h2 {
+    @apply text-[24px] font-bold leading-tight text-grey-900 sm:text-xl;
+  }
+
+  p {
+    @apply mt-4 text-[15px] font-medium text-grey-600 sm:text-lg;
+  }
+}
+
+.fee-modal-body {
+  @apply flex flex-col gap-3 px-10 pt-10 sm:gap-5 sm:px-5 sm:pt-7;
+}
+
+.merchant-field-readonly {
+  @apply flex flex-col;
+
+  .readonly-label {
+    @apply text-sm font-medium text-grey-700 mb-0.5;
+  }
+
+  .readonly-value {
+    @apply text-base text-grey-900 font-semibold bg-green-50 px-3 py-2 rounded-lg border border-green-200;
+  }
+}
+
+.field-grid {
+  @apply grid grid-cols-2 gap-8 sm:grid-cols-1 sm:gap-5;
+}
+
+.fee-modal-footer {
+  @apply flex justify-end gap-8 px-10 pb-10 pt-8 sm:flex-col sm:px-5 sm:pb-6;
+}
+</style>

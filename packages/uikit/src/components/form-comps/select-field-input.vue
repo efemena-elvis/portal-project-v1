@@ -74,7 +74,7 @@ const handleFormInput = (event: Event) => {
 watch(
   () => props.inputValue,
   (value) => (selectedValue.value = value),
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

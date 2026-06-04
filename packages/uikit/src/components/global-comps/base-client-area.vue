@@ -4,7 +4,7 @@
       <div class="client-area-brand">
         {{
           getBrandInitials(
-            getBusinessProfile?.businessName ?? "No business name"
+            getBusinessProfile?.businessName ?? "No business name",
           )
         }}
       </div>
@@ -17,13 +17,13 @@
           </div>
 
           <div class="brand-id-row">
-            <div class="brand-id">{{ getUser?.email ?? "No email" }}</div>
+            <div class="brand-id">Admin</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div
+    <!-- <div
       class="dropdown-area-wrapper"
       ref="dialogRef"
       v-if="showDropdown"
@@ -33,7 +33,7 @@
       <router-link to="/logout" class="dropdown-area select-none">
         <div class="dropdown-item">Sign Out</div>
       </router-link>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -112,7 +112,7 @@ const copyMerchantID = async () => {
           @apply relative w-[96%];
 
           .brand-id {
-            @apply relative cursor-pointer text-grey-700/90 text-[11px] line-clamp-1 w-full;
+            @apply relative cursor-pointer text-grey-700/90 text-[13px] line-clamp-1 w-full text-green-500;
           }
         }
       }

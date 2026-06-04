@@ -101,7 +101,7 @@ export const useMerchantUtils = defineStore("merchant", {
           businessProfile: this.businessProfile[idx] || {},
           businessAddress: this.businessAddress[idx] || {},
           representatives: this.representative.filter(
-            (rep) => rep.id === merchantId
+            (rep) => rep.id === merchantId,
           ),
           documents: this.documents.filter((doc) => doc.id === merchantId),
           merchantTable: this.merchantTable[idx] || {},

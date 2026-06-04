@@ -1,7 +1,6 @@
 import { useStorage } from "@packages/hooks";
-// import constants from "@/utilities/constants";
 
-const { getStorage, setStorage, removeStorage } = useStorage();
+const { getStorage, setStorage } = useStorage();
 
 export default function useString() {
   // ======================================================
@@ -9,10 +8,10 @@ export default function useString() {
   // ======================================================
   const checkAuthTimeout = (minutes: number) => {
     const timeout = Number(minutes) * 60000;
-    const entry_time = Number(getStorage({ storage_name: "timestamp" }) ?? 0);
-    const current_time = Number(+new Date());
+    const entryTime = Number(getStorage({ storage_name: "timestamp" }) ?? 0);
+    const currentTime = Number(+new Date());
 
-    if (current_time - entry_time > timeout) {
+    if (currentTime - entryTime > timeout) {
       return true;
     } else {
       setStorage({ storage_name: "timestamp", storage_value: +new Date() });
@@ -68,7 +67,7 @@ export default function useString() {
   // GET STRING INITIALS
   // ======================================================
   const getStringInitials = (text: string) => {
-    //@ts-ignore
+    // @ts-ignore
     const string_list = text?.replace(/\s+/g, " ")?.split(" ");
 
     return string_list?.length === 1
@@ -97,7 +96,7 @@ export default function useString() {
   // ======================================================
   const formatPhoneNumber = (
     phoneNumber: string,
-    countryCode: string
+    countryCode: string,
   ): string => {
     // Ensure phoneNumber is a string
     phoneNumber = String(phoneNumber);
@@ -140,7 +139,7 @@ export default function useString() {
   const createAndClickAnchor = (
     href: string,
     target = "_self",
-    noHistory = false
+    noHistory = false,
   ): void => {
     // This is the special case. It uses window.location.replace() which
     // only works on the current window.
@@ -168,20 +167,49 @@ export default function useString() {
   // ======================================================
   // GET TABLE STATUS STATE
   // ======================================================
-  const getStatus = (status: string, suffixText?: string): string => {
-    const statusData: Record<string, string> = {
-      success: "bg-green-100/75 text-green-800 border-green-300",
-      successful: "bg-green-100/75 text-green-800 border-green-300",
-      pending: "bg-yellow-100/60 text-yellow-700 border-yellow-300",
-      failed: "bg-red-100/75 text-red-700 border-red-300",
-      verified: "bg-green-100/75 text-green-700 border-green-300",
+  const getStatus = (status: string, suffixText: string) => {
+    const statusData: Record<string, { className?: string; style?: string }> = {
+      success: {
+        style: "background:#F1FAF3;color:#3AB75D;",
+      },
+      successful: {
+        style: "background:#F1FAF3;color:#3AB75D;",
+      },
+      review: {
+        style: "background:#F1FAF3;color:#3AB75D;",
+      },
+      pending: {
+        style: "background:#FEF8EC;color:#EEA41A;",
+      },
+      failed: {
+        style: "background:#FBEEF2;color:#CD3C64;",
+      },
+      rejected: {
+        style: "background:#FBEEF2;color:#CD3C64;",
+      },
+      verified: {
+        style: "background:#F1FAF3;color:#3AB75D;",
+      },
+      admin: {
+        style: "background:#F5F1FF;color:#9785B7;",
+      },
+      operations: {
+        style: "background:#EEF9FD;color:#24ACEE;",
+      },
+      "no-status": {
+        style: "background:#F1F7F6;color:#818988;",
+      },
     };
 
-    return `<div class='w-max border font-medium text-[12px] rounded-full py-1 px-3 text-center ${
-      statusData[status.toLowerCase()]
-    }'>${capitalizeFirstLetter(suffixText as string)}</div>`;
+    const currentStatus = statusData[status] || statusData["no-status"];
+    return `<span
+      class="px-4 py-2 w-auto rounded-full text-sm font-semibold ${currentStatus.className || ""}"
+      style="${currentStatus.style || ""}"
+    >
+      ${capitalizeFirstLetter(suffixText)}
+    </span>
+  `;
   };
-
   // MASK NUMBER
   const maskNumbers = (numbers: string): string => {
     const maskedSection = "*".repeat(numbers.length);

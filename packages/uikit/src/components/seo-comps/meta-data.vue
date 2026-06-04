@@ -67,11 +67,11 @@ const getMetaLocales = computed(() => ({
 }));
 
 const getTitleText = computed(() =>
-  route.meta.title ? `${route.meta.title} -` : ""
+  route.meta.title ? `${route.meta.title} -` : "",
 );
 
 const getMetaTitle = computed(
-  () => `${getTitleText.value} ${metaTitle}` || metaTitle
+  () => `${getTitleText.value} ${metaTitle}` || metaTitle,
 );
 
 const getMetaDescription = computed(() => {

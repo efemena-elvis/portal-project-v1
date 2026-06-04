@@ -104,7 +104,7 @@ const props = withDefaults(defineProps<ISelectInputField>(), {
 
 const selectedValue = ref<string>(props.inputValue);
 
-const handleFormInput = (data) => {
+const handleFormInput = (data: string) => {
   selectedValue.value = data;
   emits("onSelectionChange", data);
 
@@ -126,7 +126,7 @@ useClickOutside(dialogRef, togglerRef, toggleDropdown);
 watch(
   () => props.inputValue,
   (value) => (selectedValue.value = value),
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

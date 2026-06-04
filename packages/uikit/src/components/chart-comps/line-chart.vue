@@ -26,7 +26,7 @@ ChartJS.register(
   LineElement,
   CategoryScale,
   LinearScale,
-  PointElement
+  PointElement,
 );
 
 // Props for the chart data and options

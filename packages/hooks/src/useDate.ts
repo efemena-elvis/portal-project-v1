@@ -106,13 +106,12 @@ class serviceDate {
     return this;
   }
 
-checkDateHasTime(date: string) {
-  if (!date) return "";
-  if (date.includes("T")) return date;
-  if (date.includes(" ")) return date.replace(" ", "T") + "Z";
-  return `${date}T00:00:00Z`;
-}
-
+  checkDateHasTime(date: string) {
+    if (!date) return "";
+    if (date.includes("T")) return date;
+    if (date.includes(" ")) return date.replace(" ", "T") + "Z";
+    return `${date}T00:00:00Z`;
+  }
 
   formatTimestamp(timestamp: any) {
     this.datetime_zone = new Date(parseInt(timestamp) * 1000);
@@ -120,16 +119,16 @@ checkDateHasTime(date: string) {
   }
 
   formatTime = (date: string) => {
-  const d = new Date(date);
-  const hours = d.getHours();
-  const minutes = d.getMinutes();
-  const ampm = hours >= 12 ? "PM" : "AM";
-  const formattedHours = hours % 12 || 12;
-  const formattedMinutes = minutes.toString().padStart(2, "0");
+    const d = new Date(date);
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, "0");
 
-  const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
-  return timeString;
-};
+    const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
+    return timeString;
+  };
 
   timeDifference() {
     const timeStamp = this.datetime_zone.getTime();
@@ -142,7 +141,7 @@ checkDateHasTime(date: string) {
     // GET MONTHS IF DAYS IS GREATER THAN OR EQUAL TO 30
     if (differenceInDays >= 30) {
       if (differenceInDays === 30) return `1 month ago`;
-      let monthData = Math.round(differenceInDays / 30);
+      const monthData = Math.round(differenceInDays / 30);
       return monthData === 1
         ? `${monthData} month ago`
         : `${monthData} months ago`;
@@ -154,7 +153,7 @@ checkDateHasTime(date: string) {
       return `${Math.round(differenceInHours / 24)} days ago`;
     }
 
-    //Get HOURS IF MINUTES IS GREATER OR EQUAL TO 60
+    // Get HOURS IF MINUTES IS GREATER OR EQUAL TO 60
     if (differenceInMinutes >= 60) {
       if (differenceInMinutes === 60) return `1 hour ago`;
       return Math.round(differenceInMinutes / 60) === 1
@@ -162,11 +161,11 @@ checkDateHasTime(date: string) {
         : `${Math.round(differenceInMinutes / 60)} hours ago`;
     }
 
-    //GET MINUTES IF SECONDS IS GREATER OR EQUAL TO 60
+    // GET MINUTES IF SECONDS IS GREATER OR EQUAL TO 60
     if (differenceInSeconds >= 60) {
       if (differenceInSeconds === 60) return `1 minute ago`;
       else {
-        let per_seconds = Math.round(differenceInSeconds / 60);
+        const per_seconds = Math.round(differenceInSeconds / 60);
 
         return per_seconds === 0
           ? `less than a minute`
@@ -174,7 +173,7 @@ checkDateHasTime(date: string) {
       }
     }
 
-    //GET SECONDS IF LESS THAN A MINTE
+    // GET SECONDS IF LESS THAN A MINTE
     if (differenceInSeconds < 60) {
       return `${Math.round(differenceInSeconds)} seconds ago`;
     }
@@ -208,10 +207,10 @@ checkDateHasTime(date: string) {
 
       // HOURS
       else if (differenceInDays < 1) {
-        let hour_resolve = differenceInHours - 1;
+        const hour_resolve = differenceInHours - 1;
         if (hour_resolve > 1) {
-          let hour = Math.floor(differenceInHours) - 1;
-          let minute =
+          const hour = Math.floor(differenceInHours) - 1;
+          const minute =
             Math.floor(Math.ceil(differenceInMinutes) / 60) === 2
               ? Math.ceil(differenceInMinutes) - 120 * hour
               : Math.ceil(differenceInMinutes) - 60 * hour;
@@ -220,7 +219,7 @@ checkDateHasTime(date: string) {
         }
 
         if (hour_resolve < 1) {
-          let minute = Math.round(differenceInMinutes);
+          const minute = Math.round(differenceInMinutes);
           return `${minute}min`;
         }
       }
@@ -229,9 +228,9 @@ checkDateHasTime(date: string) {
 
   // GET DATE ORDINAL FORMAT
   getDateSuffix(day: any) {
-    let one = [1, 21, 31];
-    let two = [2, 22];
-    let three = [3, 23];
+    const one = [1, 21, 31];
+    const two = [2, 22];
+    const three = [3, 23];
 
     if (one.includes(day)) return `${day}st`;
     else if (two.includes(day)) return `${day}nd`;
@@ -241,7 +240,7 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN DAY FORMAT
   getDay(format: any) {
-    let get_day = this.datetime_zone?.getDate();
+    const get_day = this.datetime_zone?.getDate();
 
     switch (format) {
       case "d1":
@@ -267,8 +266,8 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN MONTH FORMAT
   getMonth(month: any) {
-    let get_month = this.datetime_zone.getMonth();
-    let month_value = this.monthFormat[get_month]?.index;
+    const get_month = this.datetime_zone.getMonth();
+    const month_value = this.monthFormat[get_month]?.index;
 
     switch (month) {
       case "m1":
@@ -298,7 +297,7 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN YEAR FORMAT
   getYear(year: any) {
-    let get_year = this.datetime_zone?.getFullYear()?.toString();
+    const get_year = this.datetime_zone?.getFullYear()?.toString();
 
     switch (year) {
       case "y1":
@@ -320,7 +319,7 @@ checkDateHasTime(date: string) {
 
   // GET WEEK FORMAT
   getWeek(week: any) {
-    let get_week = this.datetime_zone?.getDay();
+    const get_week = this.datetime_zone?.getDay();
 
     switch (week) {
       case "w1":
@@ -339,11 +338,12 @@ checkDateHasTime(date: string) {
         "Please check the week format entered!!";
     }
   }
+
   // GET DATE TIME IN HOUR FORMAT
   getHour(hour: any) {
     let get_hour = this.datetime_zone?.getHours();
     get_hour = get_hour === -1 ? 12 : get_hour;
-    let twelve_hour_value = get_hour > 12 ? get_hour - 12 : get_hour;
+    const twelve_hour_value = get_hour > 12 ? get_hour - 12 : get_hour;
 
     switch (hour) {
       case "h1":
@@ -379,7 +379,7 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN MINUTE FORMAT
   getMinute(minute: any) {
-    let get_minute = this.datetime_zone?.getMinutes();
+    const get_minute = this.datetime_zone?.getMinutes();
 
     switch (minute) {
       case "b1":
@@ -401,7 +401,7 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN SECONDS FORMAT
   getSeconds(seconds: any) {
-    let get_seconds = this.datetime_zone?.getSeconds();
+    const get_seconds = this.datetime_zone?.getSeconds();
 
     switch (seconds) {
       case "s1":
@@ -423,7 +423,7 @@ checkDateHasTime(date: string) {
 
   // GET DATE TIME IN MERIDIAN FORMAT
   getMeridian() {
-    let get_hour = this.datetime_zone.getHours() - 1;
+    const get_hour = this.datetime_zone.getHours() - 1;
 
     if (get_hour < 12) return "am";
     // else if (get_hour >= 13) return "pm";
@@ -451,9 +451,9 @@ checkDateHasTime(date: string) {
 const dateUtil = new serviceDate();
 export default dateUtil;
 
-//****************
-//DATETIME FORMATS
-//**************//
+//* ***************
+// DATETIME FORMATS
+//* *************//
 
 // 1. DAY FORMATS
 // -  (d1) Day without 0 prefix (3)

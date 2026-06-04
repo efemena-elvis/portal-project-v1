@@ -50,7 +50,7 @@ watch(
       statusFilterList.value[0].active = true;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

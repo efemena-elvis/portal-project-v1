@@ -1,7 +1,5 @@
 <template>
   <div class="page-content-wrapper">
-    <!-- TOP ROW -->
-
     <div
       v-if="searchInputPlaceholder"
       class="flex flex-col justify-center items-end mdLg:gap-y-0.5 w-full mb-8"
@@ -23,6 +21,9 @@
     <div class="top-row">
       <div class="top-row--left">
         <div class="page-title" v-if="props.showTitle">{{ pageTitle }}</div>
+        <span v-if="props.description" class="text-grey-700 text-sm">{{
+          description
+        }}</span>
       </div>
 
       <div class="top-row--right">
@@ -69,6 +70,7 @@ interface IPageContentType {
   customActionBtnText?: string;
   showCustomActionBtn?: boolean;
   searchInputPlaceholder?: string;
+  description?: string;
   pageKeys?: any;
 }
 
@@ -79,6 +81,7 @@ const props = withDefaults(defineProps<IPageContentType>(), {
   customActionBtnText: "",
   showCustomActionBtn: false,
   searchInputPlaceholder: "",
+  description: "",
   pageKeys: {},
 });
 
@@ -135,10 +138,10 @@ watch(route, () => updatePageMeta(), { immediate: true });
     @apply flex sm:flex-wrap justify-between items-center gap-4 sm:gap-3 w-full -mb-3;
 
     &--left {
-      @apply flex justify-start items-center gap-3 sm:w-full;
+      @apply flex justify-start flex-col gap-3 sm:w-full;
 
       .page-title {
-        @apply font-bold text-grey-900 text-2xl sm:text-xl sm:mt-4 -mt-5;
+        @apply font-bold text-teal-800 text-2xl sm:text-xl sm:mt-4 -mt-5;
       }
     }
 

@@ -130,7 +130,7 @@ const emits = defineEmits(["verifyClicked", "inputChanged", "inputValidated"]);
 const props = withDefaults(defineProps<ITextInputField>(), {
   labelId: "",
   labelTitle: "",
-  labelCompact: true,
+  labelCompact: false,
   inputType: IInputType.Text,
   inputValue: "",
   inputPlaceholder: "",
@@ -178,7 +178,7 @@ const formValue = ref<string | number>(props.inputValue);
 const formErrorMsg = ref<string>("");
 
 const isInputValid = computed(() => {
-  const isValid = formErrorMsg.value.length ? false : true;
+  const isValid = !formErrorMsg.value.length;
   emits("inputValidated", isValid);
   return isValid;
 });

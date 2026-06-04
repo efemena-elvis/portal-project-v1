@@ -4,7 +4,10 @@
     <TableLoading v-if="isLoading" />
 
     <template v-else>
-      <div class="table-container-wrapper" :class="hasCustomBtn && 'mt-20 sm:mt-8'">
+      <div
+        class="table-container-wrapper"
+        :class="hasCustomBtn && 'mt-20 sm:mt-8'"
+      >
         <template v-if="true">
           <div class="table-container">
             <table class="table">
@@ -75,10 +78,10 @@ const props = defineProps({
       customImg: "",
     }),
   },
-hasCustomBtn: {
-  type: Boolean,
-  default: false
-}
+  hasCustomBtn: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const { tableHeader, tableBody, isLoading } = toRefs(props);
@@ -86,11 +89,12 @@ const { tableHeader, tableBody, isLoading } = toRefs(props);
 
 <style lang="scss">
 .table-container-wrapper {
-  @apply border border-grey-200/90 border-t-0 overflow-hidden rounded-lg;
+  @apply border border-grey-200/90 overflow-hidden rounded-[18px] bg-white;
 }
 
 .table-container {
-  @apply overflow-auto w-full p-0;
+  @apply overflow-x-auto overflow-y-hidden w-full p-0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-container::-webkit-scrollbar {
@@ -110,36 +114,40 @@ const { tableHeader, tableBody, isLoading } = toRefs(props);
 }
 
 thead {
-  @apply text-[13.5px] font-medium text-grey-900;
+  @apply text-[14px] font-semibold  text-teal-800 uppercase tracking-[0.04em];
 }
 
 thead tr {
-  @apply border-0 border-y border-y-grey-200/75 bg-grey-50/80;
+  @apply border-0 border-b border-b-grey-200;
 }
 
 thead tr td {
-  @apply px-3.5 pt-[22px] pb-[18px];
+  @apply px-5 py-4;
 }
 
 thead tr td .table-header {
-  @apply flex justify-start items-center font-medium;
+  @apply flex justify-start items-center gap-2;
 }
 
 thead tr td .table-header .table-sort-icon {
-  @apply cursor-pointer text-[23px];
+  @apply cursor-pointer text-[22px];
 }
 
 tbody {
-  @apply text-[13.5px] text-grey-900;
+  @apply text-sm text-grey-900;
 }
 
 tbody tr {
-  @apply cursor-pointer align-middle transition duration-300 ease-in-out border-b border-b-grey-200/60 hover:bg-green-100/20 last-of-type:border-b-0;
+  @apply align-middle   border-b border-b-grey-200 bg-white transition duration-200 ease-in-out hover:bg-grey-50 last-of-type:border-b-0;
 }
 
 tbody tr td {
-  @apply px-4 py-4 w-auto;
+  @apply py-5 align-top;
   min-width: 24px;
-  max-width: 200px;
+  max-width: 260px;
+}
+
+tbody tr td:last-child {
+  @apply text-right;
 }
 </style>

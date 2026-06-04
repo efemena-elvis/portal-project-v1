@@ -41,7 +41,7 @@ const getBackRoute = computed(() => {
   ) {
     return backRouteHistory.value[routeName];
   }
-  return backRouteHistory.value["all"];
+  return backRouteHistory.value.all;
 });
 
 // UPDATE PAGE TITLE

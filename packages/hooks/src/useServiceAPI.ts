@@ -116,7 +116,7 @@ class APIService {
         // }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -125,7 +125,7 @@ class APIService {
   // ======================================================
   public async fetch<T = any>(
     url: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.get<T>(urlHash(url), {
@@ -146,7 +146,7 @@ class APIService {
   public async push<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.post<T>(url, payload, {
@@ -167,7 +167,7 @@ class APIService {
   public async update<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.put<T>(url, payload, {
@@ -188,7 +188,7 @@ class APIService {
   public async patch<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.patch<T>(url, payload, {
@@ -208,7 +208,7 @@ class APIService {
   // ======================================================
   public async delete<T = any>(
     url: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.delete<T>(url, {

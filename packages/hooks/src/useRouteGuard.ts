@@ -33,7 +33,7 @@ class RouteGuard {
 
   verifyAuthRoutes(
     to: RouteLocationNormalized,
-    next: NavigationGuardNext
+    next: NavigationGuardNext,
   ): void {
     if (this.getAuthToken() === null) {
       next({
@@ -46,7 +46,7 @@ class RouteGuard {
 
   verifyGuestRoutes(
     to: RouteLocationNormalized,
-    next: NavigationGuardNext
+    next: NavigationGuardNext,
   ): void {
     if (this.getAuthToken() === null) {
       next();
@@ -58,7 +58,7 @@ class RouteGuard {
   checkUserTimeoutSession(
     to: RouteLocationNormalized,
     next: NavigationGuardNext,
-    is_guest: boolean = false
+    is_guest: boolean = false,
   ): void {
     const is_timed_out: boolean = checkAuthTimeout(this.sessionTime);
 

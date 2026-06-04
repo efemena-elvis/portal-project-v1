@@ -74,8 +74,8 @@ const allowedFiles = ref<string[]>(["pdf", "jpeg", "jpg", "png"]);
 const updateFieldInput = (merchantId: string, path: string, value: string) => {
   props.updateMerchantAction({
     id: merchantId,
-    path: path,
-    value: value,
+    path,
+    value,
   });
 };
 
@@ -88,7 +88,7 @@ const updateUploadingStatus = (merchantId: string, path: string) => {
 const processDocumentUpload = async (
   $event: Event,
   path: string,
-  merchantId: string
+  merchantId: string,
 ) => {
   const inputElement = $event.target as HTMLInputElement;
   const uploadedFile = inputElement.files ? inputElement.files[0] : null;

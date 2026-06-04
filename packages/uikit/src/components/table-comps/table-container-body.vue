@@ -4,29 +4,26 @@
       v-for="(header, index) in tableHeader"
       :key="index"
       @click="header?.tableAction"
-class = "px-4"
-     
+      class="px-5 first:pl-10 last:pr-10"
     >
       <div
         :class="[
           header.tableDataClass,
           renderLogicClass(header, tableData[header.slug]),
         ]"
-
         class="break-all whitespace-normal max-w-[200px]"
       >
-        <template v-if="isVNode(tableData[header.slug])" >
+        <template v-if="isVNode(tableData[header.slug])">
           <!-- Render the VNode directly if it is a component -->
-          <component :is="tableData[header.slug]"   />
+          <component :is="tableData[header.slug]" />
         </template>
-        
+
         <template v-else>
           <span
-           
             v-if="isHtmlString(tableData[header.slug])"
             v-html="tableData[header.slug]"
           />
-          <span v-else >{{ tableData[header.slug] }}</span>
+          <span v-else>{{ tableData[header.slug] }}</span>
         </template>
       </div>
     </td>
@@ -35,7 +32,6 @@ class = "px-4"
 
 <script setup>
 import { isVNode } from "vue";
-
 
 const props = defineProps({
   tableHeader: {
@@ -49,12 +45,10 @@ const props = defineProps({
   onTableClicked: Function,
 });
 
-
 const isHtmlString = (str) => {
   const pattern = /<\/?[a-z][\s\S]*>/i;
   return typeof str === "string" && pattern.test(str);
 };
-
 
 const renderLogicClass = (headerData, tableData) => {
   if (headerData.tableLogicClass !== undefined) {
@@ -63,7 +57,6 @@ const renderLogicClass = (headerData, tableData) => {
   return "";
 };
 
-
 const handleTableRowClicked = (event) => {
   if (!event.target.classList.contains("checkbox-select-input")) {
     props.onTableClicked?.(1);
@@ -71,6 +64,4 @@ const handleTableRowClicked = (event) => {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

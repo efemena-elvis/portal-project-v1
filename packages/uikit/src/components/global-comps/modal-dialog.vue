@@ -51,7 +51,7 @@ export default {
       type: Object,
       default: () => ({
         shape: "rounded-lg",
-        size: "modal-sm", //Refer to Modal.scss for more modal sizes
+        size: "modal-sm", // Refer to Modal.scss for more modal sizes
         background: "bg-neutral-10",
       }),
     },

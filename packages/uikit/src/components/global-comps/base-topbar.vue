@@ -4,90 +4,9 @@
       <div class="topbar--left-menu" @click="triggerMenuSidebar">
         <div class="icon icon-menu"></div>
       </div>
-
-  
     </div>
 
     <div class="topbar--right">
-      <!-- NOTIFICATIONS -->
-      <div class="relative">
-        <!-- <div
-          class="notification-wrapper"
-          ref="togglerNotificationRef"
-          @click="toggleNotificationDropdown(!showNotificationDropdown)"
-        >
-          <div class="icon-notification"></div>
-        </div> -->
-
-        <div
-          class="app-dropdown notification-dropdown"
-          ref="dialogNotificationRef"
-          v-if="showNotificationDropdown"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="dropdown-wrapper">
-            <div class="item-top">Your notifications</div>
-
-            <div class="item-list">
-              <NavNotificationItem />
-              <NavNotificationItem />
-            </div>
-
-            <router-link to="/notifications" class="item-base"
-              >View all notifications</router-link
-            >
-          </div>
-        </div>
-      </div>
-
-      <!-- CREATE ACTION -->
-      <!-- <div class="relative">
-        <div
-          class="create-action"
-          ref="togglerActionRef"
-          @click="toggleActionDropdown(!showActionDropdown)"
-        >
-          <div class="icon-add"></div>
-        </div>
-
-        <div
-          class="app-dropdown action-dropdown"
-          ref="dialogActionRef"
-          v-if="showActionDropdown"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="dropdown-wrapper">
-            <div class="app-dropdown-item">
-              <div class="text">Deploy a new market</div>
-            </div>
-
-            <div class="app-dropdown-item">
-              <div class="text">Request a payout</div>
-            </div>
-          </div>
-        </div>
-      </div> -->
-
-      <!-- MODE TOGGLER -->
-      <div class="relative right-0">
-        <div class="mode-toggler" ref="togglerModeRef" @click="canSwtchMode">
-          <div
-            class="mode-toggler-control"
-            :class="
-              activeMode === 'live'
-                ? 'toggler-control-active'
-                : 'toggler-control-inactive'
-            "
-          >
-            <div class="mode-toggler-control-pin"></div>
-          </div>
-
-          <div class="text text-grey-900">{{ activeMode }} mode</div>
-        </div>
-      </div>
-
       <!-- USER PROFILE -->
       <div class="relative">
         <div
@@ -107,26 +26,6 @@
           aria-modal="true"
         >
           <div class="dropdown-wrapper">
-            <router-link to="/settings/profile" class="app-dropdown-item">
-              <div class="text-base icon icon-user"></div>
-              <div class="text">Profile</div>
-            </router-link>
-
-            <!-- <router-link to="/settings/preferences" class="app-dropdown-item">
-              <div class="text-base icon icon-tool"></div>
-              <div class="text">Preferences</div>
-            </router-link> -->
-
-            <router-link to="/settings/developer" class="app-dropdown-item">
-              <div class="text-base icon icon-developer"></div>
-              <div class="text">Developers</div>
-            </router-link>
-
-            <!-- <router-link to="/user-support" class="app-dropdown-item">
-              <div class="text-base icon icon-chat"></div>
-              <div class="text">Help & Support</div>
-            </router-link> -->
-
             <router-link to="/logout" class="app-dropdown-item">
               <div class="text-lg text-red-600 icon icon-logout"></div>
               <div class="text-red-600 text">Sign Out</div>
@@ -174,9 +73,8 @@ const profileUtil = props.businessProfile;
 
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const isBusinessActivated = computed(() =>
-  profileUtil.getBusinessActivatedStatus()
+  profileUtil.getBusinessActivatedStatus(),
 );
-
 
 watch(route, () => {
   toggleNotificationDropdown(false);
@@ -186,7 +84,7 @@ watch(route, () => {
 
 // UPDATE ENVIRONMENT MODE
 const activeMode = ref<string>(
-  getBusinessProfile?.value?.businessMode || "test"
+  getBusinessProfile?.value?.businessMode || "test",
 );
 
 const updateActiveMode = (mode: string) => {
@@ -259,7 +157,7 @@ const toggleActionDropdown = (state: boolean) =>
 useClickOutside(
   dialogNotificationRef,
   togglerNotificationRef,
-  toggleNotificationDropdown
+  toggleNotificationDropdown,
 );
 useClickOutside(dialogProfileRef, togglerProfileRef, toggleProfileDropdown);
 useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
@@ -267,7 +165,7 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
 <style lang="scss" scoped>
 .topbar {
-  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto  bg-neutral-10  ;
+  @apply relative px-9 xl:px-6 mdLg:px-4 py-5 mdLg:py-4 sm:px-3 sm:py-2 flex flex-wrap justify-between sm:flex-col-reverse items-center h-auto  bg-grey-50;
 
   &--left {
     @apply flex justify-start items-center gap-x-2.5 w-1/2 sm:w-full sm:flex-wrap sm:gap-x-3 sm:gap-y-2;
@@ -278,8 +176,6 @@ useClickOutside(dialogActionRef, togglerActionRef, toggleActionDropdown);
 
     &-wrapper {
       @apply flex flex-col justify-center items-start mdLg:gap-y-0.5 w-full;
-
-    
     }
   }
 

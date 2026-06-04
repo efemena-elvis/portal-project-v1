@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, Ref } from "vue";
 export default function useClickOutside(
   dialogRef: Ref<HTMLElement | null>,
   togglerRef: Ref<HTMLElement | null>,
-  dialogHandler: (state: boolean) => void
+  dialogHandler: (state: boolean) => void,
 ) {
   const listener = (event: MouseEvent | TouchEvent) => {
     if (

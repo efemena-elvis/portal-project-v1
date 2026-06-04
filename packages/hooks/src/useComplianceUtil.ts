@@ -1,6 +1,5 @@
 import { ref, Ref } from "vue";
-import { storeToRefs } from "pinia";
-import { Store } from "pinia";
+import { storeToRefs, Store } from "pinia";
 import { useRouter } from "vue-router";
 import { useEvents } from "@packages/hooks";
 
@@ -82,7 +81,7 @@ export default class ComplianceUtil<TStore extends Store> {
               (rep: any, index: number) => ({
                 ...(getComplianceRepresentative.value?.[index] || {}),
                 ...rep,
-              })
+              }),
             )
           : getComplianceRepresentative.value || [],
 
@@ -121,7 +120,7 @@ export default class ComplianceUtil<TStore extends Store> {
     if (responsePayload.code === 200) {
       setTimeout(
         () => this.router.push({ name: redirectRoute }),
-        this.timeOut.value
+        this.timeOut.value,
       );
     }
   }
@@ -134,7 +133,7 @@ export default class ComplianceUtil<TStore extends Store> {
       | "representatives"
       | "bank_account"
       | "business_signatory"
-      | "terms"
+      | "terms",
   ) {
     const payloadBucket = {
       business: { businessPayload: payload },
@@ -157,7 +156,7 @@ export default class ComplianceUtil<TStore extends Store> {
     payloadType,
   }: any) {
     const requestPayload = this.getRequestPayload(
-      this.selectPayload(payload, payloadType)
+      this.selectPayload(payload, payloadType),
     );
 
     const response = await this.processAPIRequest({

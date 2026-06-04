@@ -7,7 +7,6 @@ module.exports = {
     "eslint:recommended",
     "plugin:vue/vue3-essential",
     "@vue/standard",
-    "@vue/typescript/recommended",
     "plugin:prettier/recommended",
   ],
   parserOptions: {
@@ -21,7 +20,7 @@ module.exports = {
     quotes: ["off", "single"], // Turn off the quotes rule
     "comma-dangle": "off", // Ignore trailing commas
     semi: "off", // Ignore semi-colons
-    "space-before-function-paren": ["error", "ignore"],
+    "space-before-function-paren": "off",
     "prettier/prettier": [
       "error",
       {

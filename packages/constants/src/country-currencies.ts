@@ -71,18 +71,18 @@ const countries = [
       description: "Danish Krone",
     },
   },
-  // {
-  //   country: "Ecuador",
-  //   dialing_code: "593",
-  //   code: "ec",
-  //   flag: "https://flagsapi.com/EC/flat/64.png",
-  //   currency: {
-  //     sign: "$",
-  //     short: "USD",
-  //     long: "Dollar",
-  //     description: "United States Dollar",
-  //   },
-  // },
+  {
+    country: "Ecuador",
+    dialing_code: "593",
+    code: "ec",
+    flag: "https://flagsapi.com/EC/flat/64.png",
+    currency: {
+      sign: "$",
+      short: "USD",
+      long: "Dollar",
+      description: "United States Dollar",
+    },
+  },
   {
     country: "Egypt",
     dialing_code: "20",
@@ -579,17 +579,17 @@ const countries = [
 
 const dialingCodes = countries.map((c) => c.dialing_code);
 const escapedCodes = dialingCodes.map((dc) =>
-  dc.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")
+  dc.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"),
 );
 
 export const dialingCodeRegex = new RegExp(
-  `^(?:\\+)?(?:${escapedCodes.join("|")})`
+  `^(?:\\+)?(?:${escapedCodes.join("|")})`,
 );
 
 export function getCountryByCurrencyShort(shortCode: string) {
   return (
     countries.find(
-      (c) => c.currency.short.toUpperCase() === shortCode.toUpperCase()
+      (c) => c.currency.short.toUpperCase() === shortCode.toUpperCase(),
     ) || null
   );
 }

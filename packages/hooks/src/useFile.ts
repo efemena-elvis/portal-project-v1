@@ -2,7 +2,7 @@ export default function useFile() {
   const processFileType = (name: string, allowedFiles: string[]) => {
     const fileParts = name.split(".");
     const fileType = fileParts[fileParts.length - 1];
-    return allowedFiles.includes(fileType) ? true : false;
+    return !!allowedFiles.includes(fileType);
   };
 
   const processFileSize = (size: number, limit = 5000000) => {

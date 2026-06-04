@@ -18,7 +18,7 @@ export default function useValidator() {
 
   const validateRequired = (
     input: string | number,
-    message: string = "This input field is required"
+    message: string = "This input field is required",
   ) => {
     const trimmedInput = trimInput(input);
     return trimmedInput.length ? "" : message;
@@ -26,7 +26,7 @@ export default function useValidator() {
 
   const validateEmail = (
     input: string | number,
-    message: string = "Please provide a valid email address"
+    message: string = "Please provide a valid email address",
   ) => {
     const trimmedInput = trimInput(input);
     return emailRegex.test(trimmedInput) ? "" : message;
@@ -34,7 +34,7 @@ export default function useValidator() {
 
   const validateNumberEntry = (
     input: string,
-    message: string = "Should not contain any number or a special character"
+    message: string = "Should not contain any number or a special character",
   ) => {
     const trimmedInput = trimInput(input);
 
@@ -43,7 +43,7 @@ export default function useValidator() {
 
   const validateOnlyNumbers = (
     input: string | number,
-    message: string = "Input must contain only numbers (0-9)"
+    message: string = "Input must contain only numbers (0-9)",
   ) => {
     const trimmedInput = trimInput(input);
     return /^\d+$/.test(trimmedInput) ? "" : message;
@@ -52,7 +52,7 @@ export default function useValidator() {
   const validatePhone = (
     input: string | number,
     countryCode: string,
-    message: string = "Please provide a valid phone number"
+    message: string = "Please provide a valid phone number",
   ) => {
     const trimmedInput = trimInput(input);
 
@@ -71,7 +71,7 @@ export default function useValidator() {
 
   const validateTelephone = (
     input: string | number,
-    message: string = "Please provide a valid phone number"
+    message: string = "Please provide a valid phone number",
   ) => {
     const trimmedInput = trimInput(input);
 
@@ -128,7 +128,7 @@ export default function useValidator() {
 
   const validateSingleName = (
     input: string,
-    message: string = "Input field should not contain any number"
+    message: string = "Input field should not contain any number",
   ) => {
     const trimmedInput = trimInput(input);
 
@@ -139,7 +139,7 @@ export default function useValidator() {
 
   const validateAlphanumeric = (
     input: string,
-    message: string = "Input should only contain alphabets and numbers"
+    message: string = "Input should only contain alphabets and numbers",
   ) => {
     const trimmedInput = trimInput(input);
 
@@ -152,7 +152,7 @@ export default function useValidator() {
   const validateDateRange = (
     input: string,
     range: number,
-    message: string = "Input value should be outside of the range"
+    message: string = "Input value should be outside of the range",
   ) => {
     const providedDate = new Date(input);
     const today = new Date();
@@ -175,7 +175,7 @@ export default function useValidator() {
 
   const validateURL = (
     input: string | number,
-    message = "Please provide a valid URL"
+    message = "Please provide a valid URL",
   ) => {
     const trimmedInput =
       typeof input === "number" ? input.toString().trim() : input.trim();

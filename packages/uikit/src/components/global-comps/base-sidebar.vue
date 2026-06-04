@@ -2,14 +2,7 @@
   <div class="base-sidebar">
     <!-- CLIENT BUSINESS AREA -->
 
-    <BaseClientAreaStore
-      v-if="isStoreLayout"
-      :businessProfile="businessProfile"
-      :storeList="storeList"
-      :setActiveStore="setActiveStore"
-      :activeStore="activeStore"
-    />
-    <BaseClientArea v-else :businessProfile="businessProfile" />
+    <BaseClientArea :businessProfile="businessProfile" />
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
@@ -27,7 +20,15 @@
             class="sidebar-item"
           >
             <div class="icon" :class="route.icon"></div>
-            <div class="sidebar-text">{{ route.title }}</div>
+            <div class="sidebar-text">
+              {{ route.title }}
+              <span
+                v-if="badgeConfig && badgeConfig[route.title]"
+                class="badge"
+              >
+                {{ formatBadge(badgeConfig[route.title]) }}
+              </span>
+            </div>
           </router-link>
         </template>
       </div>
@@ -54,7 +55,15 @@
             class="sidebar-item"
           >
             <div class="icon" :class="route.icon"></div>
-            <div class="sidebar-text">{{ route.title }}</div>
+            <div class="sidebar-text">
+              {{ route.title }}
+              <span
+                v-if="badgeConfig && badgeConfig[route.title]"
+                class="badge"
+              >
+                {{ formatBadge(badgeConfig[route.title]) }}
+              </span>
+            </div>
           </router-link>
         </div>
       </template>
@@ -76,6 +85,9 @@
         <div class="icon" :class="route.icon"></div>
         <div class="sidebar-text">
           {{ route.title }}
+          <span v-if="badgeConfig && badgeConfig[route.title]" class="badge">
+            {{ formatBadge(badgeConfig[route.title]) }}
+          </span>
         </div>
       </router-link>
     </div>
@@ -84,18 +96,14 @@
 
 <script lang="ts" setup>
 import { computed, reactive } from "vue";
-import { useRoute } from "vue-router";
+
 import { ISidebarRouteType, IRouteGroupType } from "@packages/models";
 import BaseClientArea from "./base-client-area.vue";
-import BaseClientAreaStore from "./base-client-area-store.vue";
 
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
-  storeList?: any[];
-  setActiveStore?: (store: any) => void;
-  activeStore?: any;
-  isStoreLayout?: boolean;
+  badgeConfig?: Record<string, number>;
 }
 
 interface GroupedByCategory {
@@ -113,8 +121,9 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
   activeStore: () => ({}),
   storeList: () => [],
   isStoreLayout: false,
+  badgeConfig: () => ({}),
 });
-// console.log(props.activeStore)
+
 const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 
@@ -131,15 +140,17 @@ const morAccountType = computed(() => {
   return profileUtil?.getUser?.().morAccountType ?? "merchant";
 });
 
+const formatBadge = (count: number) => (count > 10 ? "10+" : String(count))
+
 const groupedAndFilteredRoutes = computed(() => {
   const grouped: GroupedByCategory = groupRoutesByCategory(
-    sidebarRouteList.subLevel
+    sidebarRouteList.subLevel,
   );
   const filtered: GroupedByCategory = {};
 
   for (const category in grouped) {
     const filteredRoutes = grouped[category].filter(
-      (route) => !route.type || route.type === morAccountType.value
+      (route) => !route.type || route.type === morAccountType.value,
     );
     if (filteredRoutes.length) {
       filtered[category] = filteredRoutes;
@@ -163,7 +174,7 @@ const groupedAndFilteredRoutes = computed(() => {
     }
 
     .sidebar-item-group {
-      @apply relative mb-6;
+      @apply relative mb-8;
 
       &-title {
         @apply px-6 text-[12px] mb-[6px] uppercase text-grey-600;
@@ -176,14 +187,18 @@ const groupedAndFilteredRoutes = computed(() => {
   }
 
   .sidebar-item {
-    @apply w-full px-6 py-2.5 text-neutral-800/95 flex justify-start items-center gap-x-[12px] transition duration-300 ease-in-out hover:bg-grey-100/60;
+    @apply w-full px-6 py-3 text-neutral-800/95 flex justify-between items-center gap-x-[12px] transition duration-300 ease-in-out hover:bg-grey-100/60;
 
     .icon {
-      @apply text-[18px];
+      @apply text-[18px] flex-shrink-0;
     }
 
     .sidebar-text {
-      @apply text-[14.5px];
+      @apply text-[14.5px] flex items-center gap-x-2 flex-1;
+
+      .badge {
+        @apply ml-4 inline-flex items-center justify-center w-[32px] h-[32px] px-2 text-[12px] leading-none font-semibold text-[#D94072] bg-[#FDEEF4] rounded-full;
+      }
     }
   }
 }
