@@ -1,37 +1,14 @@
-import { computed } from "vue";
 import constants from "@/shared/utilities/constants";
-import { useServiceAPI, useProfile } from "@packages/hooks";
+import { useServiceAPI } from "@packages/hooks";
 import { feeRoutes } from "./fee-routes";
-import { useAuthStore } from "@/modules/auth/store";
 
-const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
-
-const authStore = useAuthStore();
-const profileUtil = new useProfile(authStore);
-
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
-const activeMode = getBusinessProfile.value?.businessMode || "test";
-
-const publicKey = computed(() =>
-  activeMode === "test"
-    ? profileUtil.getAPIKeys().test.public
-    : profileUtil.getAPIKeys().live.public,
-);
-
-const secretKey = computed(() =>
-  activeMode === "test"
-    ? profileUtil.getAPIKeys().test.secret
-    : profileUtil.getAPIKeys().live.secret,
-);
+const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
+  constants;
 
 const $api = new useServiceAPI({
-  API_BASE_URL: MOR_API_BASE_URL,
-  API_VERSION: MOR_API_VERSION,
-  TOKEN_KEY: MOR_AUTH_TOKEN,
-  HEADERS: {
-    "public-key": publicKey.value,
-    "secret-key": secretKey.value,
-  },
+  API_BASE_URL: PORTAL_API_BASE_URL,
+  API_VERSION: PORTAL_API_VERSION,
+  TOKEN_KEY: PORTAL_AUTH_TOKEN,
 });
 
 export const getFees = async (payload: any) => {
@@ -40,8 +17,10 @@ export const getFees = async (payload: any) => {
   );
 };
 
-export const getSingleFee = async (id: string) => {
-  return await $api.fetch(`${feeRoutes.getSingleFee}/${id}`);
+export const getSingleFee = async (payload: any) => {
+  return await $api.fetch(
+    `${feeRoutes.getSingleFee}/${payload.merchant_config_uuid}`,
+  );
 };
 
 export const createFee = async (payload: any) => {
@@ -49,5 +28,9 @@ export const createFee = async (payload: any) => {
 };
 
 export const updateFee = async (id: string, payload: any) => {
-  return await $api.push(`${feeRoutes.updateFee}/${id}`, payload);
+  return await $api.update(`${feeRoutes.updateFee}/${id}`, payload);
+};
+
+export const deleteFee = async (id: string) => {
+  return await $api.delete(`${feeRoutes.deleteFee}/${id}`);
 };

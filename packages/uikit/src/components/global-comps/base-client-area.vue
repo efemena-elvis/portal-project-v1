@@ -2,18 +2,14 @@
   <div class="client-area-wrapper">
     <div class="client-area">
       <div class="client-area-brand">
-        {{
-          getBrandInitials(
-            getBusinessProfile?.businessName ?? "No business name",
-          )
-        }}
+        {{ getInitials(getUserDisplayName) }}
       </div>
 
       <div class="client-area-details">
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
           <div class="brand-name">
-            {{ getBusinessProfile?.businessName ?? "No business name" }}
+            {{ getUserDisplayName }}
           </div>
 
           <div class="brand-id-row">
@@ -22,18 +18,6 @@
         </div>
       </div>
     </div>
-
-    <!-- <div
-      class="dropdown-area-wrapper"
-      ref="dialogRef"
-      v-if="showDropdown"
-      role="dialog"
-      aria-modal="true"
-    >
-      <router-link to="/logout" class="dropdown-area select-none">
-        <div class="dropdown-item">Sign Out</div>
-      </router-link>
-    </div> -->
   </div>
 </template>
 
@@ -66,24 +50,16 @@ const copied = ref<boolean>(false);
 const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUser = computed(() => profileUtil.getUser());
 
-// GET BRAND INITIALS
-const getBrandInitials = (brandName: string): string =>
-  getStringInitials(brandName);
+const getUserDisplayName = computed(() => {
+  const user = getUser.value;
+  if (!user) return "No business name";
+  const first = user.firstName ?? "";
+  const last = user.lastName ?? "";
+  return `${first} ${last}`.trim() || "No business name";
+});
 
-// COPY MERCHANT BUSINESS ID
-const copyMerchantID = async () => {
-  // const { businessId } = getBusiness();
-  const businessId = "123456789";
-  await navigator.clipboard.writeText(businessId);
-
-  pushToastAlert({
-    message: "Merchant ID copied successfully",
-    type: "success",
-  });
-
-  copied.value = true;
-  setTimeout(() => (copied.value = false), 2000);
-};
+// GET INITIALS
+const getInitials = (brandName: string): string => getStringInitials(brandName);
 </script>
 
 <style lang="scss" scoped>

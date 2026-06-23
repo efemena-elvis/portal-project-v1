@@ -1,14 +1,14 @@
-import { IRouteType } from '@packages/models'
+import { IRouteType } from "@packages/models";
 
 const overviewRoutes: IRouteType[] = [
   {
-    path: '/transactions',
+    path: "/transactions",
     component: () =>
       import(
-        /* webpackChunkName: "pyments-layout" */ '@/layouts/base-layout.vue'
+        /* webpackChunkName: "pyments-layout" */ "@/layouts/base-layout.vue"
       ),
     children: [],
   },
-]
+];
 
-export default overviewRoutes
+export default overviewRoutes;

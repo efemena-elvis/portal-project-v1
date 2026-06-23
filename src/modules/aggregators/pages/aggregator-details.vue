@@ -5,7 +5,6 @@
     :entityType="'Aggregator'"
     :showMetrics="false"
     :showPayoutRequest="false"
-
     @actionSelected="openActionModal"
   >
     <template #summaryExtra>

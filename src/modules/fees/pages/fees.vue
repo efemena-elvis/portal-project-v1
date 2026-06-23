@@ -6,7 +6,6 @@
     pageDescription="All Fee Configurations"
     :pagingData="tablePaging"
     @updatePage="(currentPage: number) => (page = currentPage)"
-    @searchEntered="processSearchEntry"
   >
     <template #pageContent>
       <section class="flex flex-col gap-7">
@@ -22,49 +21,11 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap justify-between gap-6 items-start">
-          <div class="flex justify-start items-center gap-4 w-full">
-            <div class="relative w-[20%]">
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-              ></div>
-              <input
-                v-model="searchQuery"
-                type="search"
-                class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-                placeholder="Search"
-                aria-label="Search fee configurations"
-              />
-            </div>
-
-            <div
-              class="relative text-sm font-semibold text-teal-800 border rounded-lg cursor-pointer filter-select bg-white"
-            >
-              <select
-                v-model="selectedStatus"
-                class="w-[180px] p-4 bg-transparent appearance-none focus:outline-none"
-              >
-                <option value="">Status</option>
-                <option
-                  v-for="(status, index) in statusOptions"
-                  :key="index"
-                  :value="status.toLowerCase()"
-                >
-                  {{ status }}
-                </option>
-              </select>
-              <div
-                class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-              ></div>
-            </div>
-
-            <DatePicker
-              filterSize="lg"
-              :activePeriod="activePeriod"
-              @onFilterSelected="processFilterSelection"
-            />
-          </div>
-        </div>
+        <FilterBar
+          :filters="filterConfig"
+          :values="filterValues"
+          @change="onFilterChange"
+        />
 
         <TableContainer
           :tableHeader="tableHeader"
@@ -93,31 +54,45 @@
   />
 
   <EditFeeModal
-    v-if="showEditModal && selectedFeeRaw !== null"
+    v-if="showEditModal"
     :feeId="selectedFeeId"
-    :feeData="selectedFeeRaw"
     @closeTriggered="closeEditModal"
     @feeUpdated="handleFeeUpdated"
+  />
+
+  <MerchantActionModal
+    v-if="showDeleteModal"
+    action="delete-fee"
+    title="Delete fee configuration"
+    :description="`Are you sure you want to delete the fee config for ${feeToDelete?.name || 'this merchant'}?`"
+    confirmText="Delete"
+    tone="danger"
+    @closeTriggered="showDeleteModal = false"
+    @confirmed="handleDeleteConfirmed"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, h, onMounted, watch } from "vue";
-import { useDate, useEvents, useString } from "@packages/hooks";
+import { ref, computed, h, reactive, onMounted } from "vue";
+import { useDate, useEvents, useString, useAutoFetch } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
+import { useMerchantStore } from "@/modules/merchants/store";
 import { TableHeaderType } from "@packages/models";
+import { getCountryByCurrencyShort } from "@packages/constants";
 import {
   PageContentWrapper,
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
-  DatePicker,
+  FilterBar,
 } from "@packages/uikit";
 import AddFeeModal from "@/modules/fees/modals/add-fee-modal.vue";
 import EditFeeModal from "@/modules/fees/modals/edit-fee-modal.vue";
+import MerchantActionModal from "@/modules/payments/modals/merchant-action-modal.vue";
 
-const { getFees } = useFeeStore();
-const { processAPIRequest } = useEvents();
+const { getFees, deleteFee } = useFeeStore();
+const { getMerchants } = useMerchantStore();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
   useString();
 
@@ -125,14 +100,46 @@ const isLoading = ref(true);
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const page = ref(1);
-const searchQuery = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
 const showAddFeeModal = ref(false);
 const showEditModal = ref(false);
 const selectedFeeId = ref("");
-const selectedFeeRaw = ref<Record<string, any> | null>(null);
+const showDeleteModal = ref(false);
+const feeToDelete = ref<any>(null);
+const merchantOptions = ref<{ value: string; name: string }[]>([]);
 
-const statusOptions = ["Active", "Inactive"];
+const filterValues = reactive({
+  merchant: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  {
+    type: "searchable-select" as const,
+    key: "merchant",
+    options: merchantOptions,
+    placeholder: "Merchant",
+  },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Active", "Inactive"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  page.value = 1;
+};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date_created" },
@@ -145,28 +152,23 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const selectedStatus = ref("");
-
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
+    `?page=${page.value}&status=${filterValues.status}&user_id=${filterValues.merchant}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}`,
 );
 
-const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.toLocaleLowerCase().trim();
-};
-
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string],
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]) as Date,
-    ];
-    activePeriod.value = normalizedRange;
-  } else {
-    activePeriod.value = null;
+const fetchMerchants = async () => {
+  const response = await processAPIRequest({
+    action: async () => getMerchants({ filters: "?page=1&page_size=100000" }),
+    showAlert: false,
+  });
+  if (response?.code === 200 && response.data) {
+    const merchants = response.data.merchants || [];
+    merchantOptions.value = merchants.map((m: any) => ({
+      value: m.uuid || "",
+      name:
+        m.email || `${m.first_name || ""} ${m.last_name || ""}`.trim() || "-",
+    }));
   }
 };
 
@@ -176,61 +178,47 @@ const getDateCreated = (date: string) => {
 };
 
 const getMerchantName = (data: any) => {
-  return data?.name || "-";
+  if (!data) return "-";
+
+  const merchant = data.user || data;
+  const firstName = merchant?.first_name?.toString().trim();
+  const lastName = merchant?.last_name?.toString().trim();
+
+  if (firstName || lastName) {
+    return `${firstName || ""} ${lastName || ""}`.trim();
+  }
+
+  return merchant?.email || merchant?.name || "-";
 };
 
 const normalizeFeeData = (data: any) => {
   return {
     id: data?.id,
     date: data?.created_at || "-",
-    name: getMerchantName(data) || "-",
-    merchantId: data?.id || "",
-    payment_type: data?.payment_type || "-",
-    country: data?.country || "-",
-    fee_type: data?.fee_type || "-",
+    name: getMerchantName(data),
+    merchantId: data?.user_id,
+    payment_type: data?.method || data?.payment_type || "-",
+    country:
+      getCountryByCurrencyShort(data?.currency)?.country ||
+      data?.country ||
+      "-",
+    fee_type: data?.type || data?.fee_type || "-",
     amount: getBoldTableText(
-      `${data.currency} ${formatNumber(data.amount)}`,
-      data.payment_type === "payin" ? "text-green-600" : "text-red-600",
+      `${data?.currency} ${formatNumber(data?.amount ?? 0)}`,
+      data?.method === "payin" ? "text-green-600" : "text-red-600",
     ),
-    capAmount: data?.cap_amount ? formatNumber(data.cap_amount) : "-",
-    status: capitalizeFirstLetter(
-      (data?.status || "active").toString().toLowerCase(),
-    ),
+    capAmount: data?.cap_amount
+      ? `${data.currency} ${formatNumber(data.cap_amount)}`
+      : "-",
+    status: data?.is_active ? "active" : "inactive",
     raw: data,
   };
 };
 
-const dummyTableBody = [
-  {
-    name: "Tanimola Business",
-    id: "MER-001",
-    created_at: "2025-03-15T10:30:00Z",
-    payment_type: "payin",
-    country: "nigeria",
-    fee_type: "percentage",
-    amount: 2500,
-    cap_amount: 50000,
-    currency: "NGN",
-    status: "active",
-  },
-  {
-    name: "Future Tech Solutions",
-    id: "MER-002",
-    created_at: "2025-01-22T14:15:00Z",
-    payment_type: "payout",
-    country: "ghana",
-    currency: "GHS",
-    fee_type: "fixed",
-    amount: 1500,
-    cap_amount: 30000,
-    status: "active",
-  },
-];
-
 const buildFeeTableRows = (fees: any[]) => {
   tableBody.value = fees.map((data: any) => {
     const fee = normalizeFeeData(data);
-    const date = data?.created_at || (data as any).date;
+    const date = fee.date;
 
     return {
       date_created: h(TableDoubleColumn, {
@@ -242,25 +230,44 @@ const buildFeeTableRows = (fees: any[]) => {
       name: getBoldTableText(fee.name),
       payment_type: capitalizeFirstLetter(fee.payment_type),
       fee_type: capitalizeFirstLetter(fee.fee_type),
-      amount: getBoldTableText(`${data.currency} ${formatNumber(data.amount)}`),
+      amount: fee.amount,
       cap_amount: getBoldTableText(fee.capAmount),
       status: getStatus(
-        data?.status.toLowerCase() === "active" ? "successful" : "failed",
-        data.status,
+        fee.status === "active" ? "successful" : "failed",
+        fee.status,
       ),
-      action: h(
-        "button",
-        {
-          class:
-            "text-sm font-semibold text-teal-800 transition hover:text-green-600",
-          type: "button",
-          onClick: (event: Event) => {
-            event.stopPropagation();
-            openEditFeeModal(fee);
+      action: h("div", { class: "flex items-center gap-3" }, [
+        h(
+          "button",
+          {
+            type: "button",
+            onClick: (event: Event) => {
+              event.stopPropagation();
+              openEditFeeModal(fee);
+            },
           },
-        },
-        "Edit Config",
-      ),
+          [
+            h("i", {
+              class: "icon icon-pen-edit text-teal-800 text-lg",
+            }),
+          ],
+        ),
+        h(
+          "button",
+          {
+            type: "button",
+            onClick: (event: Event) => {
+              event.stopPropagation();
+              handleDeleteFee(fee);
+            },
+          },
+          [
+            h("i", {
+              class: "icon icon-trash text-red-500 text-lg",
+            }),
+          ],
+        ),
+      ]),
       raw: fee,
     };
   });
@@ -279,25 +286,58 @@ const fetchFees = async (filters: string) => {
   isLoading.value = false;
 
   if (response?.code === 200) {
-    buildFeeTableRows(response.data);
-    tablePaging.value = response.pagination[0];
+    const merchantConfigs = response.data?.merchant_configs || [];
+    buildFeeTableRows(merchantConfigs);
+    tablePaging.value = {
+      current_page: response.data?.page || page.value,
+      page_count: merchantConfigs.length,
+      total_pages_count: Math.ceil(
+        (response.data?.total_records || 0) / (response.data?.page_size || 1),
+      ),
+    };
   }
 };
 
-const buildDummyTableRows = () => {
-  buildFeeTableRows(dummyTableBody);
+const openEditFeeModal = (fee: any) => {
+  selectedFeeId.value = fee.id;
+  showEditModal.value = true;
 };
 
-const openEditFeeModal = (fee: any) => {
-  selectedFeeId.value = fee.id || "";
-  selectedFeeRaw.value = fee.raw || null;
-  showEditModal.value = true;
+const handleDeleteFee = (fee: any) => {
+  feeToDelete.value = fee;
+  showDeleteModal.value = true;
+};
+
+const handleDeleteConfirmed = async () => {
+  showDeleteModal.value = false;
+  const fee = feeToDelete.value;
+  if (!fee) return;
+  feeToDelete.value = null;
+
+  const response = await processAPIRequest({
+    action: async () => deleteFee(fee.id),
+    payload: { merchant_config_uuid: fee.id },
+    showAlert: false,
+  });
+
+  if (response?.code >= 200 && response?.code < 300) {
+    pushToastAlert({
+      message: "Fee configuration deleted",
+      type: "success",
+    });
+    fetchFees(filters.value);
+  } else {
+    pushToastAlert({
+      message: "Unable to delete fee configuration",
+      description: response?.message || "Please try again",
+      type: "error",
+    });
+  }
 };
 
 const closeEditModal = () => {
   showEditModal.value = false;
   selectedFeeId.value = "";
-  selectedFeeRaw.value = null;
 };
 
 const handleFeeSaved = () => {
@@ -310,22 +350,28 @@ const handleFeeUpdated = () => {
   fetchFees(filters.value);
 };
 
-watch([selectedStatus, activePeriod, searchQuery], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchFees(newFilters);
-});
+useAutoFetch(filters, fetchFees);
 
 onMounted(() => {
-  buildDummyTableRows();
-  fetchFees(filters.value);
+  fetchMerchants();
 });
 </script>
 
 <style scoped lang="scss">
 :deep(tbody tr td:last-child) {
   text-align: left;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
 }
 </style>

@@ -31,7 +31,7 @@ Or via Makefile: `make dev`, `make build-staging`, `make check-types`, etc.
 - Feature modules live in `src/modules/` (auth, balances, compliance, error, external, global, overview, payments, settings) — each exports its own routes
 - Routes assembled in `src/router/index.ts` by spreading module routes
 - `src/middlewares/index.ts` — global `beforeEach` guard using `useRouteGuard` from `@packages/hooks`
-- Auth token key: `MOR_AUTH_TOKEN`; routes use meta flags: `public`, `requiresAuth`, `guest`, `open`
+- Auth token key: `PORTAL_AUTH_TOKEN`; routes use meta flags: `public`, `requiresAuth`, `guest`, `open`
 - Global toast alerts via mitt eventBus (events: `triggerToastAlert`, `closeToastAlert`)
 
 ## Internal packages (`packages/`)

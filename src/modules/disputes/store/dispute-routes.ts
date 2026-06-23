@@ -1,4 +1,4 @@
 export const disputeRoutes = {
-  getDisputes: 'disputes',
-  getSingleDispute: 'disputes',
-}
+  getDisputes: "disputes",
+  getSingleDispute: "disputes",
+};

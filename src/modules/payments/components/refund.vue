@@ -22,22 +22,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { TableHeaderType } from '@packages/models'
+import { ref, reactive } from "vue";
+import { TableHeaderType } from "@packages/models";
 import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-} from '@packages/uikit'
+} from "@packages/uikit";
 
-const isLoading = ref(false)
+const isLoading = ref(false);
 
 const tableHeader = ref<TableHeaderType[]>([
-  { title: 'Date', slug: 'date_created' },
-  { title: 'Reference', slug: 'reference' },
-  { title: 'Amount', slug: 'amount' },
-  { title: 'Status', slug: 'status' },
-])
+  { title: "Date", slug: "date_created" },
+  { title: "Reference", slug: "reference" },
+  { title: "Amount", slug: "amount" },
+  { title: "Status", slug: "status" },
+]);
 
-const tableBody = reactive<any[]>([])
+const tableBody = reactive<any[]>([]);
 </script>

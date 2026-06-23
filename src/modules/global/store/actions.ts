@@ -5,12 +5,13 @@ import { useAuthMutations } from "@/modules/auth/store/mutations";
 import axios from "axios";
 
 export function useGlobalActions() {
-  const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+  const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
+    constants;
 
   const $api = new useServiceAPI({
-    API_BASE_URL: MOR_API_BASE_URL,
-    API_VERSION: MOR_API_VERSION,
-    TOKEN_KEY: MOR_AUTH_TOKEN,
+    API_BASE_URL: PORTAL_API_BASE_URL,
+    API_VERSION: PORTAL_API_VERSION,
+    TOKEN_KEY: PORTAL_AUTH_TOKEN,
   });
 
   const { mutateBusinessMode } = useAuthMutations();

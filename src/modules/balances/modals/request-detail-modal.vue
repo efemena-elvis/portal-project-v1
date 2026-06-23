@@ -1,4 +1,3 @@
-
 <template>
   <ModalDialog
     place_center
@@ -24,7 +23,7 @@
           </div>
 
           <span :class="['status-badge', statusClass]">
-            {{ displayStatus }}
+            {{ request.status }}
           </span>
         </div>
 
@@ -49,8 +48,12 @@
             <span>Name on account</span>
             <strong>{{ request.accountName }}</strong>
           </div>
+          <div v-if="request.narration" class="detail-row">
+            <span>Narration</span>
+            <strong>{{ request.narration }}</strong>
+          </div>
         </div>
-<!-- 
+        <!-- 
         <button
           class="merchant-link"
           type="button"
@@ -100,6 +103,7 @@ export type RequestDetail = {
   accountNumber?: string;
   bankName?: string;
   accountName?: string;
+  narration?: string;
 };
 
 const props = withDefaults(
@@ -131,20 +135,14 @@ const displayAmount = computed(() => {
     : amount;
 });
 
-const displayStatus = computed(() => props.request.status || "-");
-
 const statusClass = computed(() => {
-  const status = displayStatus.value.toLowerCase().replace(/_/g, " ");
+  const status = props.request?.status?.toLowerCase().replace(/_/g, " ");
 
-  if (status.includes("success") || status.includes("complete")) {
+  if (status?.includes("completed")) {
     return "status-success";
   }
 
-  if (
-    status.includes("fail") ||
-    status.includes("cancel") ||
-    status.includes("reject")
-  ) {
+  if (status?.includes("failed")) {
     return "status-danger";
   }
 

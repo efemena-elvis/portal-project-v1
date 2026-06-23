@@ -9,60 +9,20 @@
   >
     <template #pageContent>
       <section class="flex flex-col gap-7">
-        <div class="funding-stats">
-          <div
+        <div class="flex flex-wrap items-center gap-8 mt-8">
+          <StatsCard
             v-for="stat in fundingStats"
             :key="stat.title"
-            class="funding-stat-card"
-          >
-            <p>{{ stat.title }}</p>
-            <strong>{{ stat.value }}</strong>
-          </div>
+            :title="stat.title"
+            :value="stat.value"
+          />
         </div>
 
-
-        <div class="flex flex-wrap items-center gap-4">
-          <div class="relative w-[20%]">
-            <div
-              class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-            ></div>
-            <input
-              v-model="searchQuery"
-              type="search"
-              class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-              placeholder="Search funding requests"
-              aria-label="Search funding requests"
-            />
-          </div>
-
-          <div class="flex flex-wrap items-center gap-4 sm:w-full">
-            <div
-              class="relative text-sm font-semibold text-teal-800 border rounded-lg cursor-pointer filter-select bg-white"
-            >
-              <select
-                v-model="selectedStatus"
-                class="w-[180px] p-4 bg-transparent appearance-none focus:outline-none"
-              >
-                <option value="">Status</option>
-                <option
-                  v-for="(status, index) in statusOptions"
-                  :key="index"
-                  :value="status.toLowerCase()"
-                >
-                  {{ status }}
-                </option>
-              </select>
-              <div
-                class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-              ></div>
-            </div>
-            <DatePicker
-              filterSize="lg"
-              :activePeriod="activePeriod"
-              @onFilterSelected="processFilterSelection"
-            />
-          </div>
-        </div>
+        <FilterBar
+          :filters="filterConfig"
+          :values="filterValues"
+          @change="onFilterChange"
+        />
 
         <TableContainer
           :tableHeader="tableHeader"
@@ -90,28 +50,29 @@
     title="Funding Request"
     :request="selectedRequest"
     @closeTriggered="closeRequestModal"
-    @approve="handleUnavailableFundingAction"
-    @reject="handleUnavailableFundingAction"
+    @approve="handleFundingAction('approve')"
+    @reject="handleFundingAction('reject')"
     @goToMerchant="goToMerchantDashboard"
   />
 </template>
 
 <script lang="ts" setup>
-import { computed, h, onMounted, ref, watch } from "vue";
+import { computed, h, ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useDate, useEvents, useString } from "@packages/hooks";
+import { useDate, useEvents, useString, useAutoFetch } from "@packages/hooks";
 import {
   PageContentWrapper,
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
-  DatePicker,
+  FilterBar,
+  StatsCard,
 } from "@packages/uikit";
 import { TableHeaderType } from "@packages/models";
-import { useFundingStore } from "@/modules/funding/store";
+import { useFundingStore } from "@/modules/fundings/store";
 import RequestDetailModal from "@/modules/balances/modals/request-detail-modal.vue";
 
-const { getFunding, getSingleFunding } = useFundingStore();
+const { getAllFundings, verifyFunding } = useFundingStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
   useString();
@@ -121,23 +82,62 @@ const isLoading = ref(true);
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 const page = ref(1);
-const searchQuery = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
 const showRequestModal = ref(false);
 const selectedRequest = ref<any | null>(null);
 
+const filterValues = reactive({
+  search: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
 
-const fundingStats = [
-  { title: "New request / Pending", value: "20" },
-  { title: "Completed", value: "5200" },
+const filterConfig = [
+  {
+    type: "search" as const,
+    key: "search",
+    placeholder: "Search funding requests",
+  },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Completed", "Pending", "Failed"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
 ];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  page.value = 1;
+};
+
+const fundingStats = ref<{ title: string; value: string }[]>([
+  { title: "Total Requests", value: "-" },
+  { title: "Completed", value: "-" },
+  { title: "Pending", value: "-" },
+  { title: "Failed", value: "-" },
+]);
+
+const fmtStartISO = (d: Date) => d.toISOString().replace(/\.\d+Z$/, "Z");
+const fmtEndISO = (d: Date) => {
+  const end = new Date(d);
+  end.setHours(23, 59, 59, 0);
+  return end.toISOString().replace(/\.\d+Z$/, "Z");
+};
 
 const dummyFundingRequests = [
   {
     id: "FND-001",
     created_at: new Date().toISOString(),
     amount: 1500000,
-    currency_code: "NGN",
+    currency: "NGN",
     status: "pending",
     name: "Tech-village Inc",
     reference: "REF-ABC-001",
@@ -150,7 +150,7 @@ const dummyFundingRequests = [
     id: "FND-002",
     created_at: new Date(Date.now() - 86400000).toISOString(),
     amount: 2500000,
-    currency_code: "NGN",
+    currency: "NGN",
     status: "successful",
     name: "BizMart Africa",
     reference: "REF-ABC-002",
@@ -163,7 +163,7 @@ const dummyFundingRequests = [
     id: "FND-003",
     created_at: new Date(Date.now() - 172800000).toISOString(),
     amount: 750000,
-    currency_code: "GHS",
+    currency: "GHS",
     status: "pending",
     name: "GreenLeaf Ventures",
     reference: "REF-ABC-003",
@@ -171,7 +171,7 @@ const dummyFundingRequests = [
     bankName: "GTB",
     accountName: "Tech-village Inc",
     isDummy: true,
-  }
+  },
 ];
 
 const tableHeader = ref<TableHeaderType[]>([
@@ -183,20 +183,9 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const selectedStatus = ref("");
-const statusOptions = ["Successful", "Pending", "Failed"];
-
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${
-      activePeriod.value
-        ? activePeriod.value[0].toISOString().split("T")[0]
-        : ""
-    }&to=${
-      activePeriod.value
-        ? activePeriod.value[1].toISOString().split("T")[0]
-        : ""
-    }&search=${searchQuery.value.toLocaleLowerCase().trim()}`,
+    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`,
 );
 
 const getDateCreated = (date: string) => {
@@ -206,15 +195,15 @@ const getDateCreated = (date: string) => {
 
 const normalizeFundingRequest = (data: any) => {
   return {
-    id: data?.id,
-    amount: data?.amount ? formatNumber(data?.amount) : "-",
-    currency: data?.currency_code,
+    id: data?.uuid || data?.id,
+    amount: data?.amount ? formatNumber(Number(data?.amount)) : "-",
+    currency: data?.currency,
     status: capitalizeFirstLetter(
       (data?.status || "-").toString().toLowerCase(),
     ),
     date: data?.created_at ? getDateCreated(data?.created_at) : "-",
     merchantName: data?.name,
-    merchantId: data?.id,
+    merchantId: data?.merchant_id || data?.business_id || data?.uuid,
     reference: data?.reference,
     accountNumber: data?.accountNumber || data?.account_number || "",
     bankName: data?.bankName || data?.bank_name || "",
@@ -226,17 +215,6 @@ const normalizeFundingRequest = (data: any) => {
 const openRequestModal = async (request: any) => {
   selectedRequest.value = request;
   showRequestModal.value = true;
-
-  if (!request.id || request.isDummy) return;
-
-  const response = await processAPIRequest({
-    action: async () => getSingleFunding(request.id),
-    showAlert: false,
-  });
-
-  if (response?.code === 200 && response.data) {
-    selectedRequest.value = normalizeFundingRequest(response.data);
-  }
 };
 
 const closeRequestModal = () => {
@@ -249,28 +227,48 @@ const goToMerchantDashboard = () => {
   router.push(`/merchants/${selectedRequest.value.merchantId}`);
 };
 
-const handleUnavailableFundingAction = () => {
-  pushToastAlert({
-    message: "Funding action unavailable",
-    description:
-      "Approve and reject endpoints are not available for funding yet.",
-    type: "error",
-  });
-};
+const handleFundingAction = async (action: "approve" | "reject") => {
+  const uuid = selectedRequest.value?.id;
+  if (!uuid) {
+    pushToastAlert({
+      message: "Unable to complete action",
+      description: "Funding request information is not available.",
+      type: "error",
+    });
+    return;
+  }
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string],
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
+  const response = await processAPIRequest({
+    action: () =>
+      verifyFunding({
+        uuid,
+        comment:
+          action === "approve"
+            ? "Payment confirmed by admin"
+            : "Funding request rejected",
+      }),
+    alertHandler: {
+      200: {
+        message:
+          action === "approve"
+            ? "Funding request approved"
+            : "Funding request rejected",
+        description: "The funding request has been updated successfully.",
+        type: "success",
+      },
+    },
+  });
+
+  if (response?.code === 200 || response?.code === 201) {
+    closeRequestModal();
+    fetchFundings(filters.value);
   } else {
-    activePeriod.value = null;
+    pushToastAlert({
+      message: response?.error?.message || "Unable to complete action",
+      type: "error",
+    });
   }
 };
-
 
 const buildFundingTableRows = (requests: any[]) => {
   tableBody.value = requests.map((data: any) => {
@@ -286,7 +284,10 @@ const buildFundingTableRows = (requests: any[]) => {
       }),
       merchant: request.merchantName,
       amount: getBoldTableText(`${request.currency} ${request.amount}`.trim()),
-      status: getStatus(data.status || request.status, data.status || request.status),
+      status: getStatus(
+        data.status || request.status,
+        data.status || request.status,
+      ),
       reference: request.reference,
       action: h(
         "button",
@@ -299,58 +300,51 @@ const buildFundingTableRows = (requests: any[]) => {
             openRequestModal(request);
           },
         },
-        "View"
+        "View",
       ),
       raw: request,
     };
   });
 };
 
-const fetchFunding = async (filters: string) => {
+const computeFundingStats = (response: any) => {
+  const transactions = response?.data?.wallet_fundings || [];
+  const completed = transactions.filter(
+    (t: any) => t.status === "successful" || t.status === "completed",
+  ).length;
+  const pending = transactions.filter(
+    (t: any) => t.status === "pending",
+  ).length;
+  const failed = transactions.filter((t: any) => t.status === "failed").length;
+  const total = transactions.length;
+
+  fundingStats.value = [
+    { title: "Total Requests", value: total.toLocaleString() },
+    { title: "Completed", value: completed.toLocaleString() },
+    { title: "Pending", value: pending.toLocaleString() },
+    { title: "Failed", value: failed.toLocaleString() },
+  ];
+};
+
+const fetchFundings = async (filters: string) => {
   isLoading.value = true;
-  tablePaging.value.current_page = page.value;
 
   const response = await processAPIRequest({
-    action: getFunding,
+    action: getAllFundings,
     payload: { filters, page: page.value },
     showAlert: false,
   });
 
   isLoading.value = false;
 
-  if (response?.code === 200 && response.data?.length) {
-    buildFundingTableRows(response.data);
-    tablePaging.value = response.pagination[0];
+  if (response?.code === 200 && response.data?.wallet_fundings?.length) {
+    computeFundingStats(response);
+    buildFundingTableRows(response.data.wallet_fundings);
+    tablePaging.value = response?.pagination?.[0] || {};
   } else {
     buildFundingTableRows(dummyFundingRequests);
   }
 };
 
-watch([selectedStatus, activePeriod, searchQuery], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchFunding(newFilters);
-});
-
-onMounted(() => fetchFunding(filters.value));
+useAutoFetch(filters, fetchFundings);
 </script>
-
-<style scoped lang="scss">
-.funding-stats {
-  @apply flex flex-wrap items-center gap-8;
-}
-
-.funding-stat-card {
-  @apply flex h-[124px] w-[370px] flex-col justify-center rounded-lg bg-[#F6FAF9] px-8 sm:w-full;
-
-  p {
-    @apply mb-4 text-base font-medium text-grey-800;
-  }
-
-  strong {
-    @apply text-[30px] font-bold leading-none text-grey-900;
-  }
-}
-</style>

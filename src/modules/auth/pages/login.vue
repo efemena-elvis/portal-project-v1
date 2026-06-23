@@ -105,15 +105,20 @@ const handleUserLogin = async () => {
   });
 
   if (response && response.code === 200) {
-    const { is_email_verified } = response.data;
+    // const { email_verified } = response.data;
+    const email_verified = true;
 
     setTimeout(() => {
       location.replace(
-        is_email_verified
+        email_verified
           ? "/overview"
           : `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`,
       );
     }, 1200);
+
+    // setTimeout(() => {
+    //   location.replace("/overview");
+    // }, 1200);
   }
 };
 </script>

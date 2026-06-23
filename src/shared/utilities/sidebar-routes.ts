@@ -19,6 +19,14 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "home",
     },
     {
+      slug: "transactions",
+      link: "/admin-transactions",
+      title: "Transactions",
+      icon: "icon-card-transaction",
+      active: true,
+      category: "home",
+    },
+    {
       slug: "merchants",
       link: "/merchants",
       title: "Merchants",
@@ -51,9 +59,9 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "home",
     },
     {
-      slug: "funding",
-      link: "/funding",
-      title: "Funding",
+      slug: "fundings",
+      link: "/fundings",
+      title: "Fundings",
       icon: "icon-money-3",
       active: true,
       category: "home",
@@ -86,7 +94,6 @@ export const sidebarRoutes: ISidebarRouteType = {
       active: true,
       category: "auth",
     },
-
   ],
 };
 

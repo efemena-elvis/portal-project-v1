@@ -1,6 +1,7 @@
 export const feeRoutes = {
-  getFees: "fees",
-  getSingleFee: "fees",
-  createFee: "fees",
-  updateFee: "fees",
+  getFees: "admin/merchant-configs",
+  getSingleFee: "admin/merchant-configs",
+  createFee: "admin/merchant-configs",
+  updateFee: "admin/merchant-configs",
+  deleteFee: "admin/merchant-configs",
 };

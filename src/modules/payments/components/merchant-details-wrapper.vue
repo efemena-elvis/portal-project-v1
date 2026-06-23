@@ -183,7 +183,6 @@ defineEmits<{
   payoutActionSelected: [action: PayoutAction];
 }>();
 
-
 const router = useRouter();
 const { formatNumber } = useString();
 

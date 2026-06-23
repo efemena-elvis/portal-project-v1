@@ -132,11 +132,13 @@ export default function useEvents() {
           break;
       }
 
-      return response !== undefined ? response : false;
+      const finalResponse = response !== undefined ? response : false;
+
+      return finalResponse;
     } catch (error) {
       btnRef && clickHandler(btnRef, btnText, false);
 
-      console.error("A network error occurred:", error);
+      console.error("[processAPIRequest] Error caught:", error);
 
       if (hasAlertHandler) {
         showAlert &&

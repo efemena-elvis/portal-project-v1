@@ -1,35 +1,35 @@
-import { IRouteType } from '@packages/models'
+import { IRouteType } from "@packages/models";
 
 const merchantsRoutes: IRouteType[] = [
   {
-    path: '/transactions',
+    path: "/transactions",
     component: () =>
       import(
-        /* webpackChunkName: "merchants-layout" */ '@/layouts/base-layout.vue'
+        /* webpackChunkName: "merchants-layout" */ "@/layouts/base-layout.vue"
       ),
     children: [
       {
-        path: '/merchants',
-        name: 'VesicashMerchants',
+        path: "/merchants",
+        name: "VesicashMerchants",
         component: () =>
           import(
-            /* webpackChunkName: "merchants-module" */ '@/modules/merchants/pages/merchants.vue'
+            /* webpackChunkName: "merchants-module" */ "@/modules/merchants/pages/merchants.vue"
           ),
         meta: {
           requiresAuth: true,
-          title: 'Merchants',
+          title: "Merchants",
           pageMeta: {
-            title: 'Merchants',
-            description: 'Merchants',
+            title: "Merchants",
+            description: "Merchants",
           },
         },
       },
       {
-        path: '/merchant/:id',
-        name: 'MerchantDetails',
+        path: "/merchant/:id",
+        name: "MerchantDetails",
         component: () =>
           import(
-            /* webpackChunkName: "merchants-module" */ '@/modules/merchants/pages/merchant-details.vue'
+            /* webpackChunkName: "merchants-module" */ "@/modules/merchants/pages/merchant-details.vue"
           ),
         meta: {
           requiresAuth: true,
@@ -42,6 +42,6 @@ const merchantsRoutes: IRouteType[] = [
       },
     ],
   },
-]
+];
 
-export default merchantsRoutes
+export default merchantsRoutes;

@@ -2,12 +2,13 @@ import { useServiceAPI } from "@packages/hooks";
 import { complianceRoutes } from "./compliance-routes";
 import constants from "@/shared/utilities/constants";
 
-const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
+  constants;
 
 const $api = new useServiceAPI({
-  API_BASE_URL: MOR_API_BASE_URL,
-  API_VERSION: MOR_API_VERSION,
-  TOKEN_KEY: MOR_AUTH_TOKEN,
+  API_BASE_URL: PORTAL_API_BASE_URL,
+  API_VERSION: PORTAL_API_VERSION,
+  TOKEN_KEY: PORTAL_AUTH_TOKEN,
 });
 
 export const getCompliance = async () => {

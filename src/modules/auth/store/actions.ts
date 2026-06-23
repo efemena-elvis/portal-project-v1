@@ -1,16 +1,19 @@
-import { useServiceAPI } from "@packages/hooks";
+import { useServiceAPI, useStorage } from "@packages/hooks";
 import { authRoutes } from "./auth-routes";
 import { useAuthMutations } from "./mutations";
 import { IAPIType } from "@packages/models";
 import constants from "@/shared/utilities/constants";
 
+const { getStorage } = useStorage();
+
 export function useAuthActions() {
-  const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+  const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
+    constants;
 
   const $api = new useServiceAPI({
-    API_BASE_URL: MOR_API_BASE_URL,
-    API_VERSION: MOR_API_VERSION,
-    TOKEN_KEY: MOR_AUTH_TOKEN,
+    API_BASE_URL: PORTAL_API_BASE_URL,
+    API_VERSION: PORTAL_API_VERSION,
+    TOKEN_KEY: PORTAL_AUTH_TOKEN,
   });
 
   const { mutateUserData } = useAuthMutations();
@@ -19,6 +22,7 @@ export function useAuthActions() {
     const response: any = await $api.push(authRoutes.login, payload);
 
     response?.code === 200 && mutateUserData(response?.data);
+
     return response;
   };
 
@@ -57,3 +61,38 @@ export function useAuthActions() {
     logoutUser,
   };
 }
+
+export const refreshAccessToken = async () => {
+  const {
+    PORTAL_API_BASE_URL,
+    PORTAL_API_VERSION,
+    PORTAL_REFRESH_TOKEN: REFRESH_KEY,
+  } = constants;
+
+  const refreshTokenValue = getStorage({ storage_name: REFRESH_KEY }) as
+    | string
+    | null;
+  if (!refreshTokenValue) return null;
+
+  try {
+    const res = await fetch(
+      `${PORTAL_API_BASE_URL}/${PORTAL_API_VERSION}/auth/refresh`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshTokenValue }),
+      },
+    );
+    const json = await res.json();
+    if (json?.code === 200 && json.data) {
+      const { mutateAuthToken: setToken, mutateRefreshToken: setRefresh } =
+        useAuthMutations();
+      setToken(json.data);
+      setRefresh(json.data);
+      return json.data.access_token || json.data.auth_token || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};

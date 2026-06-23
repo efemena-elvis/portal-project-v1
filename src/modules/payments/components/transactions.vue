@@ -2,42 +2,18 @@
 <template>
   <section class="transactions-panel">
     <div class="filters-row">
-      <div class="search-field">
-        <span class="icon icon-search-normal"></span>
-        <input v-model="searchQuery" type="search" placeholder="Search" />
-      </div>
-
-      <label class="filter-select">
-        <select v-model="selectedPaymentMethod">
-          <option value="">Payment method</option>
-          <option
-            v-for="method in paymentMethodOptions"
-            :key="method"
-            :value="method"
-          >
-            {{ method }}
-          </option>
-        </select>
-        <span class="icon icon-caret-down"></span>
-      </label>
-
-      <label class="filter-select">
-        <select v-model="selectedStatus">
-          <option value="">Status</option>
-          <option v-for="status in statusOptions" :key="status" :value="status">
-            {{ status }}
-          </option>
-        </select>
-        <span class="icon icon-caret-down"></span>
-      </label>
-
-      <DatePicker
-        filterSize="lg"
-        :activePeriod="activePeriod"
-        @onFilterSelected="processFilterSelection"
+      <FilterBar
+        :filters="filterConfig"
+        :values="filterValues"
+        variant="panel"
+        @change="onFilterChange"
       />
 
-      <button class="export-button" type="button" @click="exportToExcel">
+      <button
+        class="btn btn-sm btn-secondary mt-8"
+        type="button"
+        @click="exportToExcel"
+      >
         Export
       </button>
     </div>
@@ -63,14 +39,10 @@
 
 <script setup lang="ts">
 /* eslint-disable vue/valid-define-props, dot-notation */
-import { computed, defineProps, ref, withDefaults } from "vue";
+import { computed, defineProps, ref, withDefaults, reactive } from "vue";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString } from "@packages/hooks";
-import {
-  DatePicker,
-  TableContainer,
-  TableContainerBody,
-} from "@packages/uikit";
+import { FilterBar, TableContainer, TableContainerBody } from "@packages/uikit";
 import * as XLSX from "xlsx";
 
 interface MerchantTransaction {
@@ -96,13 +68,41 @@ const props = withDefaults(
 const { getStatus, formatNumber } = useString();
 
 const isLoading = ref(false);
-const searchQuery = ref("");
-const selectedPaymentMethod = ref("");
-const selectedStatus = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
 
-const paymentMethodOptions = ["Card", "Momo", "Bank Transfer"];
-const statusOptions = ["Successful", "Pending", "Failed"];
+const filterValues = reactive({
+  search: "",
+  paymentMethod: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
+  {
+    type: "select" as const,
+    key: "paymentMethod",
+    options: ["Card", "Momo", "Bank Transfer"],
+    placeholder: "Payment method",
+  },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Successful", "Pending", "Failed"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date" },
@@ -111,33 +111,6 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Amount", slug: "amount" },
   { title: "Status", slug: "status" },
 ]);
-
-const fallbackTransactions: MerchantTransaction[] = [
-  {
-    date: "Today",
-    rawDate: new Date(),
-    email: "business@email.com",
-    paymentMethod: "Card",
-    amount: "N10,500",
-    rawStatus: "Successful",
-  },
-  {
-    date: "Yesterday",
-    rawDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    email: "admin@digitalworld.com",
-    paymentMethod: "Momo",
-    amount: "N10,500",
-    rawStatus: "Successful",
-  },
-  {
-    date: "August 5, 2024",
-    rawDate: new Date("2024-08-05"),
-    email: "support@innovatehub.com",
-    paymentMethod: "Card",
-    amount: "N10,500",
-    rawStatus: "Failed",
-  },
-];
 
 const normalizeTransaction = (
   transaction: Record<string, any>,
@@ -174,11 +147,9 @@ const sourceTransactions = computed<MerchantTransaction[]>(() => {
     props.merchantDetails?.transaction_history ||
     [];
 
-  return transactions.length
-    ? transactions.map((transaction: Record<string, any>) =>
-        normalizeTransaction(transaction),
-      )
-    : fallbackTransactions;
+  return (transactions.length = transactions.map(
+    (transaction: Record<string, any>) => normalizeTransaction(transaction),
+  ));
 });
 
 const isWithinRange = (date: Date | null, range: [Date, Date] | null) => {
@@ -193,7 +164,7 @@ const isWithinRange = (date: Date | null, range: [Date, Date] | null) => {
 };
 
 const filteredRows = computed<MerchantTransaction[]>(() => {
-  const query = searchQuery.value.trim().toLowerCase();
+  const query = filterValues.search.trim().toLowerCase();
 
   return sourceTransactions.value.filter((transaction) => {
     const matchesSearch = query
@@ -207,15 +178,15 @@ const filteredRows = computed<MerchantTransaction[]>(() => {
           .toLowerCase()
           .includes(query)
       : true;
-    const matchesMethod = selectedPaymentMethod.value
+    const matchesMethod = filterValues.paymentMethod
       ? transaction.paymentMethod.toLowerCase() ===
-        selectedPaymentMethod.value.toLowerCase()
+        filterValues.paymentMethod.toLowerCase()
       : true;
-    const matchesStatus = selectedStatus.value
+    const matchesStatus = filterValues.status
       ? transaction.rawStatus.toLowerCase() ===
-        selectedStatus.value.toLowerCase()
+        filterValues.status.toLowerCase()
       : true;
-    const matchesDate = isWithinRange(transaction.rawDate, activePeriod.value);
+    const matchesDate = isWithinRange(transaction.rawDate, filterValues.period);
 
     return matchesSearch && matchesMethod && matchesStatus && matchesDate;
   });
@@ -234,18 +205,30 @@ const filteredTableBody = computed(() =>
   })),
 );
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string] | null,
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    return;
-  }
+const downloadBlob = (filename: string, blob: Blob) => {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
 
-  activePeriod.value = null;
+const toCSV = (rows: Record<string, any>[]) => {
+  if (!rows || !rows.length) return "";
+  const keys = Object.keys(rows[0]);
+  const escape = (v: any) => {
+    if (v === null || v === undefined) return "";
+    const s = String(v);
+    return s.includes(",") || s.includes("\n") || s.includes('"')
+      ? '"' + s.replace(/"/g, '""') + '"'
+      : s;
+  };
+  const header = keys.join(",");
+  const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
+  return [header, ...lines].join("\n");
 };
 
 const exportToExcel = () => {
@@ -257,10 +240,21 @@ const exportToExcel = () => {
     Status: transaction.rawStatus,
   }));
 
-  const worksheet = XLSX.utils.json_to_sheet(cleanData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-  XLSX.writeFile(workbook, `Merchant_${props.merchantId}_Transactions.xlsx`);
+  try {
+    const worksheet = XLSX.utils.json_to_sheet(cleanData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
+    XLSX.writeFile(workbook, `Merchant_${props.merchantId}_Transactions.xlsx`);
+  } catch (err) {
+    try {
+      const csv = toCSV(cleanData);
+      if (!csv) {
+        return;
+      }
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      downloadBlob(`Merchant_${props.merchantId}_Transactions.csv`, blob);
+    } catch (err2) {}
+  }
 };
 </script>
 
@@ -271,34 +265,6 @@ const exportToExcel = () => {
 
 .filters-row {
   @apply flex flex-wrap items-center gap-5;
-}
-
-.search-field {
-  @apply relative w-[260px] md:w-full;
-
-  .icon {
-    @apply absolute left-4 top-1/2 -translate-y-1/2 text-grey-500;
-  }
-
-  input {
-    @apply h-11 w-full rounded-lg border border-grey-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-grey-900 outline-none transition focus:border-teal-800;
-  }
-}
-
-.filter-select {
-  @apply relative inline-flex h-11 min-w-[170px] items-center rounded-lg bg-grey-100 text-sm font-bold text-grey-900 md:w-full;
-
-  select {
-    @apply h-full w-full appearance-none bg-transparent px-4 pr-10 outline-none;
-  }
-
-  .icon {
-    @apply pointer-events-none absolute right-4 text-xs text-grey-700;
-  }
-}
-
-.export-button {
-  @apply ml-auto h-10 rounded-lg border border-grey-700 bg-white px-6 text-sm font-bold text-grey-900 transition hover:border-teal-800 hover:text-teal-800 md:ml-0;
 }
 
 :deep(tbody tr td:last-child) {

@@ -6,7 +6,8 @@ import { useAuthStore } from "@/modules/auth/store";
 import { IWalletBalance, ITaxBalance } from "./state";
 import { useOverviewMutations } from "./mutations";
 
-const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN } = constants;
+const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
+  constants;
 const { mutateWalletBalance, mutateTaxBalance } = useOverviewMutations();
 
 const authStore = useAuthStore();
@@ -28,9 +29,9 @@ const secretKey = computed(() =>
 );
 
 const $api = new useServiceAPI({
-  API_BASE_URL: MOR_API_BASE_URL,
-  API_VERSION: MOR_API_VERSION,
-  TOKEN_KEY: MOR_AUTH_TOKEN,
+  API_BASE_URL: PORTAL_API_BASE_URL,
+  API_VERSION: PORTAL_API_VERSION,
+  TOKEN_KEY: PORTAL_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
     "secret-key": secretKey.value,

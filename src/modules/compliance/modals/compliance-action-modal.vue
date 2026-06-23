@@ -32,7 +32,7 @@
           </button>
         </div>
       </div>
-</template>
+    </template>
     <template #modal-cover-footer>
       <div class="modal-cover-footer" />
     </template>

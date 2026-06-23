@@ -5,19 +5,16 @@
     pageDescription="All Compliances"
     @updatePage="(currentPage: number) => (page = currentPage)"
     :pagingData="selectedTab === 'requests' ? tablePaging : { page_count: 0 }"
-    @searchEntered="processSearchEntry"
   >
     <template v-slot:pageContent>
       <section class="flex flex-col gap-7">
-        <div class="compliance-stats">
-          <div
+        <div class="flex flex-wrap items-center gap-8 mt-8">
+          <StatsCard
             v-for="stat in complianceStats"
             :key="stat.title"
-            class="compliance-stat-card"
-          >
-            <p>{{ stat.title }}</p>
-            <strong>{{ stat.value }}</strong>
-          </div>
+            :title="stat.title"
+            :value="stat.value"
+          />
         </div>
 
         <!-- <div class="inline-flex bg-teal-100 w-full p-2 rounded-md">
@@ -33,49 +30,11 @@
         </div> -->
 
         <template v-if="selectedTab === 'requests'">
-          <div class="flex flex-wrap justify-between gap-6 items-start">
-            <div class="flex justify-start items-center gap-4 w-full">
-              <div class="relative w-[20%]">
-                <div
-                  class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-                ></div>
-                <input
-                  type="search"
-                  class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-                  placeholder="Search"
-                  v-model="searchQuery"
-                  aria-label="Search merchants"
-                />
-              </div>
-
-              <div
-                class="relative text-sm font-semibold text-teal-800 border rounded-lg cursor-pointer filter-select bg-white"
-              >
-                <select
-                  v-model="selectedStatus"
-                  class="w-[180px] p-4 bg-transparent appearance-none focus:outline-none"
-                >
-                  <option value="">Status</option>
-                  <option
-                    v-for="(status, index) in statusOptions"
-                    :value="status.toLowerCase()"
-                    :key="index"
-                  >
-                    {{ status }}
-                  </option>
-                </select>
-                <div
-                  class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-                ></div>
-              </div>
-
-              <DatePicker
-                filterSize="lg"
-                :activePeriod="activePeriod"
-                @onFilterSelected="processFilterSelection"
-              />
-            </div>
-          </div>
+          <FilterBar
+            :filters="filterConfig"
+            :values="filterValues"
+            @change="onFilterChange"
+          />
 
           <div class="w-full">
             <TableContainer
@@ -105,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted, h, watch } from "vue";
+import { computed, ref, h, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import {
@@ -113,9 +72,10 @@ import {
   TableContainerBody,
   PageContentWrapper,
   TableDoubleColumn,
-  DatePicker,
+  FilterBar,
+  StatsCard,
 } from "@packages/uikit";
-import { useString, useEvents, useDate } from "@packages/hooks";
+import { useString, useEvents, useDate, useAutoFetch } from "@packages/hooks";
 import { usePaymentStore } from "@/modules/payments/store";
 import ComplianceConfig from "../components/compliance-config.vue";
 
@@ -124,10 +84,7 @@ const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 const router = useRouter();
 
-const complianceStats = [
-  { title: 'Pending Approvals', value: '24' },
-
-]
+const complianceStats = [{ title: "Pending Approvals", value: "24" }];
 
 const selectedTab = ref("requests");
 
@@ -138,12 +95,38 @@ const tabs = [
 
 const tabButtonClass = (tabValue: string) =>
   selectedTab.value === tabValue ? "tab-btn tab-btn--active" : "tab-btn";
-const selectedStatus = ref("");
 const isLoading = ref(true);
 const tablePaging = ref<any>({});
 const page = ref(1);
-const searchQuery = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
+
+const filterValues = reactive({
+  search: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Successful", "Pending", "Failed"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  if (key !== "search") page.value = 1;
+};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date" },
@@ -153,32 +136,12 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const statusOptions = ["Successful", "Pending", "Failed"];
-
 const tableBody = ref<any[]>([]);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
+    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
 );
-
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string],
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    activePeriod.value = normalizedRange;
-  } else {
-    activePeriod.value = null;
-  }
-};
-
-const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.toLocaleLowerCase().trim();
-};
 
 const getDateFormatted = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -251,30 +214,10 @@ const fetchCompliances = async (filters: string) => {
   }
 };
 
-watch([selectedStatus, activePeriod], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchCompliances(newFilters);
-});
-
-onMounted(fetchCompliances);
+useAutoFetch(filters, fetchCompliances);
 </script>
 
 <style scoped>
-.compliance-stat-card {
-  @apply flex h-[124px] w-[350px] bg-[#f6faf9] flex-col justify-center rounded-lg px-8 sm:w-full;
-
-  p {
-    @apply mb-4 text-base font-medium text-grey-800;
-  }
-
-  strong {
-    @apply text-[30px] font-bold leading-none text-grey-900;
-  }
-}
-
 .tab-btn {
   @apply text-sm font-medium text-grey-700 px-4 py-2 rounded-md transition duration-200 ease-in-out border-0 cursor-pointer bg-transparent;
 }

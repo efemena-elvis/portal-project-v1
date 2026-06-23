@@ -7,4 +7,5 @@ export const authRoutes = {
   passwordReset: `${nameSpace}/reset-password`,
   sendVerifyEmail: `${nameSpace}/send-verify-email`,
   verifyEmail: `${nameSpace}/verify-email`,
+  authRefresh: `${nameSpace}/refresh`,
 };

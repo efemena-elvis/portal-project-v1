@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref } from "vue";
 
-export const aggregatorList = ref<any[]>([])
-export const aggregatorDetail = ref<Record<string, any> | null>(null)
+export const aggregatorList = ref<any[]>([]);
+export const aggregatorDetail = ref<Record<string, any> | null>(null);

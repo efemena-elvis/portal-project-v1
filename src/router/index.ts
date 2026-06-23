@@ -12,14 +12,16 @@ import externalRoutes from "@/modules/external";
 import overviewRoutes from "@/modules/overview";
 import aggregatorsRoutes from "@/modules/aggregators";
 import disputesRoutes from "@/modules/disputes";
-import fundingRoutes from "@/modules/funding";
+import fundingRoutes from "@/modules/fundings";
 import feesRoutes from "@/modules/fees";
 import manageTeamsRoutes from "@/modules/manage-teams";
+import transactionsRoutes from "@/modules/transactions";
 
 const routes: import("vue-router").RouteRecordRaw[] = [
   ...(authRoutes as any),
   ...(overviewRoutes as any),
   ...(paymentRoutes as any),
+  ...(transactionsRoutes as any),
   ...(merchantsRoutes as any),
   ...(balancesRoutes as any),
   ...(complianceRoutes as any),

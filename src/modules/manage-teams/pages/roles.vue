@@ -18,25 +18,25 @@
           </button>
         </div>
 
-
         <div class="roles-section">
           <h3 class="section-title">Default roles</h3>
           <div class="roles-grid">
-            <div
-              v-for="role in defaultRoles"
-              :key="role.id"
-              class="role-card"
-            >
+            <div v-for="role in defaultRoles" :key="role.id" class="role-card">
               <div
                 class="role-card-header"
-                :class="{ 'role-card-header--expanded': expandedRoles.has(role.id) }"
+                :class="{
+                  'role-card-header--expanded': expandedRoles.has(role.id),
+                }"
                 @click="toggleRole(role.id)"
               >
                 <div class="role-card-content">
                   <h4 class="role-name">{{ role.name }}</h4>
                   <p class="role-description">{{ role.description }}</p>
                 </div>
-                <div class="role-arrow" :class="{ 'role-arrow--open': expandedRoles.has(role.id) }">
+                <div
+                  class="role-arrow"
+                  :class="{ 'role-arrow--open': expandedRoles.has(role.id) }"
+                >
                   <i class="icon icon-caret-down"></i>
                 </div>
               </div>
@@ -51,17 +51,49 @@
                     v-for="perm in perms"
                     :key="perm"
                     class="permission-item"
-                    @click="togglePerm(String(role.id), String(category), String(perm))"
+                    @click="
+                      togglePerm(
+                        String(role.id),
+                        String(category),
+                        String(perm),
+                      )
+                    "
                   >
-                    <div class="custom-checkbox" :class="{ 'custom-checkbox--checked': checkedPerms.has(permKey(String(role.id), String(category), String(perm))) }">
-                      <i v-if="checkedPerms.has(permKey(String(role.id), String(category), String(perm)))" class="icon icon-checkmark custom-checkmark"></i>
+                    <div
+                      class="custom-checkbox"
+                      :class="{
+                        'custom-checkbox--checked': checkedPerms.has(
+                          permKey(
+                            String(role.id),
+                            String(category),
+                            String(perm),
+                          ),
+                        ),
+                      }"
+                    >
+                      <i
+                        v-if="
+                          checkedPerms.has(
+                            permKey(
+                              String(role.id),
+                              String(category),
+                              String(perm),
+                            ),
+                          )
+                        "
+                        class="icon icon-checkmark custom-checkmark"
+                      ></i>
                     </div>
                     <span>{{ perm }}</span>
                   </div>
                 </div>
               </div>
               <div v-if="expandedRoles.has(role.id)" class="save-permissions">
-                <button type="button" class="btn btn-sm btn-primary" @click="savePermissions(role.id)">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-primary"
+                  @click="savePermissions(role.id)"
+                >
                   Save permissions
                 </button>
               </div>
@@ -69,7 +101,6 @@
           </div>
         </div>
 
-   
         <!-- <div class="create-role-section">
           <button
             type="button"
@@ -79,7 +110,6 @@
             + Create custom role
           </button>
         </div> -->
-
 
         <!-- <div v-if="customRoles.length" class="roles-section">
           <h3 class="section-title">Custom role(s)</h3>

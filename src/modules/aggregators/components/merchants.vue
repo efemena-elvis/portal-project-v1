@@ -1,28 +1,12 @@
 <!-- eslint-disable vue/multi-word-component-names, vue/valid-define-props -->
 <template>
   <section class="aggregator-merchants">
-    <div class="filters-row">
-      <div class="search-field">
-        <span class="icon icon-search-normal"></span>
-        <input v-model="searchQuery" type="search" placeholder="Search" />
-      </div>
-
-      <label class="filter-select">
-        <select v-model="selectedStatus">
-          <option value="">Status</option>
-          <option v-for="status in statusOptions" :key="status" :value="status">
-            {{ status }}
-          </option>
-        </select>
-        <span class="icon icon-caret-down"></span>
-      </label>
-
-      <DatePicker
-        filterSize="lg"
-        :activePeriod="activePeriod"
-        @onFilterSelected="processFilterSelection"
-      />
-    </div>
+    <FilterBar
+      :filters="filterConfig"
+      :values="filterValues"
+      variant="panel"
+      @change="onFilterChange"
+    />
 
     <TableContainer
       :tableHeader="tableHeader"
@@ -46,15 +30,11 @@
 
 <script setup lang="ts">
 /* eslint-disable vue/valid-define-props */
-import { computed,  onMounted, ref, watch } from "vue";
+import { computed, ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
-import { useDate, useEvents, useString } from "@packages/hooks";
-import {
-  DatePicker,
-  TableContainer,
-  TableContainerBody,
-} from "@packages/uikit";
+import { useDate, useEvents, useString, useAutoFetch } from "@packages/hooks";
+import { FilterBar, TableContainer, TableContainerBody } from "@packages/uikit";
 import { useAggregatorStore } from "@/modules/aggregators/store";
 
 const props = defineProps<{
@@ -67,11 +47,34 @@ const { processAPIRequest } = useEvents();
 const { getStatus } = useString();
 
 const isLoading = ref(true);
-const searchQuery = ref("");
-const selectedStatus = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
 
-const statusOptions = ["Active", "Inactive", "Pending"];
+const filterValues = reactive({
+  search: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Active", "Inactive", "Pending"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date Added", slug: "date_added" },
@@ -106,15 +109,15 @@ const fallbackRows = [
 
 const filters = computed(
   () =>
-    `?status=${selectedStatus.value.toLowerCase()}&from=${
-      activePeriod.value
-        ? activePeriod.value[0].toISOString().split("T")[0]
+    `?status=${filterValues.status}&from=${
+      filterValues.period
+        ? filterValues.period[0].toISOString().split("T")[0]
         : ""
     }&to=${
-      activePeriod.value
-        ? activePeriod.value[1].toISOString().split("T")[0]
+      filterValues.period
+        ? filterValues.period[1].toISOString().split("T")[0]
         : ""
-    }&search=${searchQuery.value.trim().toLowerCase()}`,
+    }&search=${filterValues.search.trim().toLowerCase()}`,
 );
 
 const formatDate = (date?: string) => {
@@ -133,7 +136,7 @@ const mapMerchant = (merchant: Record<string, any>) => {
     date_added:
       merchant.date_label ||
       merchant.date_added ||
-      formatDate(merchant.created_at ),
+      formatDate(merchant.created_at),
     name: merchant.name || "-",
     email: merchant.email || merchant.customer_email || "-",
     status: getStatus(rawStatus.toLowerCase(), rawStatus),
@@ -149,7 +152,6 @@ const fetchMerchants = async () => {
     payload: {
       id: props.aggregatorId,
       filters: filters.value,
-
     },
     showAlert: false,
   });
@@ -171,28 +173,12 @@ const fetchMerchants = async () => {
   }));
 };
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string] | null,
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    return;
-  }
-
-  activePeriod.value = null;
-};
-
 const openMerchant = (merchantId: string) => {
   if (!merchantId) return;
   router.push(`/merchant/${merchantId}`);
 };
 
-watch(filters, fetchMerchants);
-
-onMounted(fetchMerchants);
+useAutoFetch(filters, fetchMerchants);
 </script>
 
 <style scoped lang="scss">

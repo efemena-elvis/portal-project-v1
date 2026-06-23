@@ -4,8 +4,12 @@ import constants from "@/shared/utilities/constants";
 import { useAuthStore } from "@/modules/auth/store";
 import { computed } from "vue";
 
-const { MOR_API_BASE_URL, MOR_API_VERSION, MOR_AUTH_TOKEN, ENVIRONMENT } =
-  constants;
+const {
+  PORTAL_API_BASE_URL,
+  PORTAL_API_VERSION,
+  PORTAL_AUTH_TOKEN,
+  ENVIRONMENT,
+} = constants;
 
 const authStore = useAuthStore();
 const profileUtil = new useProfile(authStore);
@@ -24,9 +28,9 @@ const secretKey = computed(() =>
 );
 
 const $api = new useServiceAPI({
-  API_BASE_URL: MOR_API_BASE_URL,
-  API_VERSION: MOR_API_VERSION,
-  TOKEN_KEY: MOR_AUTH_TOKEN,
+  API_BASE_URL: PORTAL_API_BASE_URL,
+  API_VERSION: PORTAL_API_VERSION,
+  TOKEN_KEY: PORTAL_AUTH_TOKEN,
   HEADERS: {
     "public-key": publicKey.value,
     "secret-key": secretKey.value,
@@ -37,16 +41,20 @@ export const getTransactionStats = async () => {
   return await $api.fetch(balanceRoutes.getTransactionStats);
 };
 
-export const initiatePayout = async (payload: any) => {
-  return await $api.push(balanceRoutes.initiatePayout);
-};
 
-export const getPayouts = async (payload: any) => {
+export const getAllWithdrawalRequests = async (payload: any) => {
   return await $api.fetch(
-    `${balanceRoutes.getAllPayouts}${payload.filters ? payload.filters : `?page=${payload.page}`}`,
+    `${balanceRoutes.getAllWithdrawalRequests}${payload.filters ? payload.filters : `?page=${payload.page}`}`,
   );
 };
 
-export const fetchAllPayouts = async () => {
-  return await $api.fetch(`${balanceRoutes.getAllPayouts}?limit=100000`);
+export const decideWithdrawalRequest = async (payload: { uuid: string; action: string }) => {
+  return await $api.push(
+    `${balanceRoutes.getAllWithdrawalRequests}/${payload.uuid}/decision`,
+    { action: payload.action },
+  );
 };
+
+// export const fetchAllWithdrawalRequests = async () => {
+//   return await $api.fetch(`${balanceRoutes.getAllWithdrawalRequests}?limit=100000`);
+// };

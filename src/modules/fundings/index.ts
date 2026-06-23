@@ -2,7 +2,7 @@ import { IRouteType } from "@packages/models";
 
 const fundingRoutes: IRouteType[] = [
   {
-    path: "/funding",
+    path: "/fundings",
     component: () =>
       import(
         /* webpackChunkName: "funding-layout" */ "@/layouts/base-layout.vue"
@@ -10,14 +10,14 @@ const fundingRoutes: IRouteType[] = [
     children: [
       {
         path: "",
-        name: "VesicashFunding",
+        name: "VesicashFundings",
         component: () =>
           import(
-            /* webpackChunkName: "funding-module" */ "@/modules/funding/pages/funding.vue"
+            /* webpackChunkName: "fundings-module" */ "@/modules/fundings/pages/fundings.vue"
           ),
         meta: {
           requiresAuth: true,
-          title: "Funding",
+          title: "Fundings",
           pageMeta: {
             title: "Funding",
             description: "Funding",

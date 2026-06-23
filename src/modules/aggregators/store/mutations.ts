@@ -1,16 +1,16 @@
-import { aggregatorList, aggregatorDetail } from './state'
+import { aggregatorList, aggregatorDetail } from "./state";
 
 export function useAggregatorMutations() {
   const mutateAggregatorList = (payload: any[]) => {
-    aggregatorList.value = payload
-  }
+    aggregatorList.value = payload;
+  };
 
   const mutateAggregatorDetail = (payload: Record<string, any> | null) => {
-    aggregatorDetail.value = payload
-  }
+    aggregatorDetail.value = payload;
+  };
 
   return {
     mutateAggregatorList,
     mutateAggregatorDetail,
-  }
+  };
 }

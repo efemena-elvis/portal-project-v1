@@ -1,7 +1,6 @@
 <template>
   <PageContentWrapper :showTitle="false">
     <template v-slot:pageContent>
-
       <TableContainer
         :tableHeader="tableHeader"
         :tableBody="tableBody"

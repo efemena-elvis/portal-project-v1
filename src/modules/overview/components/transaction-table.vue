@@ -66,7 +66,7 @@ const fetchPaymentTransactions = async (page = 1) => {
   isLoading.value = false;
 
   if (response?.code === 200) {
-    response.data.slice(0, 5).map((data: any) => {
+    response.data.slice(0, 5).forEach((data: any) => {
       tableBody.push({
         date_created: h(TableDoubleColumn, {
           entry: {

@@ -11,3 +11,6 @@ export { default as useRouteGuard } from "./src/useRouteGuard";
 export { default as useProfile } from "./src/useProfile";
 export { default as useComplianceUtil } from "./src/useComplianceUtil";
 export { useAppVariant } from "./src/useGlobal";
+export { setRefreshTokenFn } from "./src/useServiceAPI";
+export { useDateFilter } from "./src/useDateFilter";
+export { useAutoFetch } from "./src/useAutoFetch";
