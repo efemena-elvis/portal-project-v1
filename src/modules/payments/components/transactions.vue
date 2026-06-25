@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names, vue/valid-define-props, dot-notation -->
 <template>
   <section class="transactions-panel">
     <div class="filters-row">
@@ -34,228 +33,267 @@
         :tableData="payload"
       />
     </TableContainer>
+
+    <Pagination
+      v-if="tablePaging.page_count > 0"
+      :pageDescription="`Page ${tablePaging.current_page} of ${tablePaging.total_pages_count}`"
+      :pagingData="tablePaging"
+      @page-change="onPageChange"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-/* eslint-disable vue/valid-define-props, dot-notation */
-import { computed, defineProps, ref, withDefaults, reactive } from "vue";
-import { TableHeaderType } from "@packages/models";
-import { useDate, useString } from "@packages/hooks";
-import { FilterBar, TableContainer, TableContainerBody } from "@packages/uikit";
-import * as XLSX from "xlsx";
+import { computed, ref, reactive, watch, onMounted, h } from "vue"
+import { TableHeaderType } from "@packages/models"
+import { useDate, useString, useEvents } from "@packages/hooks"
+import {
+  FilterBar,
+  Pagination,
+  TableContainer,
+  TableContainerBody,
+  TableDoubleColumn,
+} from "@packages/uikit"
+import { usePaymentStore } from "@/modules/payments/store"
+import { safeExport } from "@/shared/utils/export"
 
 interface MerchantTransaction {
-  date: string;
-  rawDate: Date | null;
-  email: string;
-  paymentMethod: string;
-  amount: string;
-  rawStatus: string;
+  date: string
+  createdAt: string
+  customer: string
+  customerSecondary: string
+  paymentMethod: string
+  amount: string
+  status: string
+  reference: string
+  type: string
 }
 
 const props = withDefaults(
   defineProps<{
-    merchantId?: string;
-    merchantDetails?: Record<string, any> | null;
+    merchantId?: string
+    merchantDetails?: Record<string, any> | null
   }>(),
-  {
-    merchantId: "",
-    merchantDetails: null,
-  },
-);
+  { merchantId: "", merchantDetails: null },
+)
 
-const { getStatus, formatNumber } = useString();
+const { getTransactions } = usePaymentStore()
+const { processAPIRequest } = useEvents()
+const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } = useString()
 
-const isLoading = ref(false);
+const isLoading = ref(false)
+const page = ref(1) 
+const tablePaging = ref<any>({})
 
 const filterValues = reactive({
   search: "",
   paymentMethod: "",
   status: "",
   period: null as [Date, Date] | null,
-});
+})
 
 const filterConfig = [
   { type: "search" as const, key: "search", placeholder: "Search" },
   {
     type: "select" as const,
     key: "paymentMethod",
-    options: ["Card", "Momo", "Bank Transfer"],
+    options: ["Card", "Mobilemoney", "Bank Transfer", "Reversal"],
     placeholder: "Payment method",
   },
   {
     type: "select" as const,
     key: "status",
-    options: ["Successful", "Pending", "Failed"],
+    options: ["Completed", "Pending", "Failed"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
-];
+]
 
 const onFilterChange = ({ key, value }: { key: string; value: any }) => {
   if (key === "period") {
-    filterValues.period =
-      value && value.length === 2
-        ? [new Date(value[0]), new Date(value[1])]
-        : null;
+    filterValues.period = value?.length === 2
+      ? [new Date(value[0]), new Date(value[1])]
+      : null
   } else {
-    (filterValues as any)[key] = value;
+    (filterValues as any)[key] = value
   }
-};
+  page.value = 1
+}
 
-const tableHeader = ref<TableHeaderType[]>([
+const tableHeader: TableHeaderType[] = [
   { title: "Date", slug: "date" },
-  { title: "Email", slug: "email" },
+  { title: "Customer", slug: "customer" },
   { title: "Payment Method", slug: "payment_method" },
+  { title: "Reference", slug: "reference" },
   { title: "Amount", slug: "amount" },
   { title: "Status", slug: "status" },
-]);
+]
+
+const formatDate = (date?: string) => {
+  if (!date) return "-"
+  const { m3, d3, y1, h1, b2, a0 } = useDate.formatDate(date).getAll()
+  return `${m3} ${d3}, ${y1} ${h1}:${b2} ${a0}`
+}
+
+const getDateCreated = (date: string) => {
+  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll()
+  return `${w2}, ${d3} ${m3}, ${y1}`
+}
+
+const getCustomerName = (data: any) => {
+  if (!data) return "-"
+  const firstName = data.first_name
+  const lastName = data.last_name
+  if (firstName || lastName) return `${firstName || ""} ${lastName || ""}`.trim()
+  const account = data.account_number
+  if (account) return account
+  return data.reference || "-"
+}
+
+const getCustomerSecondary = (data: any) => {
+  if (!data) return "-"
+  const email = data.email
+  if (email) return email
+  const phone = data.phone
+  if (phone) return phone
+  return "-"
+}
 
 const normalizeTransaction = (
   transaction: Record<string, any>,
-): MerchantTransaction => {
-  const createdAt =
-    transaction.created_at || transaction.date_created || transaction.date;
-  const rawDate = createdAt ? new Date(createdAt) : null;
-  const amount = transaction.amount
-    ? `${transaction.currency || "NGN"} ${formatNumber(transaction.amount)}`
-    : transaction.amount_text || transaction.amount || "N10,500";
-  const status = transaction.status || transaction.rawStatus || "Successful";
+): MerchantTransaction => ({
+  date: formatDate(transaction.created_at),
+  createdAt: transaction.created_at,
+  customer: getCustomerName(transaction),
+  customerSecondary: getCustomerSecondary(transaction),
+  paymentMethod: transaction.method || "-",
+  reference: transaction.reference || "-",
+  amount: transaction.amount ? `${transaction.currency} ${formatNumber(transaction.amount)}` : "-",
+  status: (transaction.status || "").toLowerCase(),
+  type: transaction.type || "-",
+})
 
-  return {
-    date: transaction.date_label || transaction.date || formatDate(createdAt),
-    rawDate,
-    email: transaction.email || transaction["customer_email"] || "-",
-    paymentMethod:
-      transaction["payment_method"] || transaction.paymentMethod || "Card",
-    amount,
-    rawStatus: status,
-  };
-};
+const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z")
+const fmtEndISO = (date: Date) => {
+  const end = new Date(date)
+  end.setHours(23, 59, 59, 999)
+  return end.toISOString().replace(/\.\d+Z$/, "Z")
+}
 
-const formatDate = (date?: string) => {
-  if (!date) return "-";
+const apiFilters = computed(() => {
 
-  const { m3, d3, y1 } = useDate.formatDate(date).getAll();
-  return `${m3} ${d3}, ${y1}`;
-};
+  let filters = `?page=${page.value}&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}`
 
-const sourceTransactions = computed<MerchantTransaction[]>(() => {
-  const transactions =
-    props.merchantDetails?.transactions ||
-    props.merchantDetails?.transaction_history ||
-    [];
+  if (filterValues.paymentMethod)
+    filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`
 
-  return (transactions.length = transactions.map(
-    (transaction: Record<string, any>) => normalizeTransaction(transaction),
-  ));
-});
+  if (filterValues.period) {
+    filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`
+    filters += `&to_created_at=${fmtEndISO(filterValues.period[1])}`
+  }
+  return filters
+})
 
-const isWithinRange = (date: Date | null, range: [Date, Date] | null) => {
-  if (!date || !range) return true;
+const transactions = ref<MerchantTransaction[]>([])
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-  const start = new Date(range[0]);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(range[1]);
-  end.setHours(23, 59, 59, 999);
+const fetchTransactions = async () => {
+  if (!props.merchantId) return
+  isLoading.value = true
 
-  return date >= start && date <= end;
-};
+  const response = await processAPIRequest({
+    action: getTransactions,
+    payload: { filters: apiFilters.value, page: page.value },
+    showAlert: false,
+  })
 
-const filteredRows = computed<MerchantTransaction[]>(() => {
-  const query = filterValues.search.trim().toLowerCase();
+  isLoading.value = false
 
-  return sourceTransactions.value.filter((transaction) => {
-    const matchesSearch = query
-      ? [
-          transaction.date,
-          transaction.email,
-          transaction.paymentMethod,
-          transaction.amount,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query)
-      : true;
-    const matchesMethod = filterValues.paymentMethod
-      ? transaction.paymentMethod.toLowerCase() ===
-        filterValues.paymentMethod.toLowerCase()
-      : true;
-    const matchesStatus = filterValues.status
-      ? transaction.rawStatus.toLowerCase() ===
-        filterValues.status.toLowerCase()
-      : true;
-    const matchesDate = isWithinRange(transaction.rawDate, filterValues.period);
+  if (response?.code !== 200) return
 
-    return matchesSearch && matchesMethod && matchesStatus && matchesDate;
-  });
-});
+  const data = response.data
+  const transactionsList = Array.isArray(data)
+    ? data
+    : data?.transactions || []
+
+  transactions.value = transactionsList
+    .map((t: Record<string, any>) => {
+      try { return normalizeTransaction(t) } catch { return null }
+    })
+    .filter(Boolean) as MerchantTransaction[]
+
+  const src = response.pagination?.[0] || data
+  const totalRecords = src.total_records || 0
+  const pageSize = src.page_size || 10
+  const pageCount = Math.ceil(totalRecords / pageSize) || 0
+  tablePaging.value = {
+    current_page: src.current_page || src.page || page.value,
+    page_count: pageCount,
+    total_pages_count: pageCount,
+  }
+}
+
+const onPageChange = (pageNum: number) => {
+  page.value = pageNum
+}
+
 
 const filteredTableBody = computed(() =>
-  filteredRows.value.map((transaction) => ({
-    date: transaction.date,
-    email: transaction.email,
-    payment_method: transaction.paymentMethod,
-    amount: transaction.amount,
-    status: getStatus(
-      transaction.rawStatus.toLowerCase(),
-      transaction.rawStatus,
-    ),
-  })),
-);
+  transactions.value.map((transaction) => {
+    const key = transaction.status === "completed" ? "successful" : transaction.status
+    const label = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)
+    return {
+      date: h(TableDoubleColumn, {
+        entry: {
+          primaryText: getDateCreated(transaction.createdAt),
+          secondaryText: useDate.formatTime(transaction.createdAt),
+        },
+      }),
+      customer: h(TableDoubleColumn, {
+        entry: {
+          primaryText: transaction.customer,
+          secondaryText: transaction.customerSecondary,
+        },
+      }),
+      payment_method: h(TableDoubleColumn, {
+        entry: {
+          primaryText: capitalizeFirstLetter(transaction.paymentMethod.replace(/_/g, " ")),
+          secondaryText: capitalizeFirstLetter(transaction.type.replace(/_/g, " ")),
+        },
+      }),
+      reference: transaction.reference,
+      amount: getBoldTableText(transaction.amount),
+      status: getStatus(key, label),
+    }
+  }),
+)
 
-const downloadBlob = (filename: string, blob: Blob) => {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-};
+watch(
+  () => [props.merchantId, apiFilters.value] as const,
+  () => {
+    if (debounceTimer) clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(fetchTransactions, 300)
+  },
+)
 
-const toCSV = (rows: Record<string, any>[]) => {
-  if (!rows || !rows.length) return "";
-  const keys = Object.keys(rows[0]);
-  const escape = (v: any) => {
-    if (v === null || v === undefined) return "";
-    const s = String(v);
-    return s.includes(",") || s.includes("\n") || s.includes('"')
-      ? '"' + s.replace(/"/g, '""') + '"'
-      : s;
-  };
-  const header = keys.join(",");
-  const lines = rows.map((r) => keys.map((k) => escape(r[k])).join(","));
-  return [header, ...lines].join("\n");
-};
+onMounted(() => {
+  if (props.merchantId) fetchTransactions()
+})
 
 const exportToExcel = () => {
-  const cleanData = filteredRows.value.map((transaction) => ({
-    Date: transaction.date,
-    Email: transaction.email,
-    "Payment Method": transaction.paymentMethod,
-    Amount: transaction.amount,
-    Status: transaction.rawStatus,
-  }));
+  const cleanData = transactions.value.map(
+    ({ date, customer, customerSecondary, paymentMethod, amount, status }) => ({
+      Date: date,
+      Customer: customer,
+      Email: customerSecondary,
+      "Payment Method": paymentMethod,
+      Amount: amount,
+      Status: status,
+    }),
+  )
 
-  try {
-    const worksheet = XLSX.utils.json_to_sheet(cleanData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-    XLSX.writeFile(workbook, `Merchant_${props.merchantId}_Transactions.xlsx`);
-  } catch (err) {
-    try {
-      const csv = toCSV(cleanData);
-      if (!csv) {
-        return;
-      }
-      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-      downloadBlob(`Merchant_${props.merchantId}_Transactions.csv`, blob);
-    } catch (err2) {}
-  }
-};
+  safeExport(cleanData, `Merchant_${props.merchantId}_Transactions.xlsx`, 'Merchant Transactions')
+}
 </script>
 
 <style scoped lang="scss">

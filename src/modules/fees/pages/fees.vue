@@ -320,7 +320,7 @@ const handleDeleteConfirmed = async () => {
     showAlert: false,
   });
 
-  if (response?.code >= 200 && response?.code < 300) {
+  if (response?.code >= 200) {
     pushToastAlert({
       message: "Fee configuration deleted",
       type: "success",
@@ -328,8 +328,8 @@ const handleDeleteConfirmed = async () => {
     fetchFees(filters.value);
   } else {
     pushToastAlert({
-      message: "Unable to delete fee configuration",
-      description: response?.message || "Please try again",
+      message: "Failed to delete fee configuration",
+      description: response?.error?.message || "Please try again",
       type: "error",
     });
   }

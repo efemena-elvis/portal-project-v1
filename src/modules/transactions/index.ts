@@ -1,20 +1,16 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import TransactionsPage from "@/modules/transactions/pages/transactions.vue";
 
 const transactionsRoutes: IRouteType[] = [
   {
     path: "/admin-transactions",
-    component: () =>
-      import(
-        /* webpackChunkName: "transactions-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashTransactions",
-        component: () =>
-          import(
-            /* webpackChunkName: "transactions-module" */ "@/modules/transactions/pages/transactions.vue"
-          ),
+        component: TransactionsPage,
         meta: {
           requiresAuth: true,
           title: "Transactions",

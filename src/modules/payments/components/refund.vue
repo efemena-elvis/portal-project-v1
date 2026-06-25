@@ -1,5 +1,9 @@
 <template>
-  <PageContentWrapper :showTitle="false">
+  <PageContentWrapper
+    :showTitle="false"
+    :pagingData="tablePaging"
+    @update-page="onPageChange"
+  >
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
@@ -22,13 +26,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import { TableHeaderType } from "@packages/models";
 import {
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
 } from "@packages/uikit";
+
+defineProps<{
+  merchantId?: string;
+  merchantDetails?: Record<string, any> | null;
+}>();
 
 const isLoading = ref(false);
 
@@ -39,5 +48,10 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
 ]);
 
-const tableBody = reactive<any[]>([]);
+const tableBody = ref<any[]>([]);
+const tablePaging = ref<any>({});
+
+const onPageChange = (pageNum: number) => {
+  // no-op — no data source for refunds yet
+};
 </script>

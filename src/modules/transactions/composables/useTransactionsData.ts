@@ -4,12 +4,11 @@ import { useTransactionStore } from "@/modules/transactions/store";
 import { useMerchantStore } from "@/modules/merchants/store";
 import { TableHeaderType } from "@packages/models";
 import { TableDoubleColumn } from "@packages/uikit";
-import * as XLSX from "xlsx";
 
 export function useTransactionsData() {
   const { getAllTransactions } = useTransactionStore();
   const { getMerchants } = useMerchantStore();
-  const { processAPIRequest, pushToastAlert } = useEvents();
+  const { processAPIRequest } = useEvents();
   const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
     useString();
 
@@ -130,10 +129,12 @@ export function useTransactionsData() {
     });
     if (response?.code === 200 && response.data) {
       const merchants = response.data.merchants || [];
-      merchantOptions.value = merchants.map((m: any) => ({
-        value: m.uuid || "",
+      merchantOptions.value = merchants.map((merchant: any) => ({
+        value: merchant.uuid || "",
         name:
-          m.email || `${m.first_name || ""} ${m.last_name || ""}`.trim() || "-",
+          merchant.email ||
+          `${merchant.first_name || ""} ${merchant.last_name || ""}`.trim() ||
+          "-",
       }));
     }
   };
@@ -342,37 +343,6 @@ export function useTransactionsData() {
     return response.data?.transactions || [];
   };
 
-  const exportToExcel = async () => {
-    const allTransactions = await fetchAllTransactionPages();
-
-    if (!allTransactions.length) {
-      pushToastAlert({
-        message: "No data to export",
-        description: "No transactions match the current filters.",
-        type: "warning",
-      });
-      return;
-    }
-
-    const cleanData = allTransactions.map((tx: any) => ({
-      Date: tx.created_at
-        ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
-        : "-",
-      Email: tx.email || "-",
-      "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
-      Currency: tx.currency || "-",
-      Amount: formatNumber(tx.amount ?? 0),
-      Status: capitalizeFirstLetter(
-        tx.status === "completed" ? "Successful" : tx.status || "-",
-      ),
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(cleanData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Transactions");
-    XLSX.writeFile(workbook, "Transactions_Data.xlsx");
-  };
-
   watch(filters, (newFilters) => {
     if (debounceTimer.value) clearTimeout(debounceTimer.value);
     debounceTimer.value = setTimeout(() => fetchTransactions(newFilters), 300);
@@ -393,7 +363,7 @@ export function useTransactionsData() {
     filterValues,
     filterConfig,
     onFilterChange,
-    exportToExcel,
+    fetchAllTransactionPages,
     showDetailModal,
     selectedTransaction,
   };

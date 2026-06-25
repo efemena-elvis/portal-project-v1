@@ -1,18 +1,16 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import FeesPage from "@/modules/fees/pages/fees.vue";
 
 const feesRoutes: IRouteType[] = [
   {
     path: "/fees",
-    component: () =>
-      import(/* webpackChunkName: "fees-layout" */ "@/layouts/base-layout.vue"),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashFees",
-        component: () =>
-          import(
-            /* webpackChunkName: "fees-module" */ "@/modules/fees/pages/fees.vue"
-          ),
+        component: FeesPage,
         meta: {
           requiresAuth: true,
           title: "Fees",

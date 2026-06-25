@@ -1,9 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <PageContentWrapper
-    description="Manage funding and capital"
+    description="Manage funding and withdrawal requests"
     :showTitle="true"
-    pageDescription="All Funding Requests"
+    pageDescription="All Approval Requests"
     :pagingData="tablePaging"
     @updatePage="(currentPage) => (page = currentPage)"
   >
@@ -11,7 +11,7 @@
       <section class="flex flex-col gap-7">
         <div class="flex flex-wrap items-center gap-8 mt-8">
           <StatsCard
-            v-for="stat in fundingStats"
+            v-for="stat in approvalStats"
             :key="stat.title"
             :title="stat.title"
             :value="stat.value"
@@ -29,9 +29,9 @@
           :tableBody="tableBody"
           :isLoading="isLoading"
           :emptyData="{
-            title: 'No funding requests yet',
+            title: 'No approval requests yet',
             description:
-              'Funding requests will appear here once they are available.',
+              'Approval requests will appear here once they are available.',
           }"
         >
           <TableContainerBody
@@ -47,11 +47,11 @@
 
   <RequestDetailModal
     v-if="showRequestModal && selectedRequest"
-    title="Funding Request"
+    :title="selectedRequest.isFunding ? 'Funding Request' : 'Withdrawal Request'"
     :request="selectedRequest"
     @closeTriggered="closeRequestModal"
-    @approve="handleFundingAction('approve')"
-    @reject="handleFundingAction('reject')"
+    @approve="handleApprovalAction('approve')"
+    @reject="handleApprovalAction('reject')"
     @goToMerchant="goToMerchantDashboard"
   />
 </template>
@@ -69,10 +69,10 @@ import {
   StatsCard,
 } from "@packages/uikit";
 import { TableHeaderType } from "@packages/models";
-import { useFundingStore } from "@/modules/fundings/store";
+import { useApprovalsStore } from "@/modules/approvals/store";
 import RequestDetailModal from "@/modules/balances/modals/request-detail-modal.vue";
 
-const { getAllFundings, verifyFunding } = useFundingStore();
+const { getAllApprovals, decideApproval } = useApprovalsStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
   useString();
@@ -87,6 +87,7 @@ const selectedRequest = ref<any | null>(null);
 
 const filterValues = reactive({
   search: "",
+  type: "",
   status: "",
   period: null as [Date, Date] | null,
 });
@@ -95,7 +96,13 @@ const filterConfig = [
   {
     type: "search" as const,
     key: "search",
-    placeholder: "Search funding requests",
+    placeholder: "Search approval requests",
+  },
+  {
+    type: "select" as const,
+    key: "type",
+    options: ["Funding", "Withdrawal"],
+    placeholder: "Type",
   },
   {
     type: "select" as const,
@@ -118,7 +125,7 @@ const onFilterChange = ({ key, value }: { key: string; value: any }) => {
   page.value = 1;
 };
 
-const fundingStats = ref<{ title: string; value: string }[]>([
+const approvalStats = ref<{ title: string; value: string }[]>([
   { title: "Total Requests", value: "-" },
   { title: "Completed", value: "-" },
   { title: "Pending", value: "-" },
@@ -132,13 +139,14 @@ const fmtEndISO = (d: Date) => {
   return end.toISOString().replace(/\.\d+Z$/, "Z");
 };
 
-const dummyFundingRequests = [
+const dummyApprovalRequests = [
   {
     id: "FND-001",
     created_at: new Date().toISOString(),
     amount: 1500000,
     currency: "NGN",
     status: "pending",
+    type: "funding",
     name: "Tech-village Inc",
     reference: "REF-ABC-001",
     accountNumber: "234567890",
@@ -147,16 +155,45 @@ const dummyFundingRequests = [
     isDummy: true,
   },
   {
+    id: "WTH-001",
+    created_at: new Date().toISOString(),
+    amount: 850000,
+    currency: "NGN",
+    status: "pending",
+    type: "withdrawal",
+    name: "Luna Cosmetics",
+    reference: "REF-WTH-001",
+    accountNumber: "9876543210",
+    bankName: "Access Bank",
+    accountName: "Luna Cosmetics Ltd",
+    isDummy: true,
+  },
+  {
     id: "FND-002",
     created_at: new Date(Date.now() - 86400000).toISOString(),
     amount: 2500000,
     currency: "NGN",
     status: "successful",
+    type: "funding",
     name: "BizMart Africa",
     reference: "REF-ABC-002",
-    accountNumber: "234567890",
+    accountNumber: "234567891",
     bankName: "GTB",
-    accountName: "Tech-village Inc",
+    accountName: "BizMart Africa",
+    isDummy: true,
+  },
+  {
+    id: "WTH-002",
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    amount: 1200000,
+    currency: "GHS",
+    status: "successful",
+    type: "withdrawal",
+    name: "GreenLeaf Ventures",
+    reference: "REF-WTH-002",
+    accountNumber: "1234567890",
+    bankName: "Ecobank",
+    accountName: "GreenLeaf Ventures",
     isDummy: true,
   },
   {
@@ -164,12 +201,27 @@ const dummyFundingRequests = [
     created_at: new Date(Date.now() - 172800000).toISOString(),
     amount: 750000,
     currency: "GHS",
-    status: "pending",
+    status: "failed",
+    type: "funding",
     name: "GreenLeaf Ventures",
     reference: "REF-ABC-003",
-    accountNumber: "234567890",
+    accountNumber: "234567892",
     bankName: "GTB",
-    accountName: "Tech-village Inc",
+    accountName: "GreenLeaf Ventures",
+    isDummy: true,
+  },
+  {
+    id: "WTH-003",
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    amount: 450000,
+    currency: "NGN",
+    status: "pending",
+    type: "withdrawal",
+    name: "Swift Logistics",
+    reference: "REF-WTH-003",
+    accountNumber: "5678912340",
+    bankName: "First Bank",
+    accountName: "Swift Logistics Ltd",
     isDummy: true,
   },
 ];
@@ -177,6 +229,7 @@ const dummyFundingRequests = [
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date_created" },
   { title: "Merchant", slug: "merchant" },
+  { title: "Type", slug: "type" },
   { title: "Amount", slug: "amount" },
   { title: "Status", slug: "status" },
   { title: "Reference", slug: "reference" },
@@ -185,7 +238,7 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`,
+    `?page=${page.value}&status=${filterValues.status}&type=${filterValues.type}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`,
 );
 
 const getDateCreated = (date: string) => {
@@ -193,7 +246,7 @@ const getDateCreated = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const normalizeFundingRequest = (data: any) => {
+const normalizeApprovalRequest = (data: any) => {
   return {
     id: data?.uuid || data?.id,
     amount: data?.amount ? formatNumber(Number(data?.amount)) : "-",
@@ -208,6 +261,8 @@ const normalizeFundingRequest = (data: any) => {
     accountNumber: data?.accountNumber || data?.account_number || "",
     bankName: data?.bankName || data?.bank_name || "",
     accountName: data?.accountName || data?.account_name || "",
+    isFunding: data?.type === "funding",
+    type: capitalizeFirstLetter(data?.type || ""),
     isDummy: data?.isDummy || false,
   };
 };
@@ -227,12 +282,12 @@ const goToMerchantDashboard = () => {
   router.push(`/merchants/${selectedRequest.value.merchantId}`);
 };
 
-const handleFundingAction = async (action: "approve" | "reject") => {
+const handleApprovalAction = async (action: "approve" | "reject") => {
   const uuid = selectedRequest.value?.id;
   if (!uuid) {
     pushToastAlert({
       message: "Unable to complete action",
-      description: "Funding request information is not available.",
+      description: "Approval request information is not available.",
       type: "error",
     });
     return;
@@ -240,20 +295,20 @@ const handleFundingAction = async (action: "approve" | "reject") => {
 
   const response = await processAPIRequest({
     action: () =>
-      verifyFunding({
+      decideApproval({
         uuid,
         comment:
           action === "approve"
-            ? "Payment confirmed by admin"
-            : "Funding request rejected",
+            ? "Request confirmed by admin"
+            : "Approval request rejected",
       }),
     alertHandler: {
       200: {
         message:
           action === "approve"
-            ? "Funding request approved"
-            : "Funding request rejected",
-        description: "The funding request has been updated successfully.",
+            ? "Approval request approved"
+            : "Approval request rejected",
+        description: "The approval request has been updated successfully.",
         type: "success",
       },
     },
@@ -261,7 +316,7 @@ const handleFundingAction = async (action: "approve" | "reject") => {
 
   if (response?.code === 200 || response?.code === 201) {
     closeRequestModal();
-    fetchFundings(filters.value);
+    fetchApprovals(filters.value);
   } else {
     pushToastAlert({
       message: response?.error?.message || "Unable to complete action",
@@ -270,9 +325,9 @@ const handleFundingAction = async (action: "approve" | "reject") => {
   }
 };
 
-const buildFundingTableRows = (requests: any[]) => {
+const buildApprovalTableRows = (requests: any[]) => {
   tableBody.value = requests.map((data: any) => {
-    const request = normalizeFundingRequest(data);
+    const request = normalizeApprovalRequest(data);
     const date = data?.created_at;
 
     return {
@@ -283,6 +338,7 @@ const buildFundingTableRows = (requests: any[]) => {
         },
       }),
       merchant: request.merchantName,
+      type: h("span", { class: "capitalize" }, request.type),
       amount: getBoldTableText(`${request.currency} ${request.amount}`.trim()),
       status: getStatus(
         data.status || request.status,
@@ -307,7 +363,7 @@ const buildFundingTableRows = (requests: any[]) => {
   });
 };
 
-const computeFundingStats = (response: any) => {
+const computeApprovalStats = (response: any) => {
   const transactions = response?.data?.wallet_fundings || [];
   const completed = transactions.filter(
     (t: any) => t.status === "successful" || t.status === "completed",
@@ -318,7 +374,7 @@ const computeFundingStats = (response: any) => {
   const failed = transactions.filter((t: any) => t.status === "failed").length;
   const total = transactions.length;
 
-  fundingStats.value = [
+  approvalStats.value = [
     { title: "Total Requests", value: total.toLocaleString() },
     { title: "Completed", value: completed.toLocaleString() },
     { title: "Pending", value: pending.toLocaleString() },
@@ -326,11 +382,11 @@ const computeFundingStats = (response: any) => {
   ];
 };
 
-const fetchFundings = async (filters: string) => {
+const fetchApprovals = async (filters: string) => {
   isLoading.value = true;
 
   const response = await processAPIRequest({
-    action: getAllFundings,
+    action: getAllApprovals,
     payload: { filters, page: page.value },
     showAlert: false,
   });
@@ -338,13 +394,13 @@ const fetchFundings = async (filters: string) => {
   isLoading.value = false;
 
   if (response?.code === 200 && response.data?.wallet_fundings?.length) {
-    computeFundingStats(response);
-    buildFundingTableRows(response.data.wallet_fundings);
+    computeApprovalStats(response);
+    buildApprovalTableRows(response.data.wallet_fundings);
     tablePaging.value = response?.pagination?.[0] || {};
   } else {
-    buildFundingTableRows(dummyFundingRequests);
+    buildApprovalTableRows(dummyApprovalRequests);
   }
 };
 
-useAutoFetch(filters, fetchFundings);
+useAutoFetch(filters, fetchApprovals);
 </script>

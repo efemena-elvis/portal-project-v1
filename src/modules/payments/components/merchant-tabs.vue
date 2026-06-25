@@ -22,8 +22,8 @@ withDefaults(defineProps<{ activeTab: string; tabsList?: string[] }>(), {
   tabsList: () => [
     "Transactions",
     "Refunds",
-    "Payout",
-    "Tax Record",
+    "Payouts",
+    "Tax Records",
     // "Disputes",
     "Fees",
     "Profile",

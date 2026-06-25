@@ -1,5 +1,5 @@
 export const paymentRoutes = {
-  getPaymentTransactions: "payment",
+  getPaymentTransactions: "admin/transactions",
   getTransactionByRef: "payment",
   initiatePayout: "payouts/request",
 };

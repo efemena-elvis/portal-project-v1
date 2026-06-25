@@ -4,14 +4,14 @@
       v-for="(header, index) in tableHeader"
       :key="index"
       @click="header?.tableAction"
-      class="px-5 first:pl-10 last:pr-10"
+      class="px-5"
     >
       <div
         :class="[
           header.tableDataClass,
           renderLogicClass(header, tableData[header.slug]),
         ]"
-        class="break-all whitespace-normal max-w-[200px]"
+        class="break-all whitespace-normal max-w-[220px]"
       >
         <template v-if="isVNode(tableData[header.slug])">
           <!-- Render the VNode directly if it is a component -->

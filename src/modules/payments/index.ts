@@ -1,12 +1,10 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
 
 const overviewRoutes: IRouteType[] = [
   {
     path: "/transactions",
-    component: () =>
-      import(
-        /* webpackChunkName: "pyments-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [],
   },
 ];

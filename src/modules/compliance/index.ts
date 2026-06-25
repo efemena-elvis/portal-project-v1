@@ -1,23 +1,18 @@
 import { IRouteType } from "@packages/models";
-import { FullPageLayout } from "@packages/uikit";
+import BaseLayout from "@/layouts/base-layout.vue";
+import ComplianceDashboardPage from "@/modules/compliance/pages/compliance-dashboard.vue";
+import ComplianceDetailsPage from "@/modules/compliance/pages/compliance-details.vue";
 
 // *********** VESICASH COMPLIANCE ROUTES *********** //
 const complianceRoutes: IRouteType[] = [
-  // Compliance dashboard (with sidebar)
   {
     path: "/compliance",
-    component: () =>
-      import(
-        /* webpackChunkName: "compliance-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashCompliance",
-        component: () =>
-          import(
-            /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/compliance-dashboard.vue"
-          ),
+        component: ComplianceDashboardPage,
         meta: {
           requiresAuth: true,
           title: "Compliance",
@@ -30,10 +25,7 @@ const complianceRoutes: IRouteType[] = [
       {
         path: "details/:id",
         name: "ComplianceDetails",
-        component: () =>
-          import(
-            /* webpackChunkName: "compliance-module" */ "@/modules/compliance/pages/compliance-details.vue"
-          ),
+        component: ComplianceDetailsPage,
         meta: {
           requiresAuth: true,
           title: "Compliance Details",

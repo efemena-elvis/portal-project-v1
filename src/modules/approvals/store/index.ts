@@ -2,10 +2,10 @@ import { defineStore } from "pinia";
 import * as actions from "./actions";
 import * as getters from "./getters";
 import * as state from "./state";
-import { useFundingMutations } from "./mutations";
+import { useApprovalsMutations } from "./mutations";
 
-export const useFundingStore = defineStore("funding", () => {
-  const mutations = useFundingMutations();
+export const useApprovalsStore = defineStore("approvals", () => {
+  const mutations = useApprovalsMutations();
 
   return {
     ...state,

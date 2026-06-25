@@ -73,8 +73,8 @@ const activeAction = ref<DetailAction>("approve");
 const tabComponents: Record<string, any> = {
   Transactions,
   Refunds: Refund,
-  Payout: PayoutHistory,
-  "Tax Record": TaxRecord,
+  Payouts: PayoutHistory,
+  "Tax Records": TaxRecord,
   Fees: AddFee,
   Disputes,
   Profile,

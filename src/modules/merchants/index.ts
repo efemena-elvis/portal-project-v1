@@ -1,20 +1,17 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import MerchantsPage from "@/modules/merchants/pages/merchants.vue";
+import MerchantDetailsPage from "@/modules/merchants/pages/merchant-details.vue";
 
 const merchantsRoutes: IRouteType[] = [
   {
     path: "/transactions",
-    component: () =>
-      import(
-        /* webpackChunkName: "merchants-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "/merchants",
         name: "VesicashMerchants",
-        component: () =>
-          import(
-            /* webpackChunkName: "merchants-module" */ "@/modules/merchants/pages/merchants.vue"
-          ),
+        component: MerchantsPage,
         meta: {
           requiresAuth: true,
           title: "Merchants",
@@ -27,10 +24,7 @@ const merchantsRoutes: IRouteType[] = [
       {
         path: "/merchant/:id",
         name: "MerchantDetails",
-        component: () =>
-          import(
-            /* webpackChunkName: "merchants-module" */ "@/modules/merchants/pages/merchant-details.vue"
-          ),
+        component: MerchantDetailsPage,
         meta: {
           requiresAuth: true,
           title: "Merchant's Details",

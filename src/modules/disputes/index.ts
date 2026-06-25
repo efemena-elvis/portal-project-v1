@@ -1,20 +1,16 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import DisputesPage from "@/modules/disputes/pages/disputes.vue";
 
 const disputesRoutes: IRouteType[] = [
   {
     path: "/disputes",
-    component: () =>
-      import(
-        /* webpackChunkName: "disputes-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashDisputes",
-        component: () =>
-          import(
-            /* webpackChunkName: "disputes-module" */ "@/modules/disputes/pages/disputes.vue"
-          ),
+        component: DisputesPage,
         meta: {
           requiresAuth: true,
           title: "Disputes",

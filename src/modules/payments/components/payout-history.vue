@@ -1,5 +1,9 @@
 <template>
-  <PageContentWrapper :showTitle="false">
+  <PageContentWrapper
+    :showTitle="false"
+    :pagingData="tablePaging"
+    @update-page="onPageChange"
+  >
     <template v-slot:pageContent>
       <TableContainer
         :tableHeader="tableHeader"
@@ -8,7 +12,7 @@
         :emptyData="{
           title: 'No payout initiated yet',
           description:
-            'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your  initiated payout transactions.',
+            'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your initiated payout transactions.',
           actionText: 'Initiate a Payout',
         }"
       >
@@ -24,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { useBalanceStore } from "@/modules/balances/store";
 import { TableHeaderType } from "@packages/models";
@@ -35,40 +39,33 @@ import {
   PageContentWrapper,
 } from "@packages/uikit";
 
-const { getBoldTableText, formatNumber, capitalizeFirstLetter, getStatus } =
-  useString();
+const props = withDefaults(
+  defineProps<{
+    merchantId?: string;
+    merchantDetails?: Record<string, any> | null;
+  }>(),
+  { merchantId: "", merchantDetails: null },
+);
 
-const { fetchAllPayouts } = useBalanceStore();
+const { formatNumber, capitalizeFirstLetter, getStatus } = useString();
 const { processAPIRequest } = useEvents();
 
-const isLoading = ref<boolean>(false);
+const { getAllWithdrawalRequests } = useBalanceStore();
 
-const showInitiatePayoutModal = ref(false);
+const isLoading = ref(false);
+const page = ref(1);
+const pageSize = ref(10);
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date_created" },
+  { title: "Reference", slug: "reference" },
   { title: "Amount", slug: "amount_requested" },
   { title: "Fees", slug: "fee" },
   { title: "Net payout", slug: "net_payout" },
   { title: "Status", slug: "status" },
 ]);
 
-const tableBody = reactive<any[]>([
-  {
-    date_created: "22nd July, 2024",
-    amount_requested: "$12,000.00",
-    fee: "$200",
-    net_payout: "$11,800",
-    status: getStatus("success", "Successful"),
-  },
-  {
-    date_created: "22nd July, 2024",
-    amount_requested: "$12,000.00",
-    fee: "$200",
-    net_payout: "$11,800",
-    status: getStatus("failed", "Failed"),
-  },
-]);
+const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 
 const getDateCreated = (date: string) => {
@@ -76,35 +73,75 @@ const getDateCreated = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-//   const fetchPayouts = async () => {
-//     const response = await processAPIRequest({
-//       action: fetchAllPayouts,
-//       payload: {},
-//       showAlert: false,
-//     });
+const apiFilters = computed(() => {
+  return `?page=${page.value}&user_id=${props.merchantId}`;
+});
 
-//     isLoading.value = false;
+const fetchPayouts = async () => {
+  if (!props.merchantId) return;
+  isLoading.value = true;
 
-//     if (response.code === 200) {
-//       tableBody.length = 0;
+  const response = await processAPIRequest({
+    action: getAllWithdrawalRequests,
+    payload: { filters: apiFilters.value },
+    showAlert: false,
+  });
 
-//       response.data.map((data: any) => {
-//         tableBody.push({
-//           date_created: getDateCreated(data.created_at),
-//           reference_id: data.reference,
-//           amount_requested: getBoldTableText(
-//             `${data.currency} ${formatNumber(data.amount)}`
-//           ),
-//           narration: data.narration,
-//           status: capitalizeFirstLetter(data.status.split("_").join(" ")),
-//         });
-//       });
+  isLoading.value = false;
 
-//       tablePaging.value = response.pagination[0];
-//     }
-//   };
+  if (response?.code === 200) {
+    const list = response.data?.data || response.data || [];
+    tableBody.value = list.map((item: any) => ({
+      date_created: getDateCreated(item.created_at),
+      reference: item.reference || item.reference_id || "-",
+      amount_requested: `${item.currency || "USD"} ${formatNumber(item.amount || 0)}`,
+      fee: item.fee
+        ? `${item.currency || "USD"} ${formatNumber(item.fee)}`
+        : "-",
+      net_payout: item.net_payout
+        ? `${item.currency || "USD"} ${formatNumber(item.net_payout)}`
+        : "-",
+      status: getStatus(
+        item.status === "completed" || item.status === "successful"
+          ? "success"
+          : item.status === "failed"
+            ? "failed"
+            : "pending",
+        capitalizeFirstLetter((item.status || "pending").split("_").join(" ")),
+      ),
+    }));
 
-//   onMounted(() => {
-//     fetchPayouts();
-//   });
+    const pagination = response.pagination?.[0];
+    if (pagination) {
+      const pageCount =
+        Math.ceil(
+          (pagination.total || pagination.total_records || 0) /
+            (pagination.page_size || pageSize.value),
+        ) || 0;
+      tablePaging.value = {
+        current_page: pagination.current_page || pagination.page || 1,
+        page_count: pageCount,
+        total_pages_count: pageCount,
+      };
+    } else {
+      tablePaging.value = {
+        current_page: 1,
+        page_count: 0,
+        total_pages_count: 0,
+      };
+    }
+  }
+};
+
+const onPageChange = (pageNum: number) => {
+  page.value = pageNum;
+};
+
+watch(
+  () => [props.merchantId, apiFilters.value] as const,
+  () => {
+    fetchPayouts();
+  },
+  { immediate: true },
+);
 </script>

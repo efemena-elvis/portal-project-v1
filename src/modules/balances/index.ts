@@ -1,23 +1,17 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import WithdrawalRequestsPage from "@/modules/balances/pages/withdrawal-requests.vue";
 
 // *********** VESICASH BALANCES ROUTES *********** //
 const overviewRoutes: IRouteType[] = [
   {
     path: "/balance-history",
-    component: () =>
-      import(
-        /* webpackChunkName: "balances-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
-      // *********** VESICASH BALANCES *********** //
-
       {
         path: "/withdrawal-requests",
         name: "WithdrawalRequests",
-        component: () =>
-          import(
-            /* webpackChunkName: "balances-module" */ "@/modules/balances/pages/withdrawal-requests.vue"
-          ),
+        component: WithdrawalRequestsPage,
         meta: {
           requiresAuth: true,
           title: "Withdrawal Requests",

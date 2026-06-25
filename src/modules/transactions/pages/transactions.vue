@@ -34,7 +34,7 @@
           <button
             class="btn btn-sm btn-secondary"
             type="button"
-            @click="exportToExcel"
+            @click="handleExport"
           >
             Export
           </button>
@@ -75,6 +75,8 @@ import {
   FilterBar,
   StatsCard,
 } from "@packages/uikit";
+import { useDate, useString, useEvents } from "@packages/hooks";
+import { exportXLSX } from "@/shared/utils/export";
 import TransactionDetailModal from "@/modules/transactions/modals/transaction-detail-modal.vue";
 import TransactionsDonut from "@/modules/transactions/components/transactions-donut.vue";
 import { useTransactionsData } from "@/modules/transactions/composables/useTransactionsData";
@@ -89,10 +91,46 @@ const {
   filterValues,
   filterConfig,
   onFilterChange,
-  exportToExcel,
+  fetchAllTransactionPages,
   showDetailModal,
   selectedTransaction,
 } = useTransactionsData();
+
+const { pushToastAlert } = useEvents();
+const { formatNumber, capitalizeFirstLetter } = useString();
+
+const handleExport = async () => {
+  const allTransactions = await fetchAllTransactionPages()
+
+  if (!allTransactions.length) {
+    pushToastAlert({
+      message: "No data to export",
+      description: "No transactions match the current filters.",
+      type: "warning",
+    })
+    return
+  }
+
+  const getDateCreated = (date: string) => {
+    const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll()
+    return `${w2}, ${d3} ${m3}, ${y1}`
+  }
+
+  const cleanData = allTransactions.map((tx: any) => ({
+    Date: tx.created_at
+      ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
+      : "-",
+    Email: tx.email || "-",
+    "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
+    Currency: tx.currency || "-",
+    Amount: formatNumber(tx.amount ?? 0),
+    Status: capitalizeFirstLetter(
+      tx.status === "completed" ? "Successful" : tx.status || "-",
+    ),
+  }))
+
+  exportXLSX(cleanData, "Transactions_Data.xlsx", "Transactions")
+}
 </script>
 
 <style scoped lang="scss">
