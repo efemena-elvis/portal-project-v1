@@ -110,7 +110,6 @@ const tabButtonClass = (tabValue: string) =>
 const switchTab = (tab: "funding" | "withdrawal") => {
   activeTab.value = tab;
   page.value = 1;
-  fetchApprovals(filters.value);
 };
 
 const filterValues = reactive({
@@ -160,93 +159,6 @@ const fmtEndISO = (d: Date) => {
   return end.toISOString().replace(/\.\d+Z$/, "Z");
 };
 
-const dummyApprovalRequests = [
-  {
-    id: "FND-001",
-    created_at: new Date().toISOString(),
-    amount: 1500000,
-    currency: "NGN",
-    status: "pending",
-    type: "funding",
-    name: "Tech-village Inc",
-    reference: "REF-ABC-001",
-    accountNumber: "234567890",
-    bankName: "GTB",
-    accountName: "Tech-village Inc",
-    isDummy: true,
-  },
-  {
-    id: "WTH-001",
-    created_at: new Date().toISOString(),
-    amount: 850000,
-    currency: "NGN",
-    status: "pending",
-    type: "withdrawal",
-    name: "Luna Cosmetics",
-    reference: "REF-WTH-001",
-    accountNumber: "9876543210",
-    bankName: "Access Bank",
-    accountName: "Luna Cosmetics Ltd",
-    isDummy: true,
-  },
-  {
-    id: "FND-002",
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    amount: 2500000,
-    currency: "NGN",
-    status: "successful",
-    type: "funding",
-    name: "BizMart Africa",
-    reference: "REF-ABC-002",
-    accountNumber: "234567891",
-    bankName: "GTB",
-    accountName: "BizMart Africa",
-    isDummy: true,
-  },
-  {
-    id: "WTH-002",
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    amount: 1200000,
-    currency: "GHS",
-    status: "successful",
-    type: "withdrawal",
-    name: "GreenLeaf Ventures",
-    reference: "REF-WTH-002",
-    accountNumber: "1234567890",
-    bankName: "Ecobank",
-    accountName: "GreenLeaf Ventures",
-    isDummy: true,
-  },
-  {
-    id: "FND-003",
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    amount: 750000,
-    currency: "GHS",
-    status: "failed",
-    type: "funding",
-    name: "GreenLeaf Ventures",
-    reference: "REF-ABC-003",
-    accountNumber: "234567892",
-    bankName: "GTB",
-    accountName: "GreenLeaf Ventures",
-    isDummy: true,
-  },
-  {
-    id: "WTH-003",
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    amount: 450000,
-    currency: "NGN",
-    status: "pending",
-    type: "withdrawal",
-    name: "Swift Logistics",
-    reference: "REF-WTH-003",
-    accountNumber: "5678912340",
-    bankName: "First Bank",
-    accountName: "Swift Logistics Ltd",
-    isDummy: true,
-  },
-];
-
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date_created" },
   { title: "Merchant", slug: "merchant" },
@@ -256,10 +168,9 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "", slug: "action" },
 ]);
 
-const filters = computed(() => {
-  const base = `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`;
-  return base;
-});
+const filters = computed(() =>
+  `?page=${page.value}&tab=${activeTab.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`
+);
 
 const getDateCreated = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -522,6 +433,14 @@ const computeWithdrawalStats = (response: any) => {
 };
 
 const fetchFundingRequests = async (filters: string) => {
+  tableBody.value = [];
+  approvalStats.value = [
+    { title: "Total Funding Requests", value: "-" },
+    { title: "Funding Completed", value: "-" },
+    { title: "Funding Pending", value: "-" },
+    { title: "Funding Failed", value: "-" },
+  ];
+  tablePaging.value = {};
   isLoading.value = true;
 
   const response = await processAPIRequest({
@@ -532,16 +451,24 @@ const fetchFundingRequests = async (filters: string) => {
 
   isLoading.value = false;
 
+  if (activeTab.value !== 'funding') return;
+
   if (response?.code === 200 && response.data?.wallet_fundings?.length) {
     computeApprovalStats(response);
     buildApprovalTableRows(response.data.wallet_fundings);
     tablePaging.value = response?.pagination?.[0] || {};
-  } else {
-    buildApprovalTableRows(dummyApprovalRequests);
   }
 };
 
 const fetchWithdrawalRequests = async (filters: string) => {
+  tableBody.value = [];
+  approvalStats.value = [
+    { title: "Total Withdrawal Requests", value: "-" },
+    { title: "Withdrawal Completed", value: "-" },
+    { title: "Withdrawal Pending", value: "-" },
+    { title: "Withdrawal Failed", value: "-" },
+  ];
+  tablePaging.value = {};
   isLoading.value = true;
 
   const response = await processAPIRequest({
@@ -551,6 +478,8 @@ const fetchWithdrawalRequests = async (filters: string) => {
   });
 
   isLoading.value = false;
+
+  if (activeTab.value !== 'withdrawal') return;
 
   if (response.code === 200) {
     computeWithdrawalStats(response);
