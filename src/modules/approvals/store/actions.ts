@@ -12,21 +12,27 @@ const $api = new useServiceAPI({
 });
 
 export const getAllApprovals = async (payload: any) => {
-  const queryString =
-    payload.filters &&
-    typeof payload.filters === "string" &&
-    payload.filters.length > 0
-      ? payload.filters
-      : `?page=${payload.page ?? 1}`;
-  return await $api.fetch(`${approvalRoutes.getApprovals}${queryString}`);
+  return await $api.fetch(
+    `${approvalRoutes.getApprovals}${payload.filters ? payload.filters : `?page=${payload.page ?? 1}`}`,
+  )
 };
 
-export const decideApproval = async (payload: {
-  uuid: string
-  comment?: string
-}) => {
+export const decideApproval = async (payload: { uuid: string; comment?: string }) => {
   return await $api.push(
     `${approvalRoutes.decideApproval}/${payload.uuid}/verify`,
-    { comment: payload.comment || "Request confirmed by admin" },
+    { comment: payload.comment },
   );
 };
+
+export const getAllWithdrawalRequests = async (payload: any) => {
+  return await $api.fetch(
+    `${approvalRoutes.getAllWithdrawalRequests}${payload.filters ? payload.filters : `?page=${payload.page}`}`,
+  )
+}
+
+export const decideWithdrawalRequest = async (payload: { uuid: string; action: string }) => {
+  return await $api.push(
+    `${approvalRoutes.getAllWithdrawalRequests}/${payload.uuid}/decision`,
+    { action: payload.action },
+  )
+}

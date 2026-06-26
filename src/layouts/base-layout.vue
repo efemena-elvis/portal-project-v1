@@ -36,7 +36,7 @@ import { BaseSidebar } from "@packages/uikit";
 import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
 import { usePaymentStore } from "@/modules/payments/store";
-import { useBalanceStore } from "@/modules/balances/store";
+
 import { useApprovalsStore } from "@/modules/approvals/store";
 import { useTransactionStore } from "@/modules/transactions/store";
 
@@ -44,7 +44,7 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 const { getTransactions } = usePaymentStore();
-const { getAllWithdrawalRequests } = useBalanceStore();
+const { getAllWithdrawalRequests } = useApprovalsStore();
 const { getAllApprovals } = useApprovalsStore();
 const { getAllTransactions } = useTransactionStore();
 
@@ -107,9 +107,10 @@ const getSidebarPendingData = async () => {
 
   sidebarBadgeConfig.value = {
     Compliance: getPendingCount(complianceResponse),
-    Approvals: getPendingCount(approvalResponse),
+    Approvals:
+      getPendingCount(approvalResponse) +
+      getPendingCount(withdrawalResponse),
     Transactions: getPendingCount(transactionResponse),
-    "Withdrawal Requests": getPendingCount(withdrawalResponse),
   };
 };
 

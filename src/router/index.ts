@@ -7,7 +7,6 @@ import authRoutes from "@/modules/auth";
 
 import paymentRoutes from "@/modules/payments";
 import merchantsRoutes from "@/modules/merchants";
-import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
 import externalRoutes from "@/modules/external";
 import overviewRoutes from "@/modules/overview";
@@ -24,7 +23,6 @@ const routes: import("vue-router").RouteRecordRaw[] = [
   ...(paymentRoutes as any),
   ...(transactionsRoutes as any),
   ...(merchantsRoutes as any),
-  ...(balancesRoutes as any),
   ...(complianceRoutes as any),
   ...(externalRoutes as any),
   ...(aggregatorsRoutes as any),

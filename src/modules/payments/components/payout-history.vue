@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useString, useEvents, useDate } from "@packages/hooks";
-import { useBalanceStore } from "@/modules/balances/store";
+import { useApprovalsStore } from "@/modules/approvals/store";
 import { TableHeaderType } from "@packages/models";
 
 import {
@@ -50,7 +50,7 @@ const props = withDefaults(
 const { formatNumber, capitalizeFirstLetter, getStatus } = useString();
 const { processAPIRequest } = useEvents();
 
-const { getAllWithdrawalRequests } = useBalanceStore();
+const { getAllWithdrawalRequests } = useApprovalsStore();
 
 const isLoading = ref(false);
 const page = ref(1);
