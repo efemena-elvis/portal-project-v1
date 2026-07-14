@@ -45,7 +45,7 @@ import Disputes from "@/modules/payments/components/disputes.vue";
 import MerchantActionModal from "@/modules/payments/modals/merchant-action-modal.vue";
 import { useMerchantStore } from "@/modules/merchants/store";
 
-type MerchantAction = "reset-password" | "login" | "delete";
+type MerchantAction = "reset-password" | "login" | "reset-mfa" | "delete";
 type PayoutAction = "approve" | "reject";
 type DetailAction = MerchantAction | PayoutAction;
 
@@ -58,6 +58,7 @@ const {
   resetMerchantPassword,
   loginMerchantAccount,
   deleteMerchant,
+  resetMerchantMfa,
   approveMerchantPayoutRequest,
   rejectMerchantPayoutRequest,
 } = useMerchantStore();
@@ -104,6 +105,13 @@ const modalContent = computed(() => {
       description:
         "You will be logged into this merchant's account if the request is approved by the server.",
       confirmText: "Login",
+      tone: "success",
+    },
+    "reset-mfa": {
+      title: "Reset MFA",
+      description:
+        "This will reset the multi-factor authentication for this merchant. They will need to set it up again.",
+      confirmText: "Reset MFA",
       tone: "success",
     },
     delete: {
@@ -161,6 +169,7 @@ const actionHandler = computed(() => {
   const actions: Record<DetailAction, () => Promise<any>> = {
     "reset-password": () => resetMerchantPassword(id),
     login: () => loginMerchantAccount(id),
+    "reset-mfa": () => resetMerchantMfa(id),
     delete: () => deleteMerchant(id),
     approve: () => approveMerchantPayoutRequest(id),
     reject: () => rejectMerchantPayoutRequest(id),

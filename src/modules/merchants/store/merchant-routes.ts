@@ -6,4 +6,5 @@ export const merchantRoutes = {
   deleteMerchant: "merchants",
   approveMerchantPayoutRequest: "merchants",
   rejectMerchantPayoutRequest: "merchants",
+  resetMfa: "admin/users/mfa/reset",
 };

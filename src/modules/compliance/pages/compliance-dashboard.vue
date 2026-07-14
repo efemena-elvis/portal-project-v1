@@ -76,25 +76,33 @@ import {
   StatsCard,
 } from "@packages/uikit";
 import { useString, useEvents, useDate, useAutoFetch } from "@packages/hooks";
-import { usePaymentStore } from "@/modules/payments/store";
+import { useComplianceStore } from "@/modules/compliance/store";
 import ComplianceConfig from "../components/compliance-config.vue";
 
 const { getStatus } = useString();
 const { processAPIRequest } = useEvents();
-const { getTransactions } = usePaymentStore();
+
+const complianceStore = useComplianceStore() as any;
+const { getCompliances } = complianceStore;
 const router = useRouter();
 
-const complianceStats = [{ title: "Pending Approvals", value: "24" }];
+const complianceStats = ref<{ title: string; value: string }[]>([
+  { title: "Total Requests", value: "-" },
+  { title: "Approved", value: "-" },
+  { title: "Pending", value: "-" },
+  { title: "Rejected", value: "-" },
+]);
 
 const selectedTab = ref("requests");
 
-const tabs = [
-  { label: "New Requests", value: "requests" },
-  { label: "Compliance set-up", value: "setup" },
-] as const;
+// const tabs = [
+//   { label: "New Requests", value: "requests" },
+//   { label: "Compliance set-up", value: "setup" },
+// ] as const;
 
-const tabButtonClass = (tabValue: string) =>
-  selectedTab.value === tabValue ? "tab-btn tab-btn--active" : "tab-btn";
+// const tabButtonClass = (tabValue: string) =>
+//   selectedTab.value === tabValue ? "tab-btn tab-btn--active" : "tab-btn";
+
 const isLoading = ref(true);
 const tablePaging = ref<any>({});
 const page = ref(1);
@@ -110,7 +118,7 @@ const filterConfig = [
   {
     type: "select" as const,
     key: "status",
-    options: ["Successful", "Pending", "Failed"],
+    options: ["Approved", "Pending", "Rejected"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
@@ -140,7 +148,7 @@ const tableBody = ref<any[]>([]);
 
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
+    `?page=${page.value}&status=${filterValues.status}&from_created_at=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to_created_at=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
 );
 
 const getDateFormatted = (date: string) => {
@@ -151,7 +159,7 @@ const getDateFormatted = (date: string) => {
 const openComplianceDetails = (data: any, customerName: string) => {
   router.push({
     name: "ComplianceDetails",
-    params: { id: data.id || data.reference || data.transaction_id || "new" },
+    params: { id: data.id || "New" },
     query: {
       business: data.business_name || data.business?.name || customerName,
       email: data.customer?.email || data.email || "",
@@ -170,7 +178,7 @@ const fetchCompliances = async (filters: string) => {
   isLoading.value = true;
   tablePaging.value.current_page = page;
   const response = await processAPIRequest({
-    action: getTransactions,
+    action: getCompliances,
     payload: { filters, page: page.value },
     showAlert: false,
   });
@@ -181,7 +189,7 @@ const fetchCompliances = async (filters: string) => {
     tableBody.value = response.data.map((data: any) => {
       const customerName = data.customer
         ? `${data.customer.firstname} ${data.customer.lastname}`
-        : "No customer info";
+        : "No business info";
       const customerEmail = data.customer ? data.customer.email : "";
 
       return {
@@ -211,6 +219,25 @@ const fetchCompliances = async (filters: string) => {
     });
 
     tablePaging.value = response.pagination[0] || {};
+
+    const data = response.data || [];
+    const total = data.length;
+    const approved = data.filter(
+      (d: any) => d.status?.toLowerCase() === "approved",
+    ).length;
+    const pending = data.filter(
+      (d: any) => d.status?.toLowerCase() === "pending",
+    ).length;
+    const rejected = data.filter(
+      (d: any) => d.status?.toLowerCase() === "rejected",
+    ).length;
+
+    complianceStats.value = [
+      { title: "Total Requests", value: total.toLocaleString() },
+      { title: "Approved", value: approved.toLocaleString() },
+      { title: "Pending", value: pending.toLocaleString() },
+      { title: "Rejected", value: rejected.toLocaleString() },
+    ];
   }
 };
 

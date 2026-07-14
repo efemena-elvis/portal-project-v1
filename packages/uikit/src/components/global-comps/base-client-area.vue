@@ -16,6 +16,36 @@
             <div class="brand-id">Admin</div>
           </div>
         </div>
+
+        <!-- DROPDOWN TOGGLER -->
+        <div
+          class="client-toggler"
+          ref="togglerRef"
+          @click="showDropdown = !showDropdown"
+        >
+          <div class="icon-caret-down"></div>
+        </div>
+
+        <!-- DROPDOWN -->
+        <div
+          class="app-dropdown"
+          ref="dialogRef"
+          v-if="showDropdown"
+          role="dialog"
+        >
+          <div class="dropdown-wrapper">
+            <router-link
+              to="/change-password"
+              class="app-dropdown-item"
+              @click="showDropdown = false"
+            >
+              <div class="text">Change Password</div>
+            </router-link>
+            <div class="app-dropdown-item" @click="handleResetMfa">
+              <div class="text">Reset MFA</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -27,14 +57,19 @@ import { useString, useClickOutside, useEvents } from "@packages/hooks";
 
 interface IClientAreaProps {
   businessProfile: any;
+  resetMfaAction: (userId: string) => Promise<any>;
 }
 
 const props = withDefaults(defineProps<IClientAreaProps>(), {
   businessProfile: () => ({}),
+  resetMfaAction: async () => {
+    console.warn("No resetMfaAction provided");
+    return Promise.resolve(null);
+  },
 });
 
-const { pushToastAlert } = useEvents();
 const { getStringInitials } = useString();
+const { pushToastAlert, processAPIRequest } = useEvents();
 
 const profileUtil = props.businessProfile;
 
@@ -45,9 +80,6 @@ const togglerRef = ref<HTMLElement | null>(null);
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
 
-const copied = ref<boolean>(false);
-
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUser = computed(() => profileUtil.getUser());
 
 const getUserDisplayName = computed(() => {
@@ -58,7 +90,26 @@ const getUserDisplayName = computed(() => {
   return `${first} ${last}`.trim() || "No business name";
 });
 
-// GET INITIALS
+const handleResetMfa = async () => {
+  showDropdown.value = false;
+
+  const userId = getUser.value?.id;
+  if (!userId) return;
+
+  const response = await processAPIRequest({
+    action: () => props.resetMfaAction(userId),
+    showAlert: false,
+  });
+
+  if (response?.code === 200) {
+    pushToastAlert({
+      message: "MFA reset successfully. Please login again.",
+      type: "success",
+    });
+    location.href = "/logout";
+  }
+};
+
 const getInitials = (brandName: string): string => getStringInitials(brandName);
 </script>
 
@@ -94,7 +145,11 @@ const getInitials = (brandName: string): string => getStringInitials(brandName);
       }
 
       .client-toggler {
-        @apply text-neutral-50/55 text-sm w-[8%];
+        @apply text-grey-600 text-sm w-[8%] cursor-pointer flex justify-center items-center;
+      }
+
+      .app-dropdown {
+        @apply w-[180px] top-10;
       }
     }
   }

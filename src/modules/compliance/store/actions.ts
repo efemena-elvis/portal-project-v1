@@ -11,28 +11,10 @@ const $api = new useServiceAPI({
   TOKEN_KEY: PORTAL_AUTH_TOKEN,
 });
 
-export const getCompliance = async () => {
+export const getCompliances = async () => {
   return await $api.fetch(complianceRoutes.getCompliance);
 };
 
 export const uploadCompliance = async (payload: any) => {
   return await $api.push(complianceRoutes.uploadCompliance, payload);
-};
-
-export const activateBusiness = async (payload: any) => {
-  return await $api.push(
-    `${complianceRoutes.activateBusiness}/${payload.complianceId}`,
-  );
-};
-
-export const getMerchantOnDraft = async () => {
-  return await $api.fetch(complianceRoutes.getDraftedMerchants);
-};
-
-export const onboardBulkMerchant = async (payload: any) => {
-  return await $api.push(complianceRoutes.onboardBulkMerchants, payload);
-};
-
-export const activateBulkMerchants = async () => {
-  return await $api.push(complianceRoutes.activateBulkMerchants, {});
 };

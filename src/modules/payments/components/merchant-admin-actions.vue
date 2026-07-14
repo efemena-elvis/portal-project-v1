@@ -15,6 +15,13 @@
       Login to account
     </button>
     <button
+      class="outline-action outline-action--success"
+      type="button"
+      @click="$emit('actionSelected', 'reset-mfa')"
+    >
+      Reset MFA
+    </button>
+    <button
       class="outline-action outline-action--danger"
       type="button"
       @click="$emit('actionSelected', 'delete')"
@@ -26,8 +33,8 @@
 
 <script setup lang="ts">
 defineEmits<{
-  actionSelected: [action: 'reset-password' | 'login' | 'delete']
-}>()
+  actionSelected: [action: "reset-password" | "login" | "reset-mfa" | "delete"];
+}>();
 </script>
 
 <style scoped lang="scss">

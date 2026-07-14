@@ -46,3 +46,7 @@ export const rejectMerchantPayoutRequest = async (id: string) => {
     `${merchantRoutes.rejectMerchantPayoutRequest}/${id}/payout-request/reject`,
   );
 };
+
+export const resetMerchantMfa = async (userId: string) => {
+  return await $api.push(merchantRoutes.resetMfa, { user_id: userId });
+};

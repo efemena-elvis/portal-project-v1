@@ -36,7 +36,9 @@
       v-if="showPayoutRequest"
       :payoutRequest="payoutRequest"
       :selectedCurrency="selectedCurrency"
-      @payoutActionSelected="(action: any) => $emit('payoutActionSelected', action)"
+      @payoutActionSelected="
+        (action: any) => $emit('payoutActionSelected', action)
+      "
     />
 
     <section v-if="showMetrics" class="metrics-card">
@@ -56,7 +58,10 @@
       </div>
 
       <div class="metrics-content">
-        <MerchantMetricsGrid :source="metricsSource" :selectedCurrency="selectedCurrency" />
+        <MerchantMetricsGrid
+          :source="metricsSource"
+          :selectedCurrency="selectedCurrency"
+        />
         <MerchantDonut :stats="transactionStats" />
       </div>
     </section>
@@ -66,75 +71,75 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useString, useEvents } from '@packages/hooks'
-import { usePaymentStore } from '@/modules/payments/store'
-import MerchantAdminActions from './merchant-admin-actions.vue'
-import MerchantDonut from './merchant-donut.vue'
-import MerchantPayoutCard from './merchant-payout-card.vue'
-import MerchantMetricsGrid from './merchant-metrics-grid.vue'
+import { computed, ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useString, useEvents } from "@packages/hooks";
+import { usePaymentStore } from "@/modules/payments/store";
+import MerchantAdminActions from "./merchant-admin-actions.vue";
+import MerchantDonut from "./merchant-donut.vue";
+import MerchantPayoutCard from "./merchant-payout-card.vue";
+import MerchantMetricsGrid from "./merchant-metrics-grid.vue";
 
-type MerchantAction = 'reset-password' | 'login' | 'delete'
-type PayoutAction = 'approve' | 'reject'
+type MerchantAction = "reset-password" | "login" | "reset-mfa" | "delete";
+type PayoutAction = "approve" | "reject";
 
 const props = withDefaults(
   defineProps<{
-    merchantId: string
-    merchantDetails?: Record<string, any> | null
-    businessName?: string
-    businessStatus?: string
-    showAdminActions?: boolean
-    showPayoutRequest?: boolean
-    showMetrics?: boolean
-    entityType?: string
+    merchantId: string;
+    merchantDetails?: Record<string, any> | null;
+    businessName?: string;
+    businessStatus?: string;
+    showAdminActions?: boolean;
+    showPayoutRequest?: boolean;
+    showMetrics?: boolean;
+    entityType?: string;
   }>(),
   {
     merchantDetails: null,
-    businessName: 'Tech-village Inc',
-    businessStatus: 'Verified',
+    businessName: "Tech-village Inc",
+    businessStatus: "Verified",
     showAdminActions: true,
     showPayoutRequest: true,
     showMetrics: true,
-    entityType: '',
+    entityType: "",
   },
-)
+);
 
 defineEmits<{
-  actionSelected: [action: MerchantAction]
-  payoutActionSelected: [action: PayoutAction]
-}>()
+  actionSelected: [action: MerchantAction];
+  payoutActionSelected: [action: PayoutAction];
+}>();
 
-const router = useRouter()
-const { formatNumber } = useString()
-const { processAPIRequest } = useEvents()
-const { getTransactions } = usePaymentStore()
+const router = useRouter();
+const { formatNumber } = useString();
+const { processAPIRequest } = useEvents();
+const { getTransactions } = usePaymentStore();
 
-const selectedCurrency = ref('NGN')
-const currencyOptions = ['NGN', 'GHS', 'TZS', 'ZMW', 'USD']
+const selectedCurrency = ref("NGN");
+const currencyOptions = ["NGN", "GHS", "TZS", "ZMW", "USD"];
 const currencySymbols: Record<string, string> = {
-  NGN: '\u20A6',
-  GHS: 'GHS',
-  TZS: 'TSh',
-  ZMW: 'ZK',
-  USD: '$',
-}
+  NGN: "\u20A6",
+  GHS: "GHS",
+  TZS: "TSh",
+  ZMW: "ZK",
+  USD: "$",
+};
 
-const isLoadingStats = ref(false)
+const isLoadingStats = ref(false);
 const transactionStats = ref<{ title: string; value: number }[]>([
-  { title: 'Total Transactions', value: 0 },
-  { title: 'Completed', value: 0 },
-  { title: 'Pending', value: 0 },
-  { title: 'Failed', value: 0 },
-])
+  { title: "Total Transactions", value: 0 },
+  { title: "Completed", value: 0 },
+  { title: "Pending", value: 0 },
+  { title: "Failed", value: 0 },
+]);
 
-const detail = computed(() => props.merchantDetails || {})
+const detail = computed(() => props.merchantDetails || {});
 const payoutRequest = computed(
   () => detail.value.payout_request || detail.value.payoutRequest || {},
-)
+);
 const metricsSource = computed(
   () => detail.value.metrics || detail.value.summary || {},
-)
+);
 
 const businessName = computed(
   () =>
@@ -142,71 +147,82 @@ const businessName = computed(
     detail.value.businessName ||
     detail.value.name ||
     props.businessName,
-)
+);
 const businessType = computed(
-  () => detail.value.type || detail.value.business_type || 'Merchant',
-)
+  () => detail.value.type || detail.value.business_type || "Merchant",
+);
 const countryName = computed(
   () =>
     detail.value.country?.name ||
     detail.value.country_name ||
     detail.value.country ||
-    'Tanzania',
-)
+    "Tanzania",
+);
 const businessLogo = computed(
   () =>
     detail.value.logo ||
     detail.value.business_logo ||
     detail.value.avatar ||
-    '',
-)
+    "",
+);
 const businessInitials = computed(() =>
   businessName.value
-    .split(' ')
+    .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((part: string) => part[0])
-    .join('')
+    .join("")
     .toUpperCase(),
-)
+);
 
 const fetchStats = async () => {
-  if (!props.merchantId) return
-  isLoadingStats.value = true
+  if (!props.merchantId) return;
+  isLoadingStats.value = true;
 
-  const base = `?page_size=1&user_id=${props.merchantId}`
+  const base = `?page_size=1&user_id=${props.merchantId}`;
   const call = (filters: string) =>
-    processAPIRequest({ action: getTransactions, payload: { filters }, showAlert: false })
+    processAPIRequest({
+      action: getTransactions,
+      payload: { filters },
+      showAlert: false,
+    });
 
   const [totalRes, completedRes, pendingRes, failedRes] = await Promise.all([
     call(base),
     call(`${base}&status=completed`),
     call(`${base}&status=pending`),
     call(`${base}&status=failed`),
-  ])
+  ]);
 
-  isLoadingStats.value = false
+  isLoadingStats.value = false;
 
   const parseTotal = (res: any) => {
-    const src = res?.pagination?.[0] || res?.data
-    return src?.total_records || src?.total || 0
-  }
+    const src = res?.pagination?.[0] || res?.data;
+    return src?.total_records || src?.total || 0;
+  };
 
   transactionStats.value = [
-    { title: 'Total Transactions', value: parseTotal(totalRes) },
-    { title: 'Completed', value: parseTotal(completedRes) },
-    { title: 'Pending', value: parseTotal(pendingRes) },
-    { title: 'Failed', value: parseTotal(failedRes) },
-  ]
-}
+    { title: "Total Transactions", value: parseTotal(totalRes) },
+    { title: "Completed", value: parseTotal(completedRes) },
+    { title: "Pending", value: parseTotal(pendingRes) },
+    { title: "Failed", value: parseTotal(failedRes) },
+  ];
+};
 
 const handleGoBack = () => {
-  router.back()
-}
+  router.back();
+};
 
-watch(() => props.merchantId, () => { fetchStats() })
+watch(
+  () => props.merchantId,
+  () => {
+    fetchStats();
+  },
+);
 
-onMounted(() => { fetchStats() })
+onMounted(() => {
+  fetchStats();
+});
 </script>
 
 <style scoped lang="scss">

@@ -70,7 +70,7 @@ defineProps({
 
 <style lang="scss" scoped>
 .auth-wrapper {
-  @apply relative w-[55%] lg:w-[65%] sm:w-full mx-auto h-full bg-[#ffffff] p-8 rounded-[14px];
+  @apply relative w-[55%]  lg:w-[65%] sm:w-full mx-auto h-full bg-[#ffffff] p-8 rounded-[14px];
 
   .brand-logo {
     @apply w-[132px] h-auto mb-8;

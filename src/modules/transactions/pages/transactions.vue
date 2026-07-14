@@ -100,37 +100,45 @@ const { pushToastAlert } = useEvents();
 const { formatNumber, capitalizeFirstLetter } = useString();
 
 const handleExport = async () => {
-  const allTransactions = await fetchAllTransactionPages()
+  const allTransactions = await fetchAllTransactionPages();
 
   if (!allTransactions.length) {
     pushToastAlert({
       message: "No data to export",
       description: "No transactions match the current filters.",
       type: "warning",
-    })
-    return
+    });
+    return;
   }
 
   const getDateCreated = (date: string) => {
-    const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll()
-    return `${w2}, ${d3} ${m3}, ${y1}`
-  }
+    const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+    return `${w2}, ${d3} ${m3}, ${y1}`;
+  };
 
   const cleanData = allTransactions.map((tx: any) => ({
     Date: tx.created_at
       ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
       : "-",
+
+    Name:
+      [tx.first_name, tx.last_name]
+        .filter(Boolean)
+        .map(capitalizeFirstLetter)
+        .join(" ") || "-",
     Email: tx.email || "-",
+    "Phone Number": tx.phone || "-",
     "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
     Currency: tx.currency || "-",
     Amount: formatNumber(tx.amount ?? 0),
-    Status: capitalizeFirstLetter(
-      tx.status === "completed" ? "Successful" : tx.status || "-",
-    ),
-  }))
+    Fee: formatNumber(tx.fee ?? 0),
+    Status: capitalizeFirstLetter(tx.status || "-"),
 
-  exportXLSX(cleanData, "Transactions_Data.xlsx", "Transactions")
-}
+    Reason: tx.failure_reason || "-",
+  }));
+
+  exportXLSX(cleanData, "Transactions_Data.xlsx", "Transactions");
+};
 </script>
 
 <style scoped lang="scss">

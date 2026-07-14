@@ -1,12 +1,15 @@
 import { useServiceAPI, useStorage } from "@packages/hooks";
 import { authRoutes } from "./auth-routes";
 import { useAuthMutations } from "./mutations";
+import { useAuthState } from "./state";
 import { IAPIType } from "@packages/models";
 import constants from "@/shared/utilities/constants";
 
 const { getStorage } = useStorage();
 
-export function useAuthActions() {
+type AuthMutations = ReturnType<typeof useAuthMutations>;
+
+export function useAuthActions(mutations: AuthMutations) {
   const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
     constants;
 
@@ -16,7 +19,7 @@ export function useAuthActions() {
     TOKEN_KEY: PORTAL_AUTH_TOKEN,
   });
 
-  const { mutateUserData } = useAuthMutations();
+  const { mutateUserData } = mutations;
 
   const loginUser = async (payload: any): Promise<IAPIType> => {
     const response: any = await $api.push(authRoutes.login, payload);
@@ -51,6 +54,34 @@ export function useAuthActions() {
     location.href = "/";
   };
 
+  const setupMfa = async (): Promise<IAPIType> => {
+    const response: any = await $api.push(authRoutes.mfaSetup, {});
+    return response;
+  };
+
+  const verifyMfaOtp = async (payload: { code: string }): Promise<IAPIType> => {
+    const response: any = await $api.push(authRoutes.mfaVerify, payload);
+    response?.code === 200 && mutateUserData(response?.data);
+    return response;
+  };
+
+  const verifyLogin = async (payload: {
+    email: string;
+    mfa_code: string;
+  }): Promise<IAPIType> => {
+    const response: any = await $api.push(authRoutes.verifyLogin, payload);
+    response?.code === 200 && mutateUserData(response?.data);
+    return response;
+  };
+
+  const changeUserPassword = async (payload: any) => {
+    return await $api.push(authRoutes.changePassword, payload);
+  };
+
+  const resetAdminMfa = async (userId: string) => {
+    return await $api.push(authRoutes.resetMfa, { user_id: userId });
+  };
+
   return {
     loginUser,
     signupUser,
@@ -59,6 +90,11 @@ export function useAuthActions() {
     sendVerifyEmailOTP,
     verifyEmailOTP,
     logoutUser,
+    setupMfa,
+    verifyMfaOtp,
+    verifyLogin,
+    changeUserPassword,
+    resetAdminMfa,
   };
 }
 
@@ -86,7 +122,7 @@ export const refreshAccessToken = async () => {
     const json = await res.json();
     if (json?.code === 200 && json.data) {
       const { mutateAuthToken: setToken, mutateRefreshToken: setRefresh } =
-        useAuthMutations();
+        useAuthMutations(useAuthState());
       setToken(json.data);
       setRefresh(json.data);
       return json.data.access_token || json.data.auth_token || null;

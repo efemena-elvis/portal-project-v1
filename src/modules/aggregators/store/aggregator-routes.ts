@@ -5,4 +5,5 @@ export const aggregatorRoutes = {
   resetAggregatorPassword: "aggregators",
   loginAggregatorAccount: "aggregators",
   deleteAggregator: "aggregators",
+  resetMfa: "admin/users/mfa/reset",
 };

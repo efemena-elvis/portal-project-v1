@@ -63,3 +63,7 @@ export const loginAggregatorAccount = async (id: string) => {
 export const deleteAggregator = async (id: string) => {
   return await getApi().delete(`${aggregatorRoutes.deleteAggregator}/${id}`);
 };
+
+export const resetAggregatorMfa = async (userId: string) => {
+  return await getApi().push(aggregatorRoutes.resetMfa, { user_id: userId });
+};

@@ -41,41 +41,46 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useDate, useString } from '@packages/hooks'
+import { computed } from "vue";
+import { useDate, useString } from "@packages/hooks";
 
 const props = defineProps<{
-  payoutRequest: Record<string, any>
-  selectedCurrency: string
-}>()
+  payoutRequest: Record<string, any>;
+  selectedCurrency: string;
+}>();
 
 defineEmits<{
-  payoutActionSelected: [action: 'approve' | 'reject']
-}>()
+  payoutActionSelected: [action: "approve" | "reject"];
+}>();
 
-const { formatNumber } = useString()
+const { formatNumber } = useString();
 
 const payoutDate = computed(() => {
-  const rawDate = props.payoutRequest.date || props.payoutRequest.created_at
-  if (!rawDate) return '12th April, 2022'
-  const { d3, m3, y1 } = useDate.formatDate(rawDate).getAll()
-  return `${d3} ${m3}, ${y1}`
-})
+  const rawDate = props.payoutRequest.date || props.payoutRequest.created_at;
+  if (!rawDate) return "12th April, 2022";
+  const { d3, m3, y1 } = useDate.formatDate(rawDate).getAll();
+  return `${d3} ${m3}, ${y1}`;
+});
 
 const payoutAmount = computed(() => {
-  const amount = props.payoutRequest.amount || props.payoutRequest.amount_requested
-  const currency = props.payoutRequest.currency || props.selectedCurrency
-  if (!amount) return '$30,000'
-  return `${currency} ${formatNumber(amount)}`
-})
+  const amount =
+    props.payoutRequest.amount || props.payoutRequest.amount_requested;
+  const currency = props.payoutRequest.currency || props.selectedCurrency;
+  if (!amount) return "$30,000";
+  return `${currency} ${formatNumber(amount)}`;
+});
 
 const payoutSortCode = computed(
-  () => props.payoutRequest.sort_code || props.payoutRequest.sortCode || '014004',
-)
+  () =>
+    props.payoutRequest.sort_code || props.payoutRequest.sortCode || "014004",
+);
 
 const payoutAccountNumber = computed(
-  () => props.payoutRequest.account_number || props.payoutRequest.accountNumber || '012703765',
-)
+  () =>
+    props.payoutRequest.account_number ||
+    props.payoutRequest.accountNumber ||
+    "012703765",
+);
 </script>
 
 <style scoped lang="scss">

@@ -2,7 +2,10 @@
   <div class="base-sidebar">
     <!-- CLIENT BUSINESS AREA -->
 
-    <BaseClientArea :businessProfile="businessProfile" />
+    <BaseClientArea
+      :businessProfile="businessProfile"
+      :resetMfaAction="resetMfaAction"
+    />
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
@@ -103,6 +106,7 @@ import BaseClientArea from "./base-client-area.vue";
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
+  resetMfaAction: (userId: string) => Promise<any>;
   badgeConfig?: Record<string, number>;
 }
 
@@ -117,6 +121,10 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
     bottomLevel: [],
   }),
   businessProfile: () => ({}),
+  resetMfaAction: async () => {
+    console.warn("No resetMfaAction provided");
+    return Promise.resolve(null);
+  },
   setActiveStore: () => {},
   activeStore: () => ({}),
   storeList: () => [],

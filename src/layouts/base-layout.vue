@@ -11,6 +11,7 @@
           :routes="sidebarRoutes"
           :businessProfile="profileUtil"
           :badgeConfig="sidebarBadgeConfig"
+          :resetMfaAction="resetAdminMfa"
         />
       </div>
 
@@ -35,15 +36,15 @@ import { useColor, useProfile, useEvents } from "@packages/hooks";
 import { BaseSidebar } from "@packages/uikit";
 import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
-import { usePaymentStore } from "@/modules/payments/store";
-
+import { useComplianceStore } from "@/modules/compliance/store";
 import { useApprovalsStore } from "@/modules/approvals/store";
 import { useTransactionStore } from "@/modules/transactions/store";
 
 const route = useRoute();
 
 const authStore = useAuthStore();
-const { getTransactions } = usePaymentStore();
+const { resetAdminMfa } = authStore;
+const { getCompliances } = useComplianceStore() as any;
 const { getAllWithdrawalRequests } = useApprovalsStore();
 const { getAllApprovals } = useApprovalsStore();
 const { getAllTransactions } = useTransactionStore();
@@ -63,17 +64,7 @@ const toggleMobileSidebar = () => {
 };
 
 const getPendingCount = (response: any) => {
-  const pagination = Array.isArray(response?.pagination)
-    ? (response.pagination[0] ?? {})
-    : (response?.pagination ?? {});
-  return Number(
-    pagination.page_count ??
-      pagination.total_count ??
-      pagination.total ??
-      response?.data?.total_records ??
-      response?.data?.length ??
-      0,
-  );
+  return Number(response?.data?.total_records ?? 0);
 };
 
 const getSidebarPendingData = async () => {
@@ -84,7 +75,7 @@ const getSidebarPendingData = async () => {
     withdrawalResponse,
   ] = await Promise.all([
     processAPIRequest({
-      action: getTransactions,
+      action: getCompliances,
       payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
       showAlert: false,
     }),
@@ -108,8 +99,7 @@ const getSidebarPendingData = async () => {
   sidebarBadgeConfig.value = {
     Compliance: getPendingCount(complianceResponse),
     Approvals:
-      getPendingCount(approvalResponse) +
-      getPendingCount(withdrawalResponse),
+      getPendingCount(approvalResponse) + getPendingCount(withdrawalResponse),
     Transactions: getPendingCount(transactionResponse),
   };
 };

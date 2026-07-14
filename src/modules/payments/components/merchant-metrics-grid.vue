@@ -1,10 +1,6 @@
 <template>
   <div class="metric-grid">
-    <article
-      v-for="metric in metrics"
-      :key="metric.label"
-      class="metric-tile"
-    >
+    <article v-for="metric in metrics" :key="metric.label" class="metric-tile">
       <p>{{ metric.label }}</p>
       <strong>{{ metric.value }}</strong>
     </article>
@@ -12,49 +8,49 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useString } from '@packages/hooks'
+import { computed } from "vue";
+import { useString } from "@packages/hooks";
 
 const props = defineProps<{
-  source: Record<string, any>
-  selectedCurrency: string
-}>()
+  source: Record<string, any>;
+  selectedCurrency: string;
+}>();
 
 const currencySymbols: Record<string, string> = {
-  NGN: '\u20A6',
-  GHS: 'GHS',
-  TZS: 'TSh',
-  ZMW: 'ZK',
-  USD: '$',
-}
+  NGN: "\u20A6",
+  GHS: "GHS",
+  TZS: "TSh",
+  ZMW: "ZK",
+  USD: "$",
+};
 
-const { formatNumber } = useString()
+const { formatNumber } = useString();
 
 const formatMetric = (value: unknown, fallback: string) => {
-  if (value === undefined || value === null || value === '') return fallback
-  if (typeof value === 'number')
-    return `${currencySymbols[props.selectedCurrency] || ''}${formatNumber(value)}`
-  return `${value}`
-}
+  if (value === undefined || value === null || value === "") return fallback;
+  if (typeof value === "number")
+    return `${currencySymbols[props.selectedCurrency] || ""}${formatNumber(value)}`;
+  return `${value}`;
+};
 
 const metrics = computed(() => [
   {
-    label: 'Available Balance',
-    value: formatMetric(props.source.available_balance, '$52,000'),
+    label: "Available Balance",
+    value: formatMetric(props.source.available_balance, "$52,000"),
   },
   {
-    label: 'Total Transactions',
-    value: formatMetric(props.source.total_transactions, 'Z52,000'),
+    label: "Total Transactions",
+    value: formatMetric(props.source.total_transactions, "Z52,000"),
   },
   {
-    label: 'Total Payout',
-    value: formatMetric(props.source.total_payout, 'Z52,000'),
+    label: "Total Payout",
+    value: formatMetric(props.source.total_payout, "Z52,000"),
   },
   {
-    label: 'Refunds',
-    value: formatMetric(props.source.refunds, 'Z52,000'),
+    label: "Refunds",
+    value: formatMetric(props.source.refunds, "Z52,000"),
   },
-])
+]);
 </script>
 
 <style scoped lang="scss">

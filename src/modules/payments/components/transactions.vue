@@ -44,53 +44,54 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, reactive, watch, onMounted, h } from "vue"
-import { TableHeaderType } from "@packages/models"
-import { useDate, useString, useEvents } from "@packages/hooks"
+import { computed, ref, reactive, watch, onMounted, h } from "vue";
+import { TableHeaderType } from "@packages/models";
+import { useDate, useString, useEvents } from "@packages/hooks";
 import {
   FilterBar,
   Pagination,
   TableContainer,
   TableContainerBody,
   TableDoubleColumn,
-} from "@packages/uikit"
-import { usePaymentStore } from "@/modules/payments/store"
-import { safeExport } from "@/shared/utils/export"
+} from "@packages/uikit";
+import { usePaymentStore } from "@/modules/payments/store";
+import { exportXLSX } from "@/shared/utils/export";
 
 interface MerchantTransaction {
-  date: string
-  createdAt: string
-  customer: string
-  customerSecondary: string
-  paymentMethod: string
-  amount: string
-  status: string
-  reference: string
-  type: string
+  date: string;
+  createdAt: string;
+  customer: string;
+  customerSecondary: string;
+  paymentMethod: string;
+  amount: string;
+  status: string;
+  reference: string;
+  type: string;
 }
 
 const props = withDefaults(
   defineProps<{
-    merchantId?: string
-    merchantDetails?: Record<string, any> | null
+    merchantId?: string;
+    merchantDetails?: Record<string, any> | null;
   }>(),
   { merchantId: "", merchantDetails: null },
-)
+);
 
-const { getTransactions } = usePaymentStore()
-const { processAPIRequest } = useEvents()
-const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } = useString()
+const { getTransactions, fetchAllPaymentTransactions } = usePaymentStore();
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } =
+  useString();
 
-const isLoading = ref(false)
-const page = ref(1) 
-const tablePaging = ref<any>({})
+const isLoading = ref(false);
+const page = ref(1);
+const tablePaging = ref<any>({});
 
 const filterValues = reactive({
   search: "",
   paymentMethod: "",
   status: "",
   period: null as [Date, Date] | null,
-})
+});
 
 const filterConfig = [
   { type: "search" as const, key: "search", placeholder: "Search" },
@@ -103,22 +104,21 @@ const filterConfig = [
   {
     type: "select" as const,
     key: "status",
-    options: ["Completed", "Pending", "Failed"],
+    options: ["Completed", "Pending", "Failed", "Cancelled"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
-]
+];
 
 const onFilterChange = ({ key, value }: { key: string; value: any }) => {
   if (key === "period") {
-    filterValues.period = value?.length === 2
-      ? [new Date(value[0]), new Date(value[1])]
-      : null
+    filterValues.period =
+      value?.length === 2 ? [new Date(value[0]), new Date(value[1])] : null;
   } else {
-    (filterValues as any)[key] = value
+    (filterValues as any)[key] = value;
   }
-  page.value = 1
-}
+  page.value = 1;
+};
 
 const tableHeader: TableHeaderType[] = [
   { title: "Date", slug: "date" },
@@ -127,37 +127,38 @@ const tableHeader: TableHeaderType[] = [
   { title: "Reference", slug: "reference" },
   { title: "Amount", slug: "amount" },
   { title: "Status", slug: "status" },
-]
+];
 
 const formatDate = (date?: string) => {
-  if (!date) return "-"
-  const { m3, d3, y1, h1, b2, a0 } = useDate.formatDate(date).getAll()
-  return `${m3} ${d3}, ${y1} ${h1}:${b2} ${a0}`
-}
+  if (!date) return "-";
+  const { m3, d3, y1, h1, b2, a0 } = useDate.formatDate(date).getAll();
+  return `${m3} ${d3}, ${y1} ${h1}:${b2} ${a0}`;
+};
 
 const getDateCreated = (date: string) => {
-  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll()
-  return `${w2}, ${d3} ${m3}, ${y1}`
-}
+  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
 
 const getCustomerName = (data: any) => {
-  if (!data) return "-"
-  const firstName = data.first_name
-  const lastName = data.last_name
-  if (firstName || lastName) return `${firstName || ""} ${lastName || ""}`.trim()
-  const account = data.account_number
-  if (account) return account
-  return data.reference || "-"
-}
+  if (!data) return "-";
+  const firstName = data.first_name;
+  const lastName = data.last_name;
+  if (firstName || lastName)
+    return `${firstName || ""} ${lastName || ""}`.trim();
+  const account = data.account_number;
+  if (account) return account;
+  return data.reference || "-";
+};
 
 const getCustomerSecondary = (data: any) => {
-  if (!data) return "-"
-  const email = data.email
-  if (email) return email
-  const phone = data.phone
-  if (phone) return phone
-  return "-"
-}
+  if (!data) return "-";
+  const email = data.email;
+  if (email) return email;
+  const phone = data.phone;
+  if (phone) return phone;
+  return "-";
+};
 
 const normalizeTransaction = (
   transaction: Record<string, any>,
@@ -168,80 +169,86 @@ const normalizeTransaction = (
   customerSecondary: getCustomerSecondary(transaction),
   paymentMethod: transaction.method || "-",
   reference: transaction.reference || "-",
-  amount: transaction.amount ? `${transaction.currency} ${formatNumber(transaction.amount)}` : "-",
+  amount: transaction.amount
+    ? `${transaction.currency} ${formatNumber(transaction.amount)}`
+    : "-",
   status: (transaction.status || "").toLowerCase(),
   type: transaction.type || "-",
-})
+});
 
-const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z")
+const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z");
 const fmtEndISO = (date: Date) => {
-  const end = new Date(date)
-  end.setHours(23, 59, 59, 999)
-  return end.toISOString().replace(/\.\d+Z$/, "Z")
-}
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  return end.toISOString().replace(/\.\d+Z$/, "Z");
+};
 
 const apiFilters = computed(() => {
-
-  let filters = `?page=${page.value}&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}`
+  let filters = `?page=${page.value}&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}`;
 
   if (filterValues.paymentMethod)
-    filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`
+    filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`;
 
   if (filterValues.period) {
-    filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`
-    filters += `&to_created_at=${fmtEndISO(filterValues.period[1])}`
+    filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`;
+    filters += `&to_created_at=${fmtEndISO(filterValues.period[1])}`;
   }
-  return filters
-})
+  return filters;
+});
 
-const transactions = ref<MerchantTransaction[]>([])
-let debounceTimer: ReturnType<typeof setTimeout> | null = null
+const transactions = ref<MerchantTransaction[]>([]);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const fetchTransactions = async () => {
-  if (!props.merchantId) return
-  isLoading.value = true
+  if (!props.merchantId) return;
+  isLoading.value = true;
 
   const response = await processAPIRequest({
     action: getTransactions,
     payload: { filters: apiFilters.value, page: page.value },
     showAlert: false,
-  })
+  });
 
-  isLoading.value = false
+  isLoading.value = false;
 
-  if (response?.code !== 200) return
+  if (response?.code !== 200) return;
 
-  const data = response.data
+  const data = response.data;
   const transactionsList = Array.isArray(data)
     ? data
-    : data?.transactions || []
+    : data?.transactions || [];
 
   transactions.value = transactionsList
     .map((t: Record<string, any>) => {
-      try { return normalizeTransaction(t) } catch { return null }
+      try {
+        return normalizeTransaction(t);
+      } catch {
+        return null;
+      }
     })
-    .filter(Boolean) as MerchantTransaction[]
+    .filter(Boolean) as MerchantTransaction[];
 
-  const src = response.pagination?.[0] || data
-  const totalRecords = src.total_records || 0
-  const pageSize = src.page_size || 10
-  const pageCount = Math.ceil(totalRecords / pageSize) || 0
+  const src = response.pagination?.[0] || data;
+  const totalRecords = src.total_records || 0;
+  const pageSize = src.page_size || 10;
+  const pageCount = Math.ceil(totalRecords / pageSize) || 0;
   tablePaging.value = {
     current_page: src.current_page || src.page || page.value,
     page_count: pageCount,
     total_pages_count: pageCount,
-  }
-}
+  };
+};
 
 const onPageChange = (pageNum: number) => {
-  page.value = pageNum
-}
-
+  page.value = pageNum;
+};
 
 const filteredTableBody = computed(() =>
   transactions.value.map((transaction) => {
-    const key = transaction.status === "completed" ? "successful" : transaction.status
-    const label = transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)
+    const key =
+      transaction.status === "completed" ? "successful" : transaction.status;
+    const label =
+      transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
     return {
       date: h(TableDoubleColumn, {
         entry: {
@@ -257,43 +264,89 @@ const filteredTableBody = computed(() =>
       }),
       payment_method: h(TableDoubleColumn, {
         entry: {
-          primaryText: capitalizeFirstLetter(transaction.paymentMethod.replace(/_/g, " ")),
-          secondaryText: capitalizeFirstLetter(transaction.type.replace(/_/g, " ")),
+          primaryText: capitalizeFirstLetter(
+            transaction.paymentMethod.replace(/_/g, " "),
+          ),
+          secondaryText: capitalizeFirstLetter(
+            transaction.type.replace(/_/g, " "),
+          ),
         },
       }),
       reference: transaction.reference,
       amount: getBoldTableText(transaction.amount),
       status: getStatus(key, label),
-    }
+    };
   }),
-)
+);
 
 watch(
   () => [props.merchantId, apiFilters.value] as const,
   () => {
-    if (debounceTimer) clearTimeout(debounceTimer)
-    debounceTimer = setTimeout(fetchTransactions, 300)
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fetchTransactions, 300);
   },
-)
+);
 
 onMounted(() => {
-  if (props.merchantId) fetchTransactions()
-})
+  if (props.merchantId) fetchTransactions();
+});
 
-const exportToExcel = () => {
-  const cleanData = transactions.value.map(
-    ({ date, customer, customerSecondary, paymentMethod, amount, status }) => ({
-      Date: date,
-      Customer: customer,
-      Email: customerSecondary,
-      "Payment Method": paymentMethod,
-      Amount: amount,
-      Status: status,
-    }),
-  )
+const exportToExcel = async () => {
+  const exportFilters =
+    `?page=1&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}` +
+    (filterValues.paymentMethod
+      ? `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`
+      : "") +
+    (filterValues.period
+      ? `&from_created_at=${fmtStartISO(filterValues.period[0])}&to_created_at=${fmtEndISO(filterValues.period[1])}`
+      : "");
 
-  safeExport(cleanData, `Merchant_${props.merchantId}_Transactions.xlsx`, 'Merchant Transactions')
-}
+  const response = await processAPIRequest({
+    action: fetchAllPaymentTransactions,
+    payload: { filters: exportFilters },
+    showAlert: false,
+  });
+
+  if (response?.code !== 200) return;
+
+  const allTransactions = Array.isArray(response.data)
+    ? response.data
+    : response.data?.transactions || [];
+
+  if (!allTransactions.length) {
+    pushToastAlert({
+      message: "No data to export",
+      description: "No transactions match the current filters.",
+      type: "warning",
+    });
+    return;
+  }
+
+  const cleanData = allTransactions.map((tx: any) => ({
+    Date: tx.created_at
+      ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
+      : "-",
+    Name:
+      [tx.first_name, tx.last_name]
+        .filter(Boolean)
+        .map(capitalizeFirstLetter)
+        .join(" ") || "-",
+    Email: tx.email || "-",
+    "Phone Number": tx.phone || "-",
+    "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
+    Currency: tx.currency || "-",
+    Amount: formatNumber(tx.amount ?? 0),
+    Fee: formatNumber(tx.fee ?? 0),
+    Status: capitalizeFirstLetter(tx.status || "-"),
+    Reason: tx.failure_reason || "-",
+  }));
+
+  exportXLSX(
+    cleanData,
+    `Merchant_${props.merchantId}_Transactions.xlsx`,
+    "Merchant Transactions",
+  );
+};
 </script>
 
 <style scoped lang="scss">

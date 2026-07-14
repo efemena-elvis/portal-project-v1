@@ -67,20 +67,38 @@
 
     <template #modal-cover-footer>
       <div v-if="showActions" class="modal-cover-footer request-modal-footer">
-        <button
-          class="action-btn reject-btn"
-          type="button"
-          @click="$emit('reject')"
-        >
-          Reject
-        </button>
-        <button
-          class="action-btn approve-btn"
-          type="button"
-          @click="$emit('approve')"
-        >
-          Approve
-        </button>
+        <template v-if="request.isFunding">
+          <button
+            class="action-btn cancel-btn"
+            type="button"
+            @click="$emit('cancel')"
+          >
+            Cancel
+          </button>
+          <button
+            class="action-btn approve-btn"
+            type="button"
+            @click="$emit('approve')"
+          >
+            Approve
+          </button>
+        </template>
+        <template v-else>
+          <button
+            class="action-btn reject-btn"
+            type="button"
+            @click="$emit('reject')"
+          >
+            Reject
+          </button>
+          <button
+            class="action-btn approve-btn"
+            type="button"
+            @click="$emit('approve')"
+          >
+            Approve
+          </button>
+        </template>
       </div>
     </template>
   </ModalDialog>
@@ -104,6 +122,7 @@ export type RequestDetail = {
   bankName?: string;
   accountName?: string;
   narration?: string;
+  isFunding?: boolean;
 };
 
 const props = withDefaults(
@@ -121,6 +140,7 @@ defineEmits<{
   closeTriggered: [];
   approve: [];
   reject: [];
+  cancel: [];
   goToMerchant: [];
 }>();
 
@@ -221,6 +241,10 @@ const statusClass = computed(() => {
 
 .reject-btn {
   @apply border-pink-600 bg-pink-600 hover:bg-pink-700;
+}
+
+.cancel-btn {
+  @apply border-grey-300 bg-white text-grey-700 hover:bg-grey-50;
 }
 
 .approve-btn {

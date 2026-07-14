@@ -11,7 +11,7 @@
           header.tableDataClass,
           renderLogicClass(header, tableData[header.slug]),
         ]"
-        class="break-all whitespace-normal max-w-[220px]"
+        class="break-all whitespace-normal max-w-[230px]"
       >
         <template v-if="isVNode(tableData[header.slug])">
           <!-- Render the VNode directly if it is a component -->

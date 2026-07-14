@@ -1,5 +1,5 @@
 export const approvalRoutes = {
-  getApprovals: "wallet-fundings",
+  getApprovals: "admin/wallet-fundings",
   decideApproval: "admin/wallet-fundings",
   getAllWithdrawalRequests: "admin/wallet-transfers",
 };

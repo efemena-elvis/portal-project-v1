@@ -12,7 +12,7 @@
         :inputType="IInputType.Email"
         inputPlaceholder="hello@companyname.com"
         :isRequired="true"
-        @inputChanged="payload.email_address = $event"
+        @inputChanged="payload.email = $event"
         @inputValidated="emailValidity = $event"
         :errorHandler="{
           validator: 'validateEmail',
@@ -46,11 +46,11 @@ import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
 
 type IPayloadInputType = {
-  emailAdress: string;
+  email: string;
 };
 
 const payload = ref<IPayloadInputType>({
-  emailAdress: "",
+  email: "",
 });
 
 const emailValidity = ref<boolean>(false);
@@ -60,12 +60,11 @@ const { requestUserPassword } = useAuthStore();
 const { processAPIRequest } = useEvents();
 
 const isActionReady = computed(() => {
-  return !(payload.value.emailAdress && emailValidity.value);
+  return !(payload.value.email && emailValidity.value);
 });
 
 const getPayload = computed(() => {
-  const { emailAdress } = payload.value;
-  return { email_address: emailAdress };
+  return { email: payload.value.email };
 });
 
 const handleUserPasswordRequest = async () => {
@@ -89,7 +88,7 @@ const handleUserPasswordRequest = async () => {
   });
 
   if (response.code === 200) {
-    setTimeout(() => (location.href = "/login"), 2000);
+    setTimeout(() => location.replace("/reset-password"), 2000);
   }
 };
 </script>

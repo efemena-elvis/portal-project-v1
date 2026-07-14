@@ -84,7 +84,7 @@ export function useTransactionsData() {
     {
       type: "select" as const,
       key: "status",
-      options: ["Completed", "Pending", "Failed"],
+      options: ["Completed", "Pending", "Failed", "Cancelled"],
       placeholder: "Status",
     },
     { type: "date" as const, key: "period" },
@@ -237,7 +237,7 @@ export function useTransactionsData() {
   };
 
   const fetchTransactionStats = async () => {
-    const base = `?page=1&page_size=100&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search}`;
+    const base = `?page=1&page_size=100&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
 
     if (filterValues.status) {
       const statusRes = await processAPIRequest({

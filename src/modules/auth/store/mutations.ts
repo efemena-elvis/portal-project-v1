@@ -13,9 +13,12 @@ const {
   PORTAL_REFRESH_TOKEN,
 } = constants;
 
-export function useAuthMutations() {
+type AuthState = ReturnType<typeof useAuthState>;
+
+export function useAuthMutations(state?: AuthState) {
+  const resolved = state || useAuthState();
   const { authToken, authUser, authBusiness, authBusinessToken, refreshToken } =
-    useAuthState();
+    resolved;
 
   const mutateUserData = (responsePayload: any) => {
     try {

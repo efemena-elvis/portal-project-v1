@@ -29,6 +29,14 @@ export const getAllTransactions = async () => {
   );
 };
 
+export const fetchAllPaymentTransactions = async (filters: string) => {
+  const allFilters =
+    filters.replace(/page=\d+/, "page=1") + "&page_size=100000";
+  return await $api.fetch(
+    `${paymentRoutes.getPaymentTransactions}${allFilters}`,
+  );
+};
+
 export const initiatePayout = async (payload: any) => {
   return await $api.push(paymentRoutes.initiatePayout, payload);
 };
