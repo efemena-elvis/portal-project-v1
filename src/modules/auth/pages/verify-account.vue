@@ -25,7 +25,7 @@
         </div>
 
         <button
-          class="btn btn-primary w-full"
+          class="btn btn-primary w-[90%]"
           ref="verifyBtnRef"
           :disabled="isVerifyReady"
         >
@@ -165,7 +165,7 @@ onMounted(() => {
     @apply flex justify-center items-start gap-x-3 mdLg:gap-x-2 mb-11;
 
     .form-control {
-      @apply h-12 w-12  text-center text-[20px]  font-semibold sm:font-medium text-green-500 py-4 focus:shadow-sm focus:shadow-green-100/80;
+      @apply h-16 w-16  text-center text-[20px]  font-semibold sm:font-medium text-green-500 py-4 focus:shadow-sm focus:shadow-green-100/80;
     }
   }
 }

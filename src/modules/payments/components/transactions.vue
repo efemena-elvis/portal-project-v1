@@ -11,7 +11,7 @@
       <button
         class="btn btn-sm btn-secondary mt-8"
         type="button"
-        @click="exportToExcel"
+        @click="handleExport"
       >
         Export
       </button>
@@ -55,7 +55,7 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 import { usePaymentStore } from "@/modules/payments/store";
-import { exportXLSX } from "@/shared/utils/export";
+import { exportTransactionsCSV } from "@/shared/utils/transaction-export";
 
 interface MerchantTransaction {
   date: string;
@@ -66,6 +66,7 @@ interface MerchantTransaction {
   amount: string;
   status: string;
   reference: string;
+  reason: string;
   type: string;
 }
 
@@ -77,7 +78,7 @@ const props = withDefaults(
   { merchantId: "", merchantDetails: null },
 );
 
-const { getTransactions, fetchAllPaymentTransactions } = usePaymentStore();
+const { getTransactions } = usePaymentStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } =
   useString();
@@ -124,9 +125,11 @@ const tableHeader: TableHeaderType[] = [
   { title: "Date", slug: "date" },
   { title: "Customer", slug: "customer" },
   { title: "Payment Method", slug: "payment_method" },
-  { title: "Reference", slug: "reference" },
   { title: "Amount", slug: "amount" },
+  {title: "Reference", slug: "reference" },
   { title: "Status", slug: "status" },
+
+  {title: "Reason", slug: "reason"}
 ];
 
 const formatDate = (date?: string) => {
@@ -168,11 +171,13 @@ const normalizeTransaction = (
   customer: getCustomerName(transaction),
   customerSecondary: getCustomerSecondary(transaction),
   paymentMethod: transaction.method || "-",
-  reference: transaction.reference || "-",
+
   amount: transaction.amount
     ? `${transaction.currency} ${formatNumber(transaction.amount)}`
     : "-",
   status: (transaction.status || "").toLowerCase(),
+  reference: transaction.reference || "-",
+  reason: transaction.failure_reason || "-",
   type: transaction.type || "-",
 });
 
@@ -272,9 +277,11 @@ const filteredTableBody = computed(() =>
           ),
         },
       }),
-      reference: transaction.reference,
+   
       amount: getBoldTableText(transaction.amount),
       status: getStatus(key, label),
+      reference: transaction.reference,
+      reason: transaction.reason,
     };
   }),
 );
@@ -291,61 +298,37 @@ onMounted(() => {
   if (props.merchantId) fetchTransactions();
 });
 
-const exportToExcel = async () => {
-  const exportFilters =
-    `?page=1&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}` +
-    (filterValues.paymentMethod
-      ? `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`
-      : "") +
-    (filterValues.period
-      ? `&from_created_at=${fmtStartISO(filterValues.period[0])}&to_created_at=${fmtEndISO(filterValues.period[1])}`
-      : "");
+const handleExport = async () => {
+  const filters: Record<string, string> = {
+    user_id: props.merchantId,
+    ...(filterValues.status && { status: filterValues.status }),
+    ...(filterValues.search && { reference: filterValues.search }),
+    ...(filterValues.paymentMethod && {
+      method:
+        filterValues.paymentMethod === "bank transfer"
+          ? "bank"
+          : filterValues.paymentMethod,
+    }),
+    ...(filterValues.period && {
+      from_created_at: fmtStartISO(filterValues.period[0]),
+      to_created_at: fmtEndISO(filterValues.period[1]),
+    }),
+  };
 
-  const response = await processAPIRequest({
-    action: fetchAllPaymentTransactions,
-    payload: { filters: exportFilters },
-    showAlert: false,
-  });
-
-  if (response?.code !== 200) return;
-
-  const allTransactions = Array.isArray(response.data)
-    ? response.data
-    : response.data?.transactions || [];
-
-  if (!allTransactions.length) {
-    pushToastAlert({
-      message: "No data to export",
-      description: "No transactions match the current filters.",
-      type: "warning",
-    });
-    return;
-  }
-
-  const cleanData = allTransactions.map((tx: any) => ({
-    Date: tx.created_at
-      ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
-      : "-",
-    Name:
-      [tx.first_name, tx.last_name]
-        .filter(Boolean)
-        .map(capitalizeFirstLetter)
-        .join(" ") || "-",
-    Email: tx.email || "-",
-    "Phone Number": tx.phone || "-",
-    "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
-    Currency: tx.currency || "-",
-    Amount: formatNumber(tx.amount ?? 0),
-    Fee: formatNumber(tx.fee ?? 0),
-    Status: capitalizeFirstLetter(tx.status || "-"),
-    Reason: tx.failure_reason || "-",
-  }));
-
-  exportXLSX(
-    cleanData,
-    `Merchant_${props.merchantId}_Transactions.xlsx`,
-    "Merchant Transactions",
+  const result = await exportTransactionsCSV(
+    filters,
+    `Merchant_${props.merchantId}_Transactions.csv`,
   );
+
+  if (!result.success) {
+    pushToastAlert({
+      message: "Export failed",
+      description:
+        result.message ||
+        "Data exceeds the number exportable. Please apply filters to narrow your search.",
+      type: "error",
+    });
+  }
 };
 </script>
 

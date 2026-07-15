@@ -107,7 +107,9 @@ export function useTransactionsData() {
     { title: "Customer", slug: "customer" },
     { title: "Amount", slug: "amount" },
     { title: "Payment Method", slug: "method" },
+    {title: "Reference", slug: "reference"},
     { title: "Status", slug: "status" },
+    {title: "Reason", slug: "reason"},
     { title: "", slug: "action" },
   ]);
 
@@ -176,6 +178,8 @@ export function useTransactionsData() {
       currency: data?.currency || "",
       method: data?.method || "-",
       type: data?.type || "-",
+      reason: data?.failure_reason || "-",
+      reference: data?.reference || "-",
       status: data?.status || "-",
       raw: data,
     };
@@ -206,10 +210,13 @@ export function useTransactionsData() {
             secondaryText: capitalizeFirstLetter(tx.type.replace(/_/g, " ")),
           },
         }),
+        reference: tx.reference,
         status: getStatus(
           tx.status === "completed" ? "successful" : tx.status,
           tx.status,
         ),
+        reason: tx.reason,
+
         action: h("div", { class: "flex items-center gap-3" }, [
           h(
             "button",
@@ -330,19 +337,6 @@ export function useTransactionsData() {
     }
   };
 
-  const fetchAllTransactionPages = async () => {
-    const filters = `?page=1&page_size=100&status=${filterValues.status}&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
-
-    const response = await processAPIRequest({
-      action: getAllTransactions,
-      payload: { filters },
-      showAlert: false,
-    });
-
-    if (response?.code !== 200) return [];
-    return response.data?.transactions || [];
-  };
-
   watch(filters, (newFilters) => {
     if (debounceTimer.value) clearTimeout(debounceTimer.value);
     debounceTimer.value = setTimeout(() => fetchTransactions(newFilters), 300);
@@ -363,7 +357,6 @@ export function useTransactionsData() {
     filterValues,
     filterConfig,
     onFilterChange,
-    fetchAllTransactionPages,
     showDetailModal,
     selectedTransaction,
   };

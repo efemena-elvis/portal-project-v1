@@ -36,19 +36,19 @@ const formatMetric = (value: unknown, fallback: string) => {
 const metrics = computed(() => [
   {
     label: "Available Balance",
-    value: formatMetric(props.source.available_balance, "$52,000"),
+    value: formatMetric(props.source.available_balance, "$0"),
   },
   {
     label: "Total Transactions",
-    value: formatMetric(props.source.total_transactions, "Z52,000"),
+    value: formatMetric(props.source.total_transactions, "$0"),
   },
   {
     label: "Total Payout",
-    value: formatMetric(props.source.total_payout, "Z52,000"),
+    value: formatMetric(props.source.total_payout, "$0"),
   },
   {
     label: "Refunds",
-    value: formatMetric(props.source.refunds, "Z52,000"),
+    value: formatMetric(props.source.refunds, "$0"),
   },
 ]);
 </script>

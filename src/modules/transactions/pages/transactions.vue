@@ -75,8 +75,8 @@ import {
   FilterBar,
   StatsCard,
 } from "@packages/uikit";
-import { useDate, useString, useEvents } from "@packages/hooks";
-import { exportXLSX } from "@/shared/utils/export";
+import { useEvents } from "@packages/hooks";
+import { exportTransactionsCSV } from "@/shared/utils/transaction-export";
 import TransactionDetailModal from "@/modules/transactions/modals/transaction-detail-modal.vue";
 import TransactionsDonut from "@/modules/transactions/components/transactions-donut.vue";
 import { useTransactionsData } from "@/modules/transactions/composables/useTransactionsData";
@@ -91,53 +91,44 @@ const {
   filterValues,
   filterConfig,
   onFilterChange,
-  fetchAllTransactionPages,
   showDetailModal,
   selectedTransaction,
 } = useTransactionsData();
 
 const { pushToastAlert } = useEvents();
-const { formatNumber, capitalizeFirstLetter } = useString();
 
 const handleExport = async () => {
-  const allTransactions = await fetchAllTransactionPages();
-
-  if (!allTransactions.length) {
-    pushToastAlert({
-      message: "No data to export",
-      description: "No transactions match the current filters.",
-      type: "warning",
-    });
-    return;
-  }
-
-  const getDateCreated = (date: string) => {
-    const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
-    return `${w2}, ${d3} ${m3}, ${y1}`;
+  const fmtStartISO = (d: Date) => d.toISOString().replace(/\.\d+Z$/, "Z");
+  const fmtEndISO = (d: Date) => {
+    const end = new Date(d);
+    end.setHours(23, 59, 59, 0);
+    return end.toISOString().replace(/\.\d+Z$/, "Z");
   };
 
-  const cleanData = allTransactions.map((tx: any) => ({
-    Date: tx.created_at
-      ? `${getDateCreated(tx.created_at)} ${useDate.formatTime(tx.created_at)}`
-      : "-",
+  const filters: Record<string, string> = {
+    ...(filterValues.status && { status: filterValues.status }),
+    ...(filterValues.type && { type: filterValues.type }),
+    ...(filterValues.currency && { currency: filterValues.currency }),
+    ...(filterValues.paymentMethod && { method: filterValues.paymentMethod }),
+    ...(filterValues.merchant && { user_id: filterValues.merchant }),
+    ...(filterValues.search && { reference: filterValues.search }),
+    ...(filterValues.period && {
+      from_created_at: fmtStartISO(filterValues.period[0]),
+      to_created_at: fmtEndISO(filterValues.period[1]),
+    }),
+  };
 
-    Name:
-      [tx.first_name, tx.last_name]
-        .filter(Boolean)
-        .map(capitalizeFirstLetter)
-        .join(" ") || "-",
-    Email: tx.email || "-",
-    "Phone Number": tx.phone || "-",
-    "Payment Method": `${capitalizeFirstLetter(tx.method?.replace(/_/g, " ") || "")} - ${capitalizeFirstLetter(tx.type?.replace(/_/g, " ") || "")}`,
-    Currency: tx.currency || "-",
-    Amount: formatNumber(tx.amount ?? 0),
-    Fee: formatNumber(tx.fee ?? 0),
-    Status: capitalizeFirstLetter(tx.status || "-"),
+  const result = await exportTransactionsCSV(filters);
 
-    Reason: tx.failure_reason || "-",
-  }));
-
-  exportXLSX(cleanData, "Transactions_Data.xlsx", "Transactions");
+  if (!result.success) {
+    pushToastAlert({
+      message: "Export failed",
+      description:
+        result.message ||
+        "Data exceeds the number exportable. Please apply filters to narrow your search.",
+      type: "error",
+    });
+  }
 };
 </script>
 
