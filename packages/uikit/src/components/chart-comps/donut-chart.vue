@@ -42,7 +42,7 @@ const props = defineProps({
   },
   cutout: {
     type: String,
-    default: "85%",
+    default: "80%",
   },
   borderWidth: {
     type: Number,

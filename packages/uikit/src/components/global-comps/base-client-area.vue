@@ -41,9 +41,9 @@
             >
               <div class="text">Change Password</div>
             </router-link>
-            <div class="app-dropdown-item" @click="handleResetMfa">
+            <!-- <div class="app-dropdown-item" @click="handleResetMfa">
               <div class="text">Reset MFA</div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

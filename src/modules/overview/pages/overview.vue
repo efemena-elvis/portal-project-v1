@@ -71,6 +71,8 @@
             <DoughnutChart
               :data="transactionAnalysisData"
               :backgroundColors="chartColors"
+              cutout="85%"
+         
             />
             <div class="donut-total-card">
               <span class="donut-total-label">Total transactions</span>

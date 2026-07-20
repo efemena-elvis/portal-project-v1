@@ -47,7 +47,7 @@ const donutStyle = computed(() => {
   const failedEnd = pendingEnd + failed.value;
 
   return {
-    background: `conic-gradient(#34bd63 0 ${successEnd}%, #f5b740 ${successEnd}% ${pendingEnd}%, #df7391 ${pendingEnd}% ${failedEnd}%, #e9f1ef ${failedEnd}% 100%)`,
+    background: `conic-gradient(#34bd63 0 ${successEnd}%, #f5b740 ${successEnd}% ${pendingEnd}%, #ef4444 ${pendingEnd}% ${failedEnd}%, #e9f1ef ${failedEnd}% 100%)`,
   };
 });
 </script>
@@ -58,7 +58,7 @@ const donutStyle = computed(() => {
 }
 
 .donut {
-  @apply relative size-36 shrink-0 rounded-full;
+  @apply relative size-32 shrink-0 rounded-full;
 
   &::after {
     @apply absolute left-1/2 top-1/2 size-[82px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-50 content-[''];
@@ -86,6 +86,6 @@ const donutStyle = computed(() => {
 }
 
 .legend-dot--failed {
-  @apply bg-red-300;
+  @apply bg-red-500;
 }
 </style>

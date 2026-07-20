@@ -11,10 +11,16 @@
 import { computed } from "vue";
 import { useString } from "@packages/hooks";
 
-const props = defineProps<{
-  source: Record<string, any>;
-  selectedCurrency: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    source: Record<string, any>;
+    selectedCurrency: string;
+    wallets?: any[];
+  }>(),
+  {
+    wallets: () => [],
+  },
+);
 
 const currencySymbols: Record<string, string> = {
   NGN: "\u20A6",
@@ -26,29 +32,36 @@ const currencySymbols: Record<string, string> = {
 
 const { formatNumber } = useString();
 
-const formatMetric = (value: unknown, fallback: string) => {
-  if (value === undefined || value === null || value === "") return fallback;
+const formatMetric = (value: unknown) => {
+  if (value === undefined || value === null || value === "")
+    return `${currencySymbols[props.selectedCurrency] || ""}0`;
   if (typeof value === "number")
     return `${currencySymbols[props.selectedCurrency] || ""}${formatNumber(value)}`;
   return `${value}`;
 };
 
+const selectedWallet = computed(() =>
+  props.wallets.find((w) => w.currency === props.selectedCurrency),
+);
+
 const metrics = computed(() => [
   {
     label: "Available Balance",
-    value: formatMetric(props.source.available_balance, "$0"),
+    value: formatMetric(
+      selectedWallet.value?.balance ?? props.source.available_balance,
+    ),
   },
   {
     label: "Total Transactions",
-    value: formatMetric(props.source.total_transactions, "$0"),
+    value: formatMetric(props.source.total_transactions),
   },
   {
     label: "Total Payout",
-    value: formatMetric(props.source.total_payout, "$0"),
+    value: formatMetric(props.source.total_payout),
   },
   {
     label: "Refunds",
-    value: formatMetric(props.source.refunds, "$0"),
+    value: formatMetric(props.source.refunds),
   },
 ]);
 </script>

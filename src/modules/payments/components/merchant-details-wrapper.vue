@@ -61,6 +61,7 @@
         <MerchantMetricsGrid
           :source="metricsSource"
           :selectedCurrency="selectedCurrency"
+          :wallets="wallets"
         />
         <MerchantDonut :stats="transactionStats" />
       </div>
@@ -93,6 +94,7 @@ const props = withDefaults(
     showPayoutRequest?: boolean;
     showMetrics?: boolean;
     entityType?: string;
+    wallets?: any[];
   }>(),
   {
     merchantDetails: null,
@@ -102,6 +104,7 @@ const props = withDefaults(
     showPayoutRequest: true,
     showMetrics: true,
     entityType: "",
+    wallets: () => [],
   },
 );
 
@@ -116,7 +119,11 @@ const { processAPIRequest } = useEvents();
 const { getTransactions } = usePaymentStore();
 
 const selectedCurrency = ref("NGN");
-const currencyOptions = ["NGN", "GHS", "TZS", "ZMW", "USD"];
+const currencyOptions = computed(() =>
+  props.wallets.length
+    ? [...new Set(props.wallets.map((w: any) => w.currency))]
+    : ["NGN", "GHS", "TZS", "ZMW", "USD"],
+);
 const currencySymbols: Record<string, string> = {
   NGN: "\u20A6",
   GHS: "GHS",
@@ -132,6 +139,16 @@ const transactionStats = ref<{ title: string; value: number }[]>([
   { title: "Pending", value: 0 },
   { title: "Failed", value: 0 },
 ]);
+
+watch(
+  () => props.wallets,
+  (newWallets) => {
+    if (newWallets.length && newWallets[0]?.currency) {
+      selectedCurrency.value = newWallets[0].currency;
+    }
+  },
+  { immediate: true },
+);
 
 const detail = computed(() => props.merchantDetails || {});
 const payoutRequest = computed(

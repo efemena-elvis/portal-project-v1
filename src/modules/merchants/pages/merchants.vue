@@ -37,7 +37,9 @@
             :key="index"
             :tableHeader="tableHeader"
             :tableData="payload"
-            :onTableClicked="() => handleTableClicked(payload.id)"
+            :onTableClicked="
+              () => handleTableClicked(payload.id, payload.email)
+            "
           />
         </TableContainer>
       </section>
@@ -181,8 +183,8 @@ const fetchMerchants = async (filters: string) => {
   }
 };
 
-const handleTableClicked = (id: string) => {
-  router.push(`/merchant/${id}`);
+const handleTableClicked = (id: string, email: string) => {
+  router.push({ path: `/merchant/${id}`, query: { email } });
 };
 
 useAutoFetch(filters, fetchMerchants);
