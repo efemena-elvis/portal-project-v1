@@ -1,5 +1,4 @@
-# Makefile for single-repo Vite project
-# Apps: merchant-of-records (mor), alexpay (ma)
+# Makefile for Portal-Backoffice Vite project
 
 # ===== Default =====
 .PHONY: all
