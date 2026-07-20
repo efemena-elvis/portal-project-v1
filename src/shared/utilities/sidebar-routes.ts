@@ -19,6 +19,14 @@ export const sidebarRoutes: ISidebarRouteType = {
       category: "home",
     },
     {
+      slug: "transactions",
+      link: "/admin-transactions",
+      title: "Transactions",
+      icon: "icon-card-transaction",
+      active: true,
+      category: "home",
+    },
+    {
       slug: "merchants",
       link: "/merchants",
       title: "Merchants",
@@ -42,18 +50,18 @@ export const sidebarRoutes: ISidebarRouteType = {
     //   active: true,
     //   category: "home",
     // },
+    // {
+    //   slug: "withdrawal-requests",
+    //   link: "/withdrawal-requests",
+    //   title: "Withdrawal Requests",
+    //   icon: "icon-export",
+    //   active: true,
+    //   category: "home",
+    // },
     {
-      slug: "withdrawal-requests",
-      link: "/withdrawal-requests",
-      title: "Withdrawal Requests",
-      icon: "icon-export",
-      active: true,
-      category: "home",
-    },
-    {
-      slug: "funding",
-      link: "/funding",
-      title: "Funding",
+      slug: "approvals",
+      link: "/approvals",
+      title: "Approvals",
       icon: "icon-money-3",
       active: true,
       category: "home",
@@ -86,7 +94,6 @@ export const sidebarRoutes: ISidebarRouteType = {
       active: true,
       category: "auth",
     },
-
   ],
 };
 

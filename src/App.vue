@@ -6,6 +6,7 @@
     companyName="Vesicash Innovative Technologies"
     companyCreator="Vesicash Innovative Technologies Tech Team"
     companyBaseUrl="https://www.vesicash.com"
+    companyLogo="/vesicash-logo.png"
   />
 
   <div id="app">

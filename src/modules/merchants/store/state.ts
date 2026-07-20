@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref } from "vue";
 
-export const merchantList = ref<any[]>([])
-export const merchantDetail = ref<Record<string, any> | null>(null)
+export const merchantList = ref<any[]>([]);
+export const merchantDetail = ref<Record<string, any> | null>(null);

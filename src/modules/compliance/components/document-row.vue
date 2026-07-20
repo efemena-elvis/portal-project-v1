@@ -13,11 +13,11 @@ defineProps({
   label: { type: String, required: true },
   filename: { type: String, required: true },
   compact: { type: Boolean, default: false },
-})
+});
 
 defineEmits<{
-  view: [payload: { label: string; filename: string }]
-}>()
+  view: [payload: { label: string; filename: string }];
+}>();
 </script>
 
 <style scoped lang="scss">

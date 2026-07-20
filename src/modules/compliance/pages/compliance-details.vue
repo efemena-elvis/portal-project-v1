@@ -42,7 +42,12 @@
             <ReadOnlyField label="Phone number" :value="businessProfile.phone">
               <template #prefix>
                 <span class="phone-prefix">
-                  <img v-if="countryFlag" :src="countryFlag" class="flag-icon" alt="" />
+                  <img
+                    v-if="countryFlag"
+                    :src="countryFlag"
+                    class="flag-icon"
+                    alt=""
+                  />
                   <span class="dial-code">+{{ dialCode }}</span>
                 </span>
               </template>
@@ -96,7 +101,7 @@
             compact
             @view="handleDocumentView"
           />
-             <div class="upload-area">
+          <div class="upload-area">
             <FileUploadInput
               :hasDocumentUploaded="!!uploadedDocUrl"
               :uploadAction="uploadCompliance"
@@ -232,13 +237,14 @@ const complianceDetails = computed(() => ({
 
 const countryData = computed(() =>
   countryCurrencies.find(
-    (c) => c.country.toLowerCase() === complianceDetails.value.country.toLowerCase(),
+    (c) =>
+      c.country.toLowerCase() === complianceDetails.value.country.toLowerCase(),
   ),
-)
+);
 
-const countryFlag = computed(() => countryData.value?.flag || '')
+const countryFlag = computed(() => countryData.value?.flag || "");
 
-const dialCode = computed(() => countryData.value?.dialing_code || '')
+const dialCode = computed(() => countryData.value?.dialing_code || "");
 
 const businessInitials = computed(() =>
   complianceDetails.value.businessName

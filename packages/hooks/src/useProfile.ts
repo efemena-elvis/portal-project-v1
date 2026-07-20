@@ -16,7 +16,6 @@ interface IUserProfile {
   lastName: string;
   currentBusiness: string;
   isEmailVerified: boolean;
-  morAccountType: string;
 }
 
 interface IBusinessProfile {

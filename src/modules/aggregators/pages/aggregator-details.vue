@@ -5,7 +5,6 @@
     :entityType="'Aggregator'"
     :showMetrics="false"
     :showPayoutRequest="false"
-
     @actionSelected="openActionModal"
   >
     <template #summaryExtra>
@@ -58,7 +57,7 @@ import MerchantActionModal from "@/modules/payments/modals/merchant-action-modal
 import MerchantDetailsWrapper from "@/modules/payments/components/merchant-details-wrapper.vue";
 import { useAggregatorStore } from "@/modules/aggregators/store";
 
-type AggregatorAction = "reset-password" | "login" | "delete";
+type AggregatorAction = "reset-password" | "login" | "reset-mfa" | "delete";
 interface ProfileSection {
   section: string;
   fields: {
@@ -76,6 +75,7 @@ const {
   resetAggregatorPassword,
   loginAggregatorAccount,
   deleteAggregator,
+  resetAggregatorMfa,
 } = useAggregatorStore();
 const { processAPIRequest } = useEvents();
 
@@ -169,6 +169,13 @@ const modalContent = computed(() => {
       confirmText: "Login",
       tone: "success",
     },
+    "reset-mfa": {
+      title: "Reset MFA",
+      description:
+        "This will reset the multi-factor authentication for this aggregator. They will need to set it up again.",
+      confirmText: "Reset MFA",
+      tone: "success",
+    },
     delete: {
       title: "Deactivate aggregator's account",
       description:
@@ -196,6 +203,7 @@ const actionHandler = computed(() => {
   const actions: Record<AggregatorAction, () => Promise<any>> = {
     "reset-password": () => resetAggregatorPassword(id),
     login: () => loginAggregatorAccount(id),
+    "reset-mfa": () => resetAggregatorMfa(id),
     delete: () => deleteAggregator(id),
   };
 

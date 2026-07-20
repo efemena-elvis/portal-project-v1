@@ -5,67 +5,23 @@
     pageDescription="All Merchants"
     @updatePage="(currentPage: number) => (page = currentPage)"
     :pagingData="tablePaging"
-    @searchEntered="processSearchEntry"
   >
     <template #pageContent>
       <section class="flex flex-col gap-7">
-        <div class="merchant-stats">
-          <div
+        <div class="flex flex-wrap items-center gap-8 mt-8">
+          <StatsCard
             v-for="stat in merchantStats"
             :key="stat.title"
-            class="merchant-stat-card"
-          >
-            <p>{{ stat.title }}</p>
-            <strong>{{ stat.value }}</strong>
-          </div>
+            :title="stat.title"
+            :value="stat.value"
+          />
         </div>
 
-        <div class="flex flex-wrap justify-between gap-6 items-start">
-          <div class="flex justify-start items-center gap-4 w-full">
-            <div class="relative w-[20%]">
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-              ></div>
-
-              <input
-                v-model="searchQuery"
-                type="search"
-                class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-                placeholder="Search"
-                aria-label="Search merchants"
-              />
-            </div>
-
-            <div
-              class="relative text-sm font-semibold text-teal-800 border rounded-lg cursor-pointer filter-select bg-white"
-            >
-              <select
-                v-model="selectedStatus"
-                class="w-[180px] p-4 bg-transparent appearance-none focus:outline-none"
-              >
-                <option value="">Status</option>
-
-                <option
-                  v-for="(status, index) in statusOptions"
-                  :key="index"
-                  :value="status.toLowerCase()"
-                >
-                  {{ status }}
-                </option>
-              </select>
-
-              <div
-                class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-              ></div>
-            </div>
-
-            <DatePicker
-              filterSize="lg"
-              :activePeriod="activePeriod"
-              @onFilterSelected="processFilterSelection"
-            />
-          </div>
-        </div>
+        <FilterBar
+          :filters="filterConfig"
+          :values="filterValues"
+          @change="onFilterChange"
+        />
 
         <TableContainer
           :tableHeader="tableHeader"
@@ -90,18 +46,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted, watch, computed } from "vue";
+import { ref, h, computed, reactive } from "vue";
 import { TableHeaderType } from "@packages/models";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, useAutoFetch } from "@packages/hooks";
 import { useMerchantStore } from "@/modules/merchants/store";
-import { TableDoubleColumn } from "@packages/uikit";
-
 import {
+  TableDoubleColumn,
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-  DatePicker,
+  FilterBar,
+  StatsCard,
 } from "@packages/uikit";
+
 import { useRouter } from "vue-router";
 
 const { getStatus, getBoldTableText } = useString();
@@ -110,40 +67,49 @@ const { getMerchants } = useMerchantStore();
 const router = useRouter();
 
 const isLoading = ref(true);
-const selectedStatus = ref("");
 const page = ref(1);
-const searchQuery = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
 
-const merchantStats = [{ title: "Number of Merchants", value: "170" }];
+const filterValues = reactive({
+  search: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  {
+    type: "search" as const,
+    key: "search",
+    placeholder: "Search merchants by email",
+  },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["Active", "Pending", "Deactivated"],
+    placeholder: "Status",
+  },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value && value.length === 2
+        ? [new Date(value[0]), new Date(value[1])]
+        : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  if (key !== "search") page.value = 1;
+};
+
+const merchantStats = ref<any[]>([]);
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 
-const statusOptions = ["Active", "Pending", "Deactivated"];
-
-const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.toLocaleLowerCase().trim();
-};
-
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
+    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&email=${filterValues.search}`,
 );
-
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string],
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    activePeriod.value = normalizedRange;
-  } else {
-    activePeriod.value = null;
-  }
-};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date added", slug: "date_created" },
@@ -153,38 +119,12 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Status", slug: "status" },
 ]);
 
-const dummyTableBody = [
-  {
-    business: "Acme Corp",
-    date_created: "Mon, 12 May, 2025",
-    id: "ACM-00123",
-    email: "contact@acmecorp.com",
-    status: getStatus("failed", "deactivated"),
-  },
-  {
-    business: "Acme Corp",
-    date_created: "Mon, 12 May, 2025",
-    id: "ACM-00123",
-    email: "contact@acmecorp.com",
-    status: getStatus("successful", "active"),
-  },
-  {
-    business: "Acme Corp",
-    date_created: "Mon, 12 May, 2025",
-    id: "ACM-00123",
-    email: "contact@acmecorp.com",
-    status: getStatus("pending", "pending"),
-  },
-];
-
 const getDateAdded = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
 const fetchMerchants = async (filters: string) => {
-  tableBody.value.push(...dummyTableBody);
-
   const response = await processAPIRequest({
     action: getMerchants,
     payload: {
@@ -197,7 +137,24 @@ const fetchMerchants = async (filters: string) => {
   isLoading.value = false;
 
   if (response?.code === 200) {
-    tableBody.value = response.data.map((data: any) => {
+    const {
+      merchants,
+      total_records,
+      page: currentPage,
+      page_size,
+    } = response.data;
+
+    // Update merchant stats
+    merchantStats.value = [
+      { title: "Number of Merchants", value: total_records.toString() },
+    ];
+
+    tableBody.value = merchants.map((data: any) => {
+      const businessName =
+        data.first_name && data.last_name
+          ? `${data.first_name} ${data.last_name}`
+          : data.first_name || data.last_name || "-";
+
       return {
         date_created: h(TableDoubleColumn, {
           entry: {
@@ -206,21 +163,21 @@ const fetchMerchants = async (filters: string) => {
           },
         }),
 
-        business: getBoldTableText(data.name),
-        id: data.business_id,
+        business: getBoldTableText(businessName),
+        id: data.uuid,
         email: data.email,
         status: getStatus(
-          data.status === "deactivated"
-            ? "failed"
-            : data.status === "active"
-              ? "successful"
-              : "pending",
-          data.status,
+          data.is_active ? "successful" : "failed",
+          data.is_active ? "active" : "deactivated",
         ),
       };
     });
 
-    tablePaging.value = response.pagination[0] || {};
+    tablePaging.value = {
+      current_page: currentPage,
+      page_count: merchants.length,
+      total_pages_count: Math.ceil(total_records / page_size),
+    };
   }
 };
 
@@ -228,29 +185,10 @@ const handleTableClicked = (id: string) => {
   router.push(`/merchant/${id}`);
 };
 
-watch([selectedStatus, activePeriod], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchMerchants(newFilters);
-});
-onMounted(fetchMerchants);
+useAutoFetch(filters, fetchMerchants);
 </script>
 
 <style lang="scss" scoped>
-.merchant-stat-card {
-  @apply flex h-[124px] w-[350px] bg-[#f6faf9] flex-col justify-center rounded-lg px-8 sm:w-full;
-
-  p {
-    @apply mb-4 text-base font-medium text-grey-800;
-  }
-
-  strong {
-    @apply text-[30px] font-bold leading-none text-grey-900;
-  }
-}
-
 .button-row {
   @apply flex justify-end items-center gap-x-2;
 

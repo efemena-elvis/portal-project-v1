@@ -118,18 +118,17 @@ const statisticsCards = computed(() => {
     { label: "Collection", value: "₦10.04B" },
     { label: "Payout", value: "₦2.8B" },
     { label: "Revenue", value: "₦1.2M" },
-  ]
+  ];
 
   if (selectedPaymentMethod.value === "card") {
     return cards.filter(
       (card) =>
-        card.label !== "Payout" &&
-        card.label !== "Total Volume Processed",
-    )
+        card.label !== "Payout" && card.label !== "Total Volume Processed",
+    );
   }
 
-  return cards
-})
+  return cards;
+});
 
 const transactionStatisticsData = ref([
   { month: "Jan", successful: 300, failed: 50 },

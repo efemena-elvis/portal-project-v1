@@ -40,6 +40,22 @@ const props = defineProps({
     type: Number,
     default: 500,
   },
+  cutout: {
+    type: String,
+    default: "85%",
+  },
+  borderWidth: {
+    type: Number,
+    default: 2,
+  },
+  legendBoxSize: {
+    type: Number,
+    default: 12,
+  },
+  legendPadding: {
+    type: Number,
+    default: 15,
+  },
 });
 
 const chartData = computed(() => {
@@ -54,31 +70,31 @@ const chartData = computed(() => {
         data: amounts,
         backgroundColor: props.backgroundColors,
         borderColor: "#fff",
-        borderWidth: 2,
+        borderWidth: props.borderWidth,
         radius: "60%",
       },
     ],
   };
 });
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  cutout: "85%",
+  cutout: props.cutout,
   plugins: {
     legend: {
       display: true,
       position: "bottom",
       labels: {
-        boxWidth: 12,
-        boxHeight: 12,
+        boxWidth: props.legendBoxSize,
+        boxHeight: props.legendBoxSize,
         usePointStyle: true,
         color: "#525857",
         font: {
           size: 12,
           weight: 500,
         },
-        padding: 15,
+        padding: props.legendPadding,
       },
     },
     tooltip: {
@@ -101,5 +117,5 @@ const chartOptions = {
       },
     },
   },
-};
+}));
 </script>

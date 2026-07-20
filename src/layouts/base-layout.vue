@@ -11,6 +11,7 @@
           :routes="sidebarRoutes"
           :businessProfile="profileUtil"
           :badgeConfig="sidebarBadgeConfig"
+          :resetMfaAction="resetAdminMfa"
         />
       </div>
 
@@ -28,22 +29,25 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
+import { jwtDecode } from "jwt-decode";
 import { useColor, useProfile, useEvents } from "@packages/hooks";
 import { BaseSidebar } from "@packages/uikit";
 import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
-import { usePaymentStore } from "@/modules/payments/store";
-import { useBalanceStore } from "@/modules/balances/store";
-
-
+import { useComplianceStore } from "@/modules/compliance/store";
+import { useApprovalsStore } from "@/modules/approvals/store";
+import { useTransactionStore } from "@/modules/transactions/store";
 
 const route = useRoute();
 
 const authStore = useAuthStore();
-const { getTransactions } = usePaymentStore();
-const { getPayouts } = useBalanceStore();
+const { resetAdminMfa } = authStore;
+const { getCompliances } = useComplianceStore() as any;
+const { getAllWithdrawalRequests } = useApprovalsStore();
+const { getAllApprovals } = useApprovalsStore();
+const { getAllTransactions } = useTransactionStore();
 
 const { setPageBackgroundColor } = useColor();
 const { processAPIRequest } = useEvents();
@@ -51,34 +55,42 @@ const profileUtil = new useProfile(authStore);
 
 const showMobileSidebar = ref<boolean>(false);
 
-const sidebarBadgeConfig = ref<Record<string, number>>({});
+let refreshCheckInterval: ReturnType<typeof setInterval> | null = null;
 
+const sidebarBadgeConfig = ref<Record<string, number>>({});
 
 const toggleMobileSidebar = () => {
   showMobileSidebar.value = !showMobileSidebar.value;
 };
 
-
 const getPendingCount = (response: any) => {
-  const pagination = response?.pagination?.[0] ?? {};
-  return Number(
-    pagination.page_count ??
-      pagination.total_count ??
-      pagination.total ??
-      response?.data?.length ??
-      0,
-  );
+  return Number(response?.data?.total_records ?? 0);
 };
 
 const getSidebarPendingData = async () => {
-  const [complianceResponse, payoutResponse] = await Promise.all([
+  const [
+    complianceResponse,
+    approvalResponse,
+    transactionResponse,
+    withdrawalResponse,
+  ] = await Promise.all([
     processAPIRequest({
-      action: getTransactions,
+      action: getCompliances,
       payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
       showAlert: false,
     }),
     processAPIRequest({
-      action: getPayouts,
+      action: getAllApprovals,
+      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
+      showAlert: false,
+    }),
+    processAPIRequest({
+      action: getAllTransactions,
+      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
+      showAlert: false,
+    }),
+    processAPIRequest({
+      action: getAllWithdrawalRequests,
       payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
       showAlert: false,
     }),
@@ -86,10 +98,11 @@ const getSidebarPendingData = async () => {
 
   sidebarBadgeConfig.value = {
     Compliance: getPendingCount(complianceResponse),
-    Payouts: getPendingCount(payoutResponse),
+    Approvals:
+      getPendingCount(approvalResponse) + getPendingCount(withdrawalResponse),
+    Transactions: getPendingCount(transactionResponse),
   };
 };
-
 
 watch(route, () => {
   if (showMobileSidebar.value) {
@@ -99,6 +112,26 @@ watch(route, () => {
 
 onMounted(() => {
   getSidebarPendingData();
+
+  refreshCheckInterval = setInterval(() => {
+    const raw = localStorage.getItem("PORTAL_REFRESH_TOKEN");
+    if (!raw) return;
+    try {
+      const { exp } = jwtDecode<{ exp: number }>(raw);
+      if (Date.now() >= exp * 1000) {
+        location.href = "/logout";
+      }
+    } catch {
+      // ignore decode errors
+    }
+  }, 30000);
+});
+
+onUnmounted(() => {
+  if (refreshCheckInterval) {
+    clearInterval(refreshCheckInterval);
+    refreshCheckInterval = null;
+  }
 });
 
 setPageBackgroundColor("#F1F7F6");

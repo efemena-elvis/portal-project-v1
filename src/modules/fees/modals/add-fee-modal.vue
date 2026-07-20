@@ -25,20 +25,9 @@
           :labelCompact="false"
           inputPlaceholder="Select merchant"
           :selectData="merchantOptions"
-          :inputValue="feePayload.merchant"
+          :inputValue="feePayload.user_id"
           isRequired
-          @onSelectionChange="feePayload.merchant = $event"
-        />
-
-         <SelectFieldInput
-          labelId="paymentMethod"
-          labelTitle="Payment Method"
-          :labelCompact="false"
-          inputPlaceholder="Select method"
-          :selectData="paymentMethodOptions"
-          :inputValue="feePayload.payment_method"
-          isRequired
-          @onSelectionChange="feePayload.payment_method = $event"
+          @onSelectionChange="feePayload.user_id = $event"
         />
 
         <SelectFieldInput
@@ -52,16 +41,27 @@
           @onSelectionChange="feePayload.method = $event"
         />
 
+        <SelectFieldInput
+          labelId="paymentMethod"
+          labelTitle="Payment Method"
+          :labelCompact="false"
+          inputPlaceholder="Select method"
+          :selectData="paymentMethodOptions"
+          :inputValue="feePayload.payment_method"
+          isRequired
+          @onSelectionChange="feePayload.payment_method = $event"
+        />
+
         <div class="field-grid">
           <SelectFieldInput
-            labelId="country"
+            labelId="country_code"
             labelTitle="Country"
             :labelCompact="false"
             inputPlaceholder="Select country"
             :selectData="countryOptions"
-            :inputValue="feePayload.country"
+            :inputValue="feePayload.country_code"
             isRequired
-            @onSelectionChange="feePayload.country = $event"
+            @onSelectionChange="feePayload.country_code = $event"
           />
 
           <SelectFieldInput
@@ -135,18 +135,19 @@
 
 <script lang="ts" setup>
 /* eslint-disable no-undef, vue/valid-define-emits */
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useMerchantStore } from "@/modules/merchants/store";
 import { useFeeStore } from "@/modules/fees/store";
+import { countryCurrencies } from "@packages/constants";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
-  merchant: string;
+  user_id: string;
   method: string;
-  country: string;
-  fee_type: string;
+  country_code: string;
+  type: string;
   amount: number | string;
   payment_method: string;
   cap_amount: number | string;
@@ -154,21 +155,21 @@ type IFeePayload = {
 
 const props = withDefaults(
   defineProps<{
-    merchantId?: string
-    merchantName?: string
+    merchantId?: string;
+    merchantName?: string;
   }>(),
   {
     merchantId: "",
     merchantName: "",
   },
-)
+);
 
 const emits = defineEmits<{
   closeTriggered: [];
   feeSaved: [];
 }>();
 
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { getMerchants } = useMerchantStore();
 const { createFee } = useFeeStore();
 
@@ -181,17 +182,23 @@ const methodOptions = [
   { value: "payout", name: "Payout" },
 ];
 
-const paymentMethodOptions = [
-
-  { value: "mobilemoney", name: "Mobile Money" },
-  { value: "card", name: "Card" },
-
-];
+const paymentMethodOptions = computed(() => {
+  if (feePayload.value.method === "payout") {
+    return [
+      { value: "mobilemoney", name: "Mobile Money" },
+      { value: "bank", name: "Bank" },
+    ];
+  }
+  return [
+    { value: "mobilemoney", name: "Mobile Money" },
+    { value: "card", name: "Card" },
+  ];
+});
 const countryOptions = [
-  { value: "nigeria", name: "Nigeria" },
-  { value: "tanzania", name: "Tanzania" },
-  { value: "ghana", name: "Ghana" },
-  { value: "zambia", name: "Zambia" },
+  { name: "Nigeria", value: "NG" },
+  { name: "Ghana", value: "GH" },
+  { name: "Zambia", value: "ZM" },
+  { name: "Tanzania", value: "TZ" },
 ];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -199,31 +206,31 @@ const typeOptions = [
 ];
 
 const feePayload = ref<IFeePayload>({
-  merchant: "",
+  user_id: "",
   method: "payin",
-  country: "nigeria",
-  fee_type: "percentage",
+  country_code: "NG",
+  type: "percentage",
   amount: "",
   payment_method: "",
   cap_amount: "",
 });
 
 const selectedMerchantName = computed(() => {
-  if (feePayload.value.merchant) {
+  if (feePayload.value.user_id) {
     const merchant = merchantOptions.value.find(
-      (m) => m.value === feePayload.value.merchant,
-    )
-    if (merchant?.name) return merchant.name
+      (m) => m.value === feePayload.value.user_id,
+    );
+    if (merchant?.name) return merchant.name;
   }
-  return props.merchantName || ""
-})
+  return props.merchantName || "";
+});
 
 const isActionReady = computed(() => {
   return !(
-    feePayload.value.merchant &&
+    feePayload.value.user_id &&
     feePayload.value.method &&
-    feePayload.value.country &&
-    feePayload.value.fee_type &&
+    feePayload.value.country_code &&
+    feePayload.value.type &&
     feePayload.value.amount !== "" &&
     feePayload.value.payment_method !== "" &&
     feePayload.value.cap_amount !== ""
@@ -237,43 +244,60 @@ const fetchMerchants = async () => {
       showAlert: false,
     });
     if (response?.code === 200 && response.data) {
-      merchantOptions.value = response.data.map((m: any) => ({
-        value: m.id ||  "",
-        name: m.name || "",
-      }))
+      const merchants = response.data.merchants || [];
+      merchantOptions.value = merchants.map((m: any) => ({
+        value: m.uuid || "",
+        name: m.email || `${m.first_name || ""} ${m.last_name || ""}` || "-",
+      }));
     }
   } catch {
-    console.error('Failed to fetch merchants');
-  }
-
-  if (props.merchantId) {
-    feePayload.value.merchant = props.merchantId
+    console.error("Failed to fetch merchants");
   }
 };
 
 const handleSaveFee = async () => {
+  const payload = {
+    ...feePayload.value,
+    amount: parseFloat(feePayload.value.amount as string) || 0,
+    cap_amount: parseFloat(feePayload.value.cap_amount as string) || 0,
+  };
+
   const response = await processAPIRequest({
-    action: async () => createFee(feePayload.value),
-    payload: feePayload.value,
+    action: async () => createFee(payload),
+    payload,
     btnRef: addFeeBtnRef,
     btnText: "Save config",
-    alertHandler: {
-      200: {
-        message: "Fee configured successfully",
-        type: "success",
-      },
-      400: {
-        message: "Unable to configure fee",
-        type: "error",
-      },
-    },
+    showAlert: false,
   });
 
-  if (response.code === 200) {
+  if (response?.code >= 200 && response?.code < 300) {
+    pushToastAlert({
+      message: "Fee configured successfully",
+      type: "success",
+    });
     emits("feeSaved");
     emits("closeTriggered");
+  } else {
+    pushToastAlert({
+      message: "Unable to configure fee",
+      description: response?.error?.message || "Please try again",
+      type: "error",
+    });
   }
 };
+
+watch(
+  () => feePayload.value.method,
+  (newMethod) => {
+    const validMethods =
+      newMethod === "payout"
+        ? ["mobilemoney", "bank"]
+        : ["mobilemoney", "card"];
+    if (!validMethods.includes(feePayload.value.payment_method)) {
+      feePayload.value.payment_method = "";
+    }
+  },
+);
 
 onMounted(fetchMerchants);
 </script>

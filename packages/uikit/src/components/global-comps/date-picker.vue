@@ -21,27 +21,34 @@ const dateRange = ref<[Date, Date] | null>(null);
 interface IFilterType {
   filterSize: string;
   activePeriod: [Date, Date] | null;
+  modelValue?: [Date, Date] | null;
 }
 
 const props = withDefaults(defineProps<IFilterType>(), {
   filterSize: "sm",
   activePeriod: null,
+  modelValue: null,
 });
 
-const emits = defineEmits(["onFilterSelected"]);
+const emits = defineEmits<{
+  (e: "onFilterSelected", value: [Date, Date] | null): void;
+  (e: "update:modelValue", value: [Date, Date] | null): void;
+}>();
 
 const handleDateChange = (value: [Date, Date] | null) => {
   dateRange.value = value;
 
   if (value && value.length === 2) {
     emits("onFilterSelected", value);
+    emits("update:modelValue", value);
   } else {
     emits("onFilterSelected", null);
+    emits("update:modelValue", null);
   }
 };
 
 watch(
-  () => props.activePeriod,
+  () => props.activePeriod ?? props.modelValue,
   (newVal) => {
     dateRange.value = newVal;
   },
@@ -54,7 +61,7 @@ watch(
   @apply relative  min-w-max sm:w-1/2 md:w-full;
 
   :deep(.dp__input) {
-    @apply p-4  border border-gray-300  rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none w-[200px]  py-4 px-6;
+    @apply p-4 border border-gray-300 rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none w-[200px] h-12 py-4 px-6;
   }
 
   :deep(.dp__input::placeholder) {

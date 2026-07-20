@@ -6,7 +6,6 @@
 
     <template #modal-cover-body>
       <div class="delete-modal-body">
-     
         <h2>Remove team member</h2>
         <p>
           Are you sure you want to remove
@@ -35,22 +34,21 @@
 </template>
 
 <script lang="ts" setup>
-import { ModalDialog } from "@packages/uikit"
+import { ModalDialog } from "@packages/uikit";
 
 defineProps<{
-  member: { name: string; email: string } | null
-}>()
+  member: { name: string; email: string } | null;
+}>();
 
 defineEmits<{
-  closeTriggered: []
-  memberDeleted: []
-}>()
+  closeTriggered: [];
+  memberDeleted: [];
+}>();
 </script>
 
 <style scoped lang="scss">
 .delete-modal-body {
   @apply flex flex-col gap-5 px-8 pb-8 sm:px-5 sm:pb-6;
-
 
   h2 {
     @apply text-xl font-bold text-grey-900;

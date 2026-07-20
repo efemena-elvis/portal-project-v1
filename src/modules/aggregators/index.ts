@@ -1,20 +1,17 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import AggregatorsPage from "@/modules/aggregators/pages/aggregators.vue";
+import AggregatorDetailsPage from "@/modules/aggregators/pages/aggregator-details.vue";
 
 const aggregatorsRoutes: IRouteType[] = [
   {
     path: "/aggregators",
-    component: () =>
-      import(
-        /* webpackChunkName: "aggregators-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashAggregators",
-        component: () =>
-          import(
-            /* webpackChunkName: "aggregators-module" */ "@/modules/aggregators/pages/aggregators.vue"
-          ),
+        component: AggregatorsPage,
         meta: {
           requiresAuth: true,
           title: "Aggregators",
@@ -27,10 +24,7 @@ const aggregatorsRoutes: IRouteType[] = [
       {
         path: ":id",
         name: "AggregatorDetails",
-        component: () =>
-          import(
-            /* webpackChunkName: "aggregators-module" */ "@/modules/aggregators/pages/aggregator-details.vue"
-          ),
+        component: AggregatorDetailsPage,
         meta: {
           requiresAuth: true,
           title: "Aggregator's Details",

@@ -2,7 +2,10 @@
   <div class="base-sidebar">
     <!-- CLIENT BUSINESS AREA -->
 
-    <BaseClientArea :businessProfile="businessProfile" />
+    <BaseClientArea
+      :businessProfile="businessProfile"
+      :resetMfaAction="resetMfaAction"
+    />
 
     <!-- SIDEBAR ITEMS AREA -->
     <div class="sidebar-items-area">
@@ -103,6 +106,7 @@ import BaseClientArea from "./base-client-area.vue";
 interface ISidebarProps {
   routes: ISidebarRouteType;
   businessProfile: any;
+  resetMfaAction: (userId: string) => Promise<any>;
   badgeConfig?: Record<string, number>;
 }
 
@@ -117,6 +121,10 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
     bottomLevel: [],
   }),
   businessProfile: () => ({}),
+  resetMfaAction: async () => {
+    console.warn("No resetMfaAction provided");
+    return Promise.resolve(null);
+  },
   setActiveStore: () => {},
   activeStore: () => ({}),
   storeList: () => [],
@@ -124,7 +132,6 @@ const props = withDefaults(defineProps<ISidebarProps>(), {
   badgeConfig: () => ({}),
 });
 
-const profileUtil = props.businessProfile;
 const sidebarRouteList = reactive<ISidebarRouteType>(props.routes);
 
 const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
@@ -136,11 +143,7 @@ const groupRoutesByCategory = (items: IRouteGroupType[]): GroupedByCategory => {
   }, {} as GroupedByCategory);
 };
 
-const morAccountType = computed(() => {
-  return profileUtil?.getUser?.().morAccountType ?? "merchant";
-});
-
-const formatBadge = (count: number) => (count > 10 ? "10+" : String(count))
+const formatBadge = (count: number) => (count > 20 ? "20+" : String(count));
 
 const groupedAndFilteredRoutes = computed(() => {
   const grouped: GroupedByCategory = groupRoutesByCategory(
@@ -149,9 +152,7 @@ const groupedAndFilteredRoutes = computed(() => {
   const filtered: GroupedByCategory = {};
 
   for (const category in grouped) {
-    const filteredRoutes = grouped[category].filter(
-      (route) => !route.type || route.type === morAccountType.value,
-    );
+    const filteredRoutes = grouped[category].filter((route) => !route.type);
     if (filteredRoutes.length) {
       filtered[category] = filteredRoutes;
     }
@@ -197,7 +198,7 @@ const groupedAndFilteredRoutes = computed(() => {
       @apply text-[14.5px] flex items-center gap-x-2 flex-1;
 
       .badge {
-        @apply ml-4 inline-flex items-center justify-center w-[32px] h-[32px] px-2 text-[12px] leading-none font-semibold text-[#D94072] bg-[#FDEEF4] rounded-full;
+        @apply ml-4 inline-flex items-center justify-center w-[38px] h-[38px] px-2 text-[12px] leading-none font-semibold text-[#D94072] bg-[#FDEEF4] rounded-full;
       }
     }
   }

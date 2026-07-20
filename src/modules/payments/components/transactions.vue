@@ -1,43 +1,18 @@
-<!-- eslint-disable vue/multi-word-component-names, vue/valid-define-props, dot-notation -->
 <template>
   <section class="transactions-panel">
     <div class="filters-row">
-      <div class="search-field">
-        <span class="icon icon-search-normal"></span>
-        <input v-model="searchQuery" type="search" placeholder="Search" />
-      </div>
-
-      <label class="filter-select">
-        <select v-model="selectedPaymentMethod">
-          <option value="">Payment method</option>
-          <option
-            v-for="method in paymentMethodOptions"
-            :key="method"
-            :value="method"
-          >
-            {{ method }}
-          </option>
-        </select>
-        <span class="icon icon-caret-down"></span>
-      </label>
-
-      <label class="filter-select">
-        <select v-model="selectedStatus">
-          <option value="">Status</option>
-          <option v-for="status in statusOptions" :key="status" :value="status">
-            {{ status }}
-          </option>
-        </select>
-        <span class="icon icon-caret-down"></span>
-      </label>
-
-      <DatePicker
-        filterSize="lg"
-        :activePeriod="activePeriod"
-        @onFilterSelected="processFilterSelection"
+      <FilterBar
+        :filters="filterConfig"
+        :values="filterValues"
+        variant="panel"
+        @change="onFilterChange"
       />
 
-      <button class="export-button" type="button" @click="exportToExcel">
+      <button
+        class="btn btn-sm btn-secondary mt-8"
+        type="button"
+        @click="handleExport"
+      >
         Export
       </button>
     </div>
@@ -58,28 +33,41 @@
         :tableData="payload"
       />
     </TableContainer>
+
+    <Pagination
+      v-if="tablePaging.page_count > 0"
+      :pageDescription="`Page ${tablePaging.current_page} of ${tablePaging.total_pages_count}`"
+      :pagingData="tablePaging"
+      @page-change="onPageChange"
+    />
   </section>
 </template>
 
 <script setup lang="ts">
-/* eslint-disable vue/valid-define-props, dot-notation */
-import { computed, defineProps, ref, withDefaults } from "vue";
+import { computed, ref, reactive, watch, onMounted, h } from "vue";
 import { TableHeaderType } from "@packages/models";
-import { useDate, useString } from "@packages/hooks";
+import { useDate, useString, useEvents } from "@packages/hooks";
 import {
-  DatePicker,
+  FilterBar,
+  Pagination,
   TableContainer,
   TableContainerBody,
+  TableDoubleColumn,
 } from "@packages/uikit";
-import * as XLSX from "xlsx";
+import { usePaymentStore } from "@/modules/payments/store";
+import { exportTransactionsCSV } from "@/shared/utils/transaction-export";
 
 interface MerchantTransaction {
   date: string;
-  rawDate: Date | null;
-  email: string;
+  createdAt: string;
+  customer: string;
+  customerSecondary: string;
   paymentMethod: string;
   amount: string;
-  rawStatus: string;
+  status: string;
+  reference: string;
+  reason: string;
+  type: string;
 }
 
 const props = withDefaults(
@@ -87,180 +75,260 @@ const props = withDefaults(
     merchantId?: string;
     merchantDetails?: Record<string, any> | null;
   }>(),
-  {
-    merchantId: "",
-    merchantDetails: null,
-  },
+  { merchantId: "", merchantDetails: null },
 );
 
-const { getStatus, formatNumber } = useString();
+const { getTransactions } = usePaymentStore();
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } =
+  useString();
 
 const isLoading = ref(false);
-const searchQuery = ref("");
-const selectedPaymentMethod = ref("");
-const selectedStatus = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
+const page = ref(1);
+const tablePaging = ref<any>({});
 
-const paymentMethodOptions = ["Card", "Momo", "Bank Transfer"];
-const statusOptions = ["Successful", "Pending", "Failed"];
+const filterValues = reactive({
+  search: "",
+  paymentMethod: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
 
-const tableHeader = ref<TableHeaderType[]>([
-  { title: "Date", slug: "date" },
-  { title: "Email", slug: "email" },
-  { title: "Payment Method", slug: "payment_method" },
-  { title: "Amount", slug: "amount" },
-  { title: "Status", slug: "status" },
-]);
-
-const fallbackTransactions: MerchantTransaction[] = [
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
   {
-    date: "Today",
-    rawDate: new Date(),
-    email: "business@email.com",
-    paymentMethod: "Card",
-    amount: "N10,500",
-    rawStatus: "Successful",
+    type: "select" as const,
+    key: "paymentMethod",
+    options: ["Card", "Mobilemoney", "Bank Transfer", "Reversal"],
+    placeholder: "Payment method",
   },
   {
-    date: "Yesterday",
-    rawDate: new Date(Date.now() - 24 * 60 * 60 * 1000),
-    email: "admin@digitalworld.com",
-    paymentMethod: "Momo",
-    amount: "N10,500",
-    rawStatus: "Successful",
+    type: "select" as const,
+    key: "status",
+    options: ["Completed", "Pending", "Failed", "Cancelled"],
+    placeholder: "Status",
   },
-  {
-    date: "August 5, 2024",
-    rawDate: new Date("2024-08-05"),
-    email: "support@innovatehub.com",
-    paymentMethod: "Card",
-    amount: "N10,500",
-    rawStatus: "Failed",
-  },
+  { type: "date" as const, key: "period" },
 ];
 
-const normalizeTransaction = (
-  transaction: Record<string, any>,
-): MerchantTransaction => {
-  const createdAt =
-    transaction.created_at || transaction.date_created || transaction.date;
-  const rawDate = createdAt ? new Date(createdAt) : null;
-  const amount = transaction.amount
-    ? `${transaction.currency || "NGN"} ${formatNumber(transaction.amount)}`
-    : transaction.amount_text || transaction.amount || "N10,500";
-  const status = transaction.status || transaction.rawStatus || "Successful";
-
-  return {
-    date: transaction.date_label || transaction.date || formatDate(createdAt),
-    rawDate,
-    email: transaction.email || transaction["customer_email"] || "-",
-    paymentMethod:
-      transaction["payment_method"] || transaction.paymentMethod || "Card",
-    amount,
-    rawStatus: status,
-  };
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    filterValues.period =
+      value?.length === 2 ? [new Date(value[0]), new Date(value[1])] : null;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  page.value = 1;
 };
+
+const tableHeader: TableHeaderType[] = [
+  { title: "Date", slug: "date" },
+  { title: "Customer", slug: "customer" },
+  { title: "Payment Method", slug: "payment_method" },
+  { title: "Amount", slug: "amount" },
+  {title: "Reference", slug: "reference" },
+  { title: "Status", slug: "status" },
+
+  {title: "Reason", slug: "reason"}
+];
 
 const formatDate = (date?: string) => {
   if (!date) return "-";
-
-  const { m3, d3, y1 } = useDate.formatDate(date).getAll();
-  return `${m3} ${d3}, ${y1}`;
+  const { m3, d3, y1, h1, b2, a0 } = useDate.formatDate(date).getAll();
+  return `${m3} ${d3}, ${y1} ${h1}:${b2} ${a0}`;
 };
 
-const sourceTransactions = computed<MerchantTransaction[]>(() => {
-  const transactions =
-    props.merchantDetails?.transactions ||
-    props.merchantDetails?.transaction_history ||
-    [];
+const getDateCreated = (date: string) => {
+  const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
+  return `${w2}, ${d3} ${m3}, ${y1}`;
+};
 
-  return transactions.length
-    ? transactions.map((transaction: Record<string, any>) =>
-        normalizeTransaction(transaction),
-      )
-    : fallbackTransactions;
+const getCustomerName = (data: any) => {
+  if (!data) return "-";
+  const firstName = data.first_name;
+  const lastName = data.last_name;
+  if (firstName || lastName)
+    return `${firstName || ""} ${lastName || ""}`.trim();
+  const account = data.account_number;
+  if (account) return account;
+  return data.reference || "-";
+};
+
+const getCustomerSecondary = (data: any) => {
+  if (!data) return "-";
+  const email = data.email;
+  if (email) return email;
+  const phone = data.phone;
+  if (phone) return phone;
+  return "-";
+};
+
+const normalizeTransaction = (
+  transaction: Record<string, any>,
+): MerchantTransaction => ({
+  date: formatDate(transaction.created_at),
+  createdAt: transaction.created_at,
+  customer: getCustomerName(transaction),
+  customerSecondary: getCustomerSecondary(transaction),
+  paymentMethod: transaction.method || "-",
+
+  amount: transaction.amount
+    ? `${transaction.currency} ${formatNumber(transaction.amount)}`
+    : "-",
+  status: (transaction.status || "").toLowerCase(),
+  reference: transaction.reference || "-",
+  reason: transaction.failure_reason || "-",
+  type: transaction.type || "-",
 });
 
-const isWithinRange = (date: Date | null, range: [Date, Date] | null) => {
-  if (!date || !range) return true;
-
-  const start = new Date(range[0]);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(range[1]);
+const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z");
+const fmtEndISO = (date: Date) => {
+  const end = new Date(date);
   end.setHours(23, 59, 59, 999);
-
-  return date >= start && date <= end;
+  return end.toISOString().replace(/\.\d+Z$/, "Z");
 };
 
-const filteredRows = computed<MerchantTransaction[]>(() => {
-  const query = searchQuery.value.trim().toLowerCase();
+const apiFilters = computed(() => {
+  let filters = `?page=${page.value}&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}`;
 
-  return sourceTransactions.value.filter((transaction) => {
-    const matchesSearch = query
-      ? [
-          transaction.date,
-          transaction.email,
-          transaction.paymentMethod,
-          transaction.amount,
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(query)
-      : true;
-    const matchesMethod = selectedPaymentMethod.value
-      ? transaction.paymentMethod.toLowerCase() ===
-        selectedPaymentMethod.value.toLowerCase()
-      : true;
-    const matchesStatus = selectedStatus.value
-      ? transaction.rawStatus.toLowerCase() ===
-        selectedStatus.value.toLowerCase()
-      : true;
-    const matchesDate = isWithinRange(transaction.rawDate, activePeriod.value);
+  if (filterValues.paymentMethod)
+    filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`;
 
-    return matchesSearch && matchesMethod && matchesStatus && matchesDate;
-  });
+  if (filterValues.period) {
+    filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`;
+    filters += `&to_created_at=${fmtEndISO(filterValues.period[1])}`;
+  }
+  return filters;
 });
+
+const transactions = ref<MerchantTransaction[]>([]);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const fetchTransactions = async () => {
+  if (!props.merchantId) return;
+  isLoading.value = true;
+
+  const response = await processAPIRequest({
+    action: getTransactions,
+    payload: { filters: apiFilters.value, page: page.value },
+    showAlert: false,
+  });
+
+  isLoading.value = false;
+
+  if (response?.code !== 200) return;
+
+  const data = response.data;
+  const transactionsList = Array.isArray(data)
+    ? data
+    : data?.transactions || [];
+
+  transactions.value = transactionsList
+    .map((t: Record<string, any>) => {
+      try {
+        return normalizeTransaction(t);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean) as MerchantTransaction[];
+
+  const src = response.pagination?.[0] || data;
+  const totalRecords = src.total_records || 0;
+  const pageSize = src.page_size || 10;
+  const pageCount = Math.ceil(totalRecords / pageSize) || 0;
+  tablePaging.value = {
+    current_page: src.current_page || src.page || page.value,
+    page_count: pageCount,
+    total_pages_count: pageCount,
+  };
+};
+
+const onPageChange = (pageNum: number) => {
+  page.value = pageNum;
+};
 
 const filteredTableBody = computed(() =>
-  filteredRows.value.map((transaction) => ({
-    date: transaction.date,
-    email: transaction.email,
-    payment_method: transaction.paymentMethod,
-    amount: transaction.amount,
-    status: getStatus(
-      transaction.rawStatus.toLowerCase(),
-      transaction.rawStatus,
-    ),
-  })),
+  transactions.value.map((transaction) => {
+    const key =
+      transaction.status === "completed" ? "successful" : transaction.status;
+    const label =
+      transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1);
+    return {
+      date: h(TableDoubleColumn, {
+        entry: {
+          primaryText: getDateCreated(transaction.createdAt),
+          secondaryText: useDate.formatTime(transaction.createdAt),
+        },
+      }),
+      customer: h(TableDoubleColumn, {
+        entry: {
+          primaryText: transaction.customer,
+          secondaryText: transaction.customerSecondary,
+        },
+      }),
+      payment_method: h(TableDoubleColumn, {
+        entry: {
+          primaryText: capitalizeFirstLetter(
+            transaction.paymentMethod.replace(/_/g, " "),
+          ),
+          secondaryText: capitalizeFirstLetter(
+            transaction.type.replace(/_/g, " "),
+          ),
+        },
+      }),
+   
+      amount: getBoldTableText(transaction.amount),
+      status: getStatus(key, label),
+      reference: transaction.reference,
+      reason: transaction.reason,
+    };
+  }),
 );
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string] | null,
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    return;
+watch(
+  () => [props.merchantId, apiFilters.value] as const,
+  () => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(fetchTransactions, 300);
+  },
+);
+
+onMounted(() => {
+  if (props.merchantId) fetchTransactions();
+});
+
+const handleExport = async () => {
+  const filters: Record<string, string> = {
+    user_id: props.merchantId,
+    ...(filterValues.status && { status: filterValues.status }),
+    ...(filterValues.search && { reference: filterValues.search }),
+    ...(filterValues.paymentMethod && {
+      method:
+        filterValues.paymentMethod === "bank transfer"
+          ? "bank"
+          : filterValues.paymentMethod,
+    }),
+    ...(filterValues.period && {
+      from_created_at: fmtStartISO(filterValues.period[0]),
+      to_created_at: fmtEndISO(filterValues.period[1]),
+    }),
+  };
+
+  const result = await exportTransactionsCSV(
+    filters,
+    `Merchant_${props.merchantId}_Transactions.csv`,
+  );
+
+  if (!result.success) {
+    pushToastAlert({
+      message: "Export failed",
+      description:
+        result.message ||
+        "Data exceeds the number exportable. Please apply filters to narrow your search.",
+      type: "error",
+    });
   }
-
-  activePeriod.value = null;
-};
-
-const exportToExcel = () => {
-  const cleanData = filteredRows.value.map((transaction) => ({
-    Date: transaction.date,
-    Email: transaction.email,
-    "Payment Method": transaction.paymentMethod,
-    Amount: transaction.amount,
-    Status: transaction.rawStatus,
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(cleanData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Merchant Transactions");
-  XLSX.writeFile(workbook, `Merchant_${props.merchantId}_Transactions.xlsx`);
 };
 </script>
 
@@ -271,34 +339,6 @@ const exportToExcel = () => {
 
 .filters-row {
   @apply flex flex-wrap items-center gap-5;
-}
-
-.search-field {
-  @apply relative w-[260px] md:w-full;
-
-  .icon {
-    @apply absolute left-4 top-1/2 -translate-y-1/2 text-grey-500;
-  }
-
-  input {
-    @apply h-11 w-full rounded-lg border border-grey-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-grey-900 outline-none transition focus:border-teal-800;
-  }
-}
-
-.filter-select {
-  @apply relative inline-flex h-11 min-w-[170px] items-center rounded-lg bg-grey-100 text-sm font-bold text-grey-900 md:w-full;
-
-  select {
-    @apply h-full w-full appearance-none bg-transparent px-4 pr-10 outline-none;
-  }
-
-  .icon {
-    @apply pointer-events-none absolute right-4 text-xs text-grey-700;
-  }
-}
-
-.export-button {
-  @apply ml-auto h-10 rounded-lg border border-grey-700 bg-white px-6 text-sm font-bold text-grey-900 transition hover:border-teal-800 hover:text-teal-800 md:ml-0;
 }
 
 :deep(tbody tr td:last-child) {

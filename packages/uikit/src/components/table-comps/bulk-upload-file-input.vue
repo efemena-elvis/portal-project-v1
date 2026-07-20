@@ -145,9 +145,6 @@ const processDocumentUpload = async (
     inputElement.value = "";
     updateUploadingStatus(merchantId, path);
 
-    console.log("merchantId", merchantId);
-    console.log("path", path);
-
     inputValue.value = response.data[0].file_url;
     updateFieldInput(merchantId, path, inputValue.value);
   }

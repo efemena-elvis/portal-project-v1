@@ -91,7 +91,7 @@ const adminPermissions = {
     "View Business Settings & Preferences",
     "Invite Users",
   ],
-  
+
   Compliance: [
     "View Transactions",
     "Manage Refunds & Disputes",
@@ -119,7 +119,6 @@ const adminPermissions = {
     "Manage Refunds & Disputes",
     "View Customers",
   ],
-  
 };
 
 export const defaultRoles = ref<any[]>([

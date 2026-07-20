@@ -8,12 +8,7 @@
   >
     <div class="w-full">
       <!-- BRAND LOGO -->
-      <img
-        v-if="show_logo"
-        :src="renderImg('alexpay-logo.png')"
-        alt="Alexpay Logo"
-        class="brand-logo"
-      />
+      <VesicashLogo v-if="show_logo" class="brand-logo" />
 
       <!-- TITLE TEXT -->
       <div
@@ -40,10 +35,9 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
-import { useImage } from "@/shared/composables";
 import { useAppVariant } from "@packages/hooks";
+import { VesicashLogo } from "@packages/uikit";
 
-const { renderImg } = useImage();
 const appVariant = ref<string>(useAppVariant());
 
 defineProps({
@@ -76,7 +70,7 @@ defineProps({
 
 <style lang="scss" scoped>
 .auth-wrapper {
-  @apply relative w-[55%] lg:w-[65%] sm:w-full mx-auto h-full bg-[#ffffff] p-8 rounded-[14px];
+  @apply relative w-[55%]  lg:w-[65%] sm:w-full mx-auto h-full bg-[#ffffff] p-8 rounded-[14px];
 
   .brand-logo {
     @apply w-[132px] h-auto mb-8;

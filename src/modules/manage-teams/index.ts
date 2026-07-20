@@ -1,20 +1,18 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import ManageTeamsPage from "@/modules/manage-teams/pages/manage-teams.vue";
+import RolesPage from "@/modules/manage-teams/pages/roles.vue";
+import ActivitiesPage from "@/modules/manage-teams/pages/activities.vue";
 
 const manageTeamsRoutes: IRouteType[] = [
   {
     path: "/manage-teams",
-    component: () =>
-      import(
-        /* webpackChunkName: "manage-teams-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
       {
         path: "",
         name: "VesicashManageTeams",
-        component: () =>
-          import(
-            /* webpackChunkName: "manage-teams-module" */ "@/modules/manage-teams/pages/manage-teams.vue"
-          ),
+        component: ManageTeamsPage,
         meta: {
           requiresAuth: true,
           title: "Manage Teams",
@@ -27,10 +25,7 @@ const manageTeamsRoutes: IRouteType[] = [
       {
         path: "roles",
         name: "VesicashManageTeamsRoles",
-        component: () =>
-          import(
-            /* webpackChunkName: "manage-teams-roles" */ "@/modules/manage-teams/pages/roles.vue"
-          ),
+        component: RolesPage,
         meta: {
           requiresAuth: true,
           title: "Manage Roles",
@@ -43,10 +38,7 @@ const manageTeamsRoutes: IRouteType[] = [
       {
         path: "activities",
         name: "VesicashManageTeamsActivities",
-        component: () =>
-          import(
-            /* webpackChunkName: "manage-teams-activities" */ "@/modules/manage-teams/pages/activities.vue"
-          ),
+        component: ActivitiesPage,
         meta: {
           requiresAuth: true,
           title: "Team Activities",

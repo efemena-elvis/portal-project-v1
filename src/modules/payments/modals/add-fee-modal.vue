@@ -28,6 +28,7 @@
           :labelCompact="false"
           inputPlaceholder="Select method"
           :selectData="paymentMethodOptions"
+          :inputValue="feePayload.payment_method"
           isRequired
           @onSelectionChange="feePayload.payment_method = $event"
         />
@@ -44,13 +45,14 @@
 
         <div class="field-grid">
           <SelectFieldInput
-            labelId="country"
+            labelId="country_code"
             labelTitle="Country"
             :labelCompact="false"
             inputPlaceholder="Select country"
             :selectData="countryOptions"
+            :inputValue="feePayload.country_code"
             isRequired
-            @onSelectionChange="feePayload.country = $event"
+            @onSelectionChange="feePayload.country_code = $event"
           />
 
           <SelectFieldInput
@@ -120,94 +122,129 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted } from "vue"
-import { IInputType } from "@packages/models"
-import { useEvents } from "@packages/hooks"
-import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit"
+import { computed, ref, watch, onMounted } from "vue";
+import { IInputType } from "@packages/models";
+import { useEvents } from "@packages/hooks";
+import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
-  merchant: string
-  method: string
-  country: string
-  fee_type: string
-  amount: number
-  cap_amount: number
-  payment_method: string
-}
+  merchant: string;
+  user_id: string;
+  method: string;
+  country_code: string;
+  fee_type: string;
+  amount: number | string;
+  cap_amount: number | string;
+  payment_method: string;
+};
 
 const props = withDefaults(
   defineProps<{
-    merchantId?: string
-    merchantName?: string
+    merchantId?: string;
+    merchantName?: string;
   }>(),
   {
     merchantId: "",
     merchantName: "",
   },
-)
+);
 
 const emits = defineEmits<{
-  closeTriggered: []
-  feeAdded: []
-}>()
+  closeTriggered: [];
+  feeAdded: [];
+}>();
 
-const { processAPIRequest } = useEvents()
+const { processAPIRequest } = useEvents();
 
-const methodOptions = [{ value: "payin", name: "Payin" }, { value: "payout", name: "Payout" }]
-const paymentMethodOptions = [
-
-  { value: "mobilemoney", name: "Mobile Money" },
-  { value: "card", name: "Card" },
-
+const methodOptions = [
+  { value: "payin", name: "Payin" },
+  { value: "payout", name: "Payout" },
 ];
+const paymentMethodOptions = computed(() => {
+  const methods = [{ value: "mobilemoney", name: "Mobile Money" }];
+  if (feePayload.value.method === "payin") {
+    methods.push({ value: "card", name: "Card" });
+  } else {
+    methods.push({ value: "bank", name: "Bank" });
+  }
+  return methods;
+});
 const countryOptions = [
-  { value: "nigeria", name: "Nigeria" },
-  { value: "tanzania", name: "Tanzania" },
-  { value: "ghana", name: "Ghana" },
-  { value: "zambia", name: "Zambia" },
-]
-const typeOptions = [{ value: "percentage", name: "Percentage" }, { value: "fixed", name: "Fixed" }]
+  { value: "NG", name: "Nigeria" },
+  { value: "TZ", name: "Tanzania" },
+  { value: "GH", name: "Ghana" },
+  { value: "ZM", name: "Zambia" },
+];
+const typeOptions = [
+  { value: "percentage", name: "Percentage" },
+  { value: "fixed", name: "Fixed" },
+];
 
-const addFeeBtnRef = ref(null)
+const addFeeBtnRef = ref(null);
 
 const feePayload = ref<IFeePayload>({
   merchant: "",
+  user_id: "",
   method: "payin",
-  country: "nigeria",
+  country_code: "NG",
   payment_method: "",
   fee_type: "percentage",
   amount: "",
-  capAmount: "",
-})
+  cap_amount: "",
+});
 
 const selectedMerchantName = computed(() => {
-  return props.merchantName || "Select merchant"
-})
+  return props.merchantName || "Select merchant";
+});
 
 onMounted(() => {
   if (props.merchantId) {
-    feePayload.value.merchant = props.merchantId
+    feePayload.value.merchant = props.merchantId;
   }
-})
+});
+
+const validPaymentMethods: Record<string, string[]> = {
+  payin: ["mobilemoney", "card"],
+  payout: ["mobilemoney", "bank"],
+};
+
+watch(
+  () => feePayload.value.method,
+  (newMethod) => {
+    const valid = validPaymentMethods[newMethod] || [];
+    if (!valid.includes(feePayload.value.payment_method)) {
+      feePayload.value.payment_method = "";
+    }
+  },
+);
 
 const isActionReady = computed(() => {
   return !(
     feePayload.value.merchant &&
     feePayload.value.method &&
-    feePayload.value.country &&
-    feePayload.value.type &&
+    feePayload.value.country_code &&
+    feePayload.value.fee_type &&
     feePayload.value.amount !== "" &&
-    feePayload.value.capAmount !== ""
-  )
-})
+    feePayload.value.cap_amount !== "" &&
+    feePayload.value.payment_method !== ""
+  );
+});
 
 const handleAddFee = async () => {
+  feePayload.value.user_id = feePayload.value.merchant;
+
+  const { merchant: _, ...payload } = feePayload.value;
+  const apiPayload = {
+    ...payload,
+    amount: parseFloat(payload.amount as string) || 0,
+    cap_amount: parseFloat(payload.cap_amount as string) || 0,
+  };
+
   const response = await processAPIRequest({
     action: async () => {
-
-      return { code: 200 }
+      return { code: 200 };
     },
-    payload: feePayload.value,
+    payload: apiPayload,
     btnRef: addFeeBtnRef,
     btnText: "Save config",
     alertHandler: {
@@ -220,13 +257,13 @@ const handleAddFee = async () => {
         type: "error",
       },
     },
-  })
+  });
 
   if (response.code === 200) {
-    emits("feeAdded")
-    emits("closeTriggered")
+    emits("feeAdded");
+    emits("closeTriggered");
   }
-}
+};
 </script>
 
 <style scoped lang="scss">
@@ -265,5 +302,4 @@ const handleAddFee = async () => {
 .fee-modal-footer {
   @apply flex justify-end gap-8 px-10 pb-10 pt-8 sm:flex-col sm:px-5 sm:pb-6;
 }
-
 </style>

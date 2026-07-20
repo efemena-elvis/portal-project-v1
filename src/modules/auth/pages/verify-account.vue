@@ -1,8 +1,7 @@
 <template>
   <AuthWrapper
-    title_text="Enter OTP code"
-    :meta_text="`Enter the One Time Password code we sent to 
-      <span class='text-green-500 font-medium'>${userEmailAddress}</span>`"
+    title_text="Enter authentication code"
+    meta_text="Enter the code from your authenticator app"
     icon_display_type="icon-mail"
   >
     <form @submit.prevent="handleUserEmailVerification">
@@ -26,102 +25,61 @@
         </div>
 
         <button
-          class="btn btn-primary w-full"
+          class="btn btn-primary w-[90%]"
           ref="verifyBtnRef"
           :disabled="isVerifyReady"
         >
-          Verify email
+          Verify
         </button>
-
-        <div class="helper-row justify-center mt-7">
-          <div class="text">
-            Didn't receive the email?
-            <router-link
-              to=""
-              @click.prevent="resendOTP"
-              :class="{
-                'pointer-events-none text-gray-400': resendCountdown > 0,
-              }"
-            >
-              {{ resendText }}
-            </router-link>
-          </div>
-        </div>
       </div>
     </form>
   </AuthWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useEvents, useProfile } from "@packages/hooks";
+import { ref, computed, onMounted, nextTick } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useEvents } from "@packages/hooks";
 import AuthWrapper from "@/modules/auth/components/auth-wrapper.vue";
 import { useAuthStore } from "@/modules/auth/store";
 
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 
 const authStore = useAuthStore();
-const profileUtil = new useProfile(authStore);
 
-const { sendVerifyEmailOTP, verifyEmailOTP } = authStore;
+const { verifyMfaOtp, verifyLogin } = authStore;
 const { processAPIRequest } = useEvents();
 
-const userEmailAddress = ref<string | null>(null);
 const verifyBtnRef = ref(null);
 
-const otpFields = ref(Array(4).fill(""));
+const otpFields = ref(Array(6).fill(""));
 const otpRefs = ref<(HTMLInputElement | null)[]>([]);
-
-const resendCountdown = ref(0);
-let countdownInterval: number | null = null;
 
 const getOTPToken = computed(() => otpFields.value.join(""));
 
 const isVerifyReady = computed(() => {
-  return !(userEmailAddress.value && getOTPToken.value.length === 4);
+  return getOTPToken.value.length !== 6;
 });
 
-const getVerifyPayload = computed(() => {
-  return { email: userEmailAddress.value, token: getOTPToken.value };
-});
-
-// Initialize the refs array
 const setOtpRef = (el: any, index: number) => {
   otpRefs.value[index] = el;
-};
-
-const resendText = computed(() => {
-  return resendCountdown.value > 0
-    ? `Resend in ${resendCountdown.value}s`
-    : "Click to resend";
-});
-
-const getUserEmailAddress = () => {
-  if (!Array.isArray(route.query.email)) {
-    const decodedEmail = decodeURIComponent(route.query.email as string);
-    userEmailAddress.value = decodedEmail || "No email address";
-  }
 };
 
 const moveFieldFocus = (index: number) => {
   let val = otpFields.value[index];
 
-  // Keep only the first digit (handle pasting or multiple input)
   if (val.length > 1) {
     val = val.charAt(0);
     otpFields.value[index] = val;
   }
 
-  // If a digit (including 0) is entered, move focus to the next field
   if (val !== "" && index < otpFields.value.length - 1) {
     nextTick(() => {
       otpRefs.value[index + 1]?.focus();
     });
   }
 
-  // If it's the last input and filled, blur it
   if (index === otpFields.value.length - 1 && val !== "") {
     nextTick(() => {
       otpRefs.value[index]?.blur();
@@ -137,7 +95,6 @@ const handleBackspace = (index: number) => {
   }
 };
 
-// Handle OTP paste
 const handlePaste = (event: ClipboardEvent) => {
   event.preventDefault();
   const pastedData = event.clipboardData?.getData("text/plain").trim() || "";
@@ -150,7 +107,6 @@ const handlePaste = (event: ClipboardEvent) => {
     otpFields.value[index] = value;
   });
 
-  // Blur last field after paste
   const lastFilledIndex = otpValues.length - 1;
 
   if (lastFilledIndex === otpFields.value.length - 1) {
@@ -160,85 +116,45 @@ const handlePaste = (event: ClipboardEvent) => {
   }
 };
 
-// HANDLE OTP RESEND
-const resendOTP = async () => {
-  if (resendCountdown.value > 0) return;
-
-  // Start countdown
-  resendCountdown.value = 15;
-
-  // Clear any existing interval
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-
-  // Start new countdown
-  countdownInterval = window.setInterval(() => {
-    resendCountdown.value -= 1;
-
-    if (resendCountdown.value <= 0 && countdownInterval) {
-      clearInterval(countdownInterval);
-      countdownInterval = null;
-    }
-  }, 1000);
-
-  await sendOutEmailToken();
-};
-
 const handleUserEmailVerification = async () => {
+  const isMfaMode = route.query.mode === "mfa";
+  const email = (route.query.email as string) || "";
+
+  const action = isMfaMode
+    ? () => verifyMfaOtp({ code: getOTPToken.value })
+    : () => verifyLogin({ email, mfa_code: getOTPToken.value });
+
   const response = await processAPIRequest({
-    action: verifyEmailOTP,
-    payload: getVerifyPayload.value,
+    action,
+    payload: isMfaMode
+      ? { code: getOTPToken.value }
+      : { email, mfa_code: getOTPToken.value },
     btnRef: verifyBtnRef,
-    btnText: "Verify email address",
+    btnText: "Verify",
     alertHandler: {
       200: {
-        message: "Email address is verified",
+        message: "Two-factor authentication verified successfully",
         type: "success",
       },
 
       400: {
-        message: "Email verification failed",
+        message: "Verification failed",
+        description: "Invalid OTP code",
         type: "error",
       },
     },
   });
 
   if (response.code === 200) {
-    // Check if user is authenticated
     setTimeout(() => {
-      router.push(
-        profileUtil.isUserAuthenticated()
-          ? "/confirm-verify-account"
-          : "/login",
-      );
+      router.push("/overview");
     }, 2000);
   }
 };
 
-// SEND OUT EMAIL VERIFICATION
-const sendOutEmailToken = async () => {
-  await processAPIRequest({
-    action: sendVerifyEmailOTP,
-    payload: { email: userEmailAddress.value },
-    showAlert: false,
-  });
-};
-
-// Focus the first input when component mounts
-onMounted(async () => {
+onMounted(() => {
   otpRefs.value[0]?.focus();
-  await sendOutEmailToken();
 });
-
-// Clean up interval when component unmounts
-onUnmounted(() => {
-  if (countdownInterval) {
-    clearInterval(countdownInterval);
-  }
-});
-
-getUserEmailAddress();
 </script>
 
 <style lang="scss" scoped>
@@ -249,7 +165,7 @@ getUserEmailAddress();
     @apply flex justify-center items-start gap-x-3 mdLg:gap-x-2 mb-11;
 
     .form-control {
-      @apply h-20 mdLg:h-16 sm:h-14 w-20 mdLg:w-16 sm:w-14 text-center text-[40px] mdLg:text-[32px] sm:text-[26px] font-semibold sm:font-medium text-green-500 py-4 focus:shadow-sm focus:shadow-green-100/80;
+      @apply h-16 w-16  text-center text-[20px]  font-semibold sm:font-medium text-green-500 py-4 focus:shadow-sm focus:shadow-green-100/80;
     }
   }
 }

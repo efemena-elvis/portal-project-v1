@@ -8,10 +8,11 @@ import { useStorage } from "@packages/hooks";
 
 const { removeStorage } = useStorage();
 const {
-  MOR_AUTH_TOKEN,
-  MOR_AUTH_USER,
-  MOR_AUTH_BUSINESS,
-  MOR_AUTH_BUSINESS_TOKEN,
+  PORTAL_AUTH_TOKEN,
+  PORTAL_AUTH_USER,
+  PORTAL_AUTH_BUSINESS,
+  PORTAL_AUTH_BUSINESS_TOKEN,
+  PORTAL_REFRESH_TOKEN,
 } = constants;
 
 // HANDLE USER LOG OUT LOGIC
@@ -19,10 +20,11 @@ const logOutUser = () => {
   const storage_exception_key = "identifier_token";
 
   // PRIORITY REMOVALS ON LOGOUT
-  removeStorage(MOR_AUTH_USER);
-  removeStorage(MOR_AUTH_TOKEN);
-  removeStorage(MOR_AUTH_BUSINESS);
-  removeStorage(MOR_AUTH_BUSINESS_TOKEN);
+  removeStorage(PORTAL_AUTH_USER);
+  removeStorage(PORTAL_AUTH_TOKEN);
+  removeStorage(PORTAL_AUTH_BUSINESS);
+  removeStorage(PORTAL_AUTH_BUSINESS_TOKEN);
+  removeStorage(PORTAL_REFRESH_TOKEN);
   removeStorage("timestamp");
 
   for (let i = 0; i < localStorage.length; i++) {

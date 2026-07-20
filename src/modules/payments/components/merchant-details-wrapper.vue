@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/valid-define-props, vue/valid-define-emits -->
 <template>
   <main class="merchant-details">
     <header class="page-header">
@@ -7,29 +6,10 @@
         Back
       </button>
 
-      <div v-if="showAdminActions" class="admin-actions">
-        <button
-          class="outline-action outline-action--success"
-          type="button"
-          @click="$emit('actionSelected', 'reset-password')"
-        >
-          Reset account password
-        </button>
-        <button
-          class="outline-action outline-action--success"
-          type="button"
-          @click="$emit('actionSelected', 'login')"
-        >
-          Login to account
-        </button>
-        <button
-          class="outline-action outline-action--danger"
-          type="button"
-          @click="$emit('actionSelected', 'delete')"
-        >
-          Deactivate merchant's account
-        </button>
-      </div>
+      <MerchantAdminActions
+        v-if="showAdminActions"
+        @actionSelected="(action: any) => $emit('actionSelected', action)"
+      />
     </header>
 
     <section class="summary-card">
@@ -52,45 +32,14 @@
       <slot name="summaryExtra" />
     </section>
 
-    <section v-if="showPayoutRequest" class="payout-card">
-      <h2>Payout request</h2>
-
-      <div class="payout-grid">
-        <div>
-          <p>Date</p>
-          <strong>{{ payoutDate }}</strong>
-        </div>
-        <div>
-          <p>Amount</p>
-          <strong>{{ payoutAmount }}</strong>
-        </div>
-        <div>
-          <p>Sort code</p>
-          <strong>{{ payoutSortCode }}</strong>
-        </div>
-        <div>
-          <p>Account number</p>
-          <strong>{{ payoutAccountNumber }}</strong>
-        </div>
-      </div>
-
-      <div class="payout-actions">
-        <button
-          class="solid-action solid-action--danger"
-          type="button"
-          @click="$emit('payoutActionSelected', 'reject')"
-        >
-          Reject
-        </button>
-        <button
-          class="solid-action solid-action--success"
-          type="button"
-          @click="$emit('payoutActionSelected', 'approve')"
-        >
-          Approve
-        </button>
-      </div>
-    </section>
+    <MerchantPayoutCard
+      v-if="showPayoutRequest"
+      :payoutRequest="payoutRequest"
+      :selectedCurrency="selectedCurrency"
+      @payoutActionSelected="
+        (action: any) => $emit('payoutActionSelected', action)
+      "
+    />
 
     <section v-if="showMetrics" class="metrics-card">
       <div class="metrics-toolbar">
@@ -106,39 +55,14 @@
           </select>
           <span class="icon icon-caret-down"></span>
         </label>
-
-        <DatePicker
-          filterSize="lg"
-          :activePeriod="activePeriod"
-          @onFilterSelected="processFilterSelection"
-        />
       </div>
 
       <div class="metrics-content">
-        <div class="metric-grid">
-          <article
-            v-for="metric in metrics"
-            :key="metric.label"
-            class="metric-tile"
-          >
-            <p>{{ metric.label }}</p>
-            <strong>{{ metric.value }}</strong>
-          </article>
-        </div>
-
-        <div class="status-chart">
-          <div class="donut" :style="donutStyle"></div>
-          <div class="status-legend">
-            <div
-              v-for="item in statusBreakdown"
-              :key="item.label"
-              class="legend-row"
-            >
-              <span :class="item.className"></span>
-              <p>{{ item.label }} - {{ item.value }}%</p>
-            </div>
-          </div>
-        </div>
+        <MerchantMetricsGrid
+          :source="metricsSource"
+          :selectedCurrency="selectedCurrency"
+        />
+        <MerchantDonut :stats="transactionStats" />
       </div>
     </section>
 
@@ -147,13 +71,16 @@
 </template>
 
 <script setup lang="ts">
-/* eslint-disable vue/valid-define-props, vue/valid-define-emits */
-import { computed, defineEmits, defineProps, ref, withDefaults } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { DatePicker } from "@packages/uikit";
-import { useDate, useString } from "@packages/hooks";
+import { useString, useEvents } from "@packages/hooks";
+import { usePaymentStore } from "@/modules/payments/store";
+import MerchantAdminActions from "./merchant-admin-actions.vue";
+import MerchantDonut from "./merchant-donut.vue";
+import MerchantPayoutCard from "./merchant-payout-card.vue";
+import MerchantMetricsGrid from "./merchant-metrics-grid.vue";
 
-type MerchantAction = "reset-password" | "login" | "delete";
+type MerchantAction = "reset-password" | "login" | "reset-mfa" | "delete";
 type PayoutAction = "approve" | "reject";
 
 const props = withDefaults(
@@ -183,20 +110,28 @@ defineEmits<{
   payoutActionSelected: [action: PayoutAction];
 }>();
 
-
 const router = useRouter();
 const { formatNumber } = useString();
+const { processAPIRequest } = useEvents();
+const { getTransactions } = usePaymentStore();
 
-const activePeriod = ref<[Date, Date] | null>(null);
 const selectedCurrency = ref("NGN");
 const currencyOptions = ["NGN", "GHS", "TZS", "ZMW", "USD"];
 const currencySymbols: Record<string, string> = {
-  NGN: "₦",
+  NGN: "\u20A6",
   GHS: "GHS",
   TZS: "TSh",
   ZMW: "ZK",
   USD: "$",
 };
+
+const isLoadingStats = ref(false);
+const transactionStats = ref<{ title: string; value: number }[]>([
+  { title: "Total Transactions", value: 0 },
+  { title: "Completed", value: 0 },
+  { title: "Pending", value: 0 },
+  { title: "Failed", value: 0 },
+]);
 
 const detail = computed(() => props.merchantDetails || {});
 const payoutRequest = computed(
@@ -240,109 +175,54 @@ const businessInitials = computed(() =>
     .toUpperCase(),
 );
 
-const payoutDate = computed(() => {
-  const rawDate = payoutRequest.value.date || payoutRequest.value.created_at;
-  if (!rawDate) return "12th April, 2022";
+const fetchStats = async () => {
+  if (!props.merchantId) return;
+  isLoadingStats.value = true;
 
-  const { d3, m3, y1 } = useDate.formatDate(rawDate).getAll();
-  return `${d3} ${m3}, ${y1}`;
-});
+  const base = `?page_size=1&user_id=${props.merchantId}`;
+  const call = (filters: string) =>
+    processAPIRequest({
+      action: getTransactions,
+      payload: { filters },
+      showAlert: false,
+    });
 
-const payoutAmount = computed(() => {
-  const amount =
-    payoutRequest.value.amount || payoutRequest.value.amount_requested;
-  const currency = payoutRequest.value.currency || selectedCurrency.value;
-  if (!amount) return "$30,000";
+  const [totalRes, completedRes, pendingRes, failedRes] = await Promise.all([
+    call(base),
+    call(`${base}&status=completed`),
+    call(`${base}&status=pending`),
+    call(`${base}&status=failed`),
+  ]);
 
-  return `${currency} ${formatNumber(amount)}`;
-});
-const payoutSortCode = computed(
-  () =>
-    payoutRequest.value.sort_code || payoutRequest.value.sortCode || "014004",
-);
-const payoutAccountNumber = computed(
-  () =>
-    payoutRequest.value.account_number ||
-    payoutRequest.value.accountNumber ||
-    "012703765",
-);
+  isLoadingStats.value = false;
 
-const formatMetric = (value: unknown, fallback: string) => {
-  if (value === undefined || value === null || value === "") return fallback;
-  if (typeof value === "number")
-    return `${currencySymbols[selectedCurrency.value] || ""}${formatNumber(value)}`;
-  return `${value}`;
-};
-
-const metrics = computed(() => [
-  {
-    label: "Available Balance",
-    value: formatMetric(metricsSource.value.available_balance, "$52,000"),
-  },
-  {
-    label: "Total Transactions",
-    value: formatMetric(metricsSource.value.total_transactions, "Z52,000"),
-  },
-  {
-    label: "Total Payout",
-    value: formatMetric(metricsSource.value.total_payout, "Z52,000"),
-  },
-  {
-    label: "Refunds",
-    value: formatMetric(metricsSource.value.refunds, "Z52,000"),
-  },
-]);
-
-const statusBreakdown = computed(() => {
-  const source = metricsSource.value.status_breakdown || {};
-  return [
-    {
-      label: "Successful",
-      value: Number(source.successful ?? source.success ?? 68),
-      className: "legend-dot legend-dot--success",
-    },
-    {
-      label: "Pending",
-      value: Number(source.pending ?? 12),
-      className: "legend-dot legend-dot--pending",
-    },
-    {
-      label: "Failed",
-      value: Number(source.failed ?? 20),
-      className: "legend-dot legend-dot--failed",
-    },
-  ];
-});
-
-const donutStyle = computed(() => {
-  const success = statusBreakdown.value[0].value;
-  const pending = statusBreakdown.value[1].value;
-  const failed = statusBreakdown.value[2].value;
-  const successEnd = success;
-  const pendingEnd = success + pending;
-
-  return {
-    background: `conic-gradient(#34bd63 0 ${successEnd}%, #f5b740 ${successEnd}% ${pendingEnd}%, #df7391 ${pendingEnd}% ${pendingEnd + failed}%, #e9f1ef ${pendingEnd + failed}% 100%)`,
+  const parseTotal = (res: any) => {
+    const src = res?.pagination?.[0] || res?.data;
+    return src?.total_records || src?.total || 0;
   };
-});
 
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string] | null,
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    activePeriod.value = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    return;
-  }
-
-  activePeriod.value = null;
+  transactionStats.value = [
+    { title: "Total Transactions", value: parseTotal(totalRes) },
+    { title: "Completed", value: parseTotal(completedRes) },
+    { title: "Pending", value: parseTotal(pendingRes) },
+    { title: "Failed", value: parseTotal(failedRes) },
+  ];
 };
 
 const handleGoBack = () => {
   router.back();
 };
+
+watch(
+  () => props.merchantId,
+  () => {
+    fetchStats();
+  },
+);
+
+onMounted(() => {
+  fetchStats();
+});
 </script>
 
 <style scoped lang="scss">
@@ -356,22 +236,6 @@ const handleGoBack = () => {
 
 .back-button {
   @apply inline-flex h-10 items-center gap-2 rounded-lg border border-grey-700 bg-white px-4 text-sm font-semibold text-grey-900 transition hover:border-teal-800 hover:text-teal-800;
-}
-
-.admin-actions {
-  @apply flex flex-wrap items-center justify-end gap-5 md:w-full md:justify-start;
-}
-
-.outline-action {
-  @apply h-10 rounded-lg border bg-white px-6 text-sm font-bold transition;
-}
-
-.outline-action--success {
-  @apply border-green-500 text-green-500 hover:bg-green-50;
-}
-
-.outline-action--danger {
-  @apply border-red-500 text-red-500 hover:bg-pink-50;
 }
 
 .summary-card {
@@ -414,42 +278,6 @@ const handleGoBack = () => {
   @apply bg-blue-50 text-blue-600;
 }
 
-.payout-card {
-  @apply rounded-xl border border-yellow-200 bg-yellow-200/20 p-7;
-
-  h2 {
-    @apply mb-5 text-base font-bold text-grey-900;
-  }
-}
-
-.payout-grid {
-  @apply grid grid-cols-4 gap-6 md:grid-cols-2 sm:grid-cols-1;
-
-  p {
-    @apply mb-2 text-xs font-bold uppercase text-grey-500;
-  }
-
-  strong {
-    @apply text-sm font-bold text-grey-900;
-  }
-}
-
-.payout-actions {
-  @apply mt-6 flex items-center gap-5;
-}
-
-.solid-action {
-  @apply h-10 min-w-[120px] rounded-lg px-6 text-sm font-bold text-white transition;
-}
-
-.solid-action--danger {
-  @apply bg-red-500 hover:bg-red-600;
-}
-
-.solid-action--success {
-  @apply bg-green-500 hover:bg-green-600;
-}
-
 .metrics-card {
   @apply rounded-lg bg-white p-7 sm:p-5;
 }
@@ -474,55 +302,7 @@ const handleGoBack = () => {
   @apply grid grid-cols-[minmax(0,1fr)_minmax(320px,0.95fr)] gap-7 lg:grid-cols-1;
 }
 
-.metric-grid {
-  @apply grid grid-cols-2 gap-5 sm:grid-cols-1;
-}
-
-.metric-tile {
-  @apply min-h-[84px] rounded-lg bg-grey-50 p-6;
-
-  p {
-    @apply mb-3 text-xs font-semibold text-grey-600;
-  }
-
-  strong {
-    @apply text-2xl font-bold text-grey-900;
-  }
-}
-
-.status-chart {
-  @apply flex min-h-[190px] items-center gap-20 justify-center rounded-lg bg-grey-50 p-6 md:gap-8 sm:flex-col;
-}
-
-.donut {
-  @apply relative size-36 shrink-0 rounded-full;
-
-  &::after {
-    @apply absolute left-1/2 top-1/2 size-[82px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-50 content-[''];
-  }
-}
-
-.status-legend {
-  @apply flex flex-col gap-6;
-}
-
-.legend-row {
-  @apply flex items-center gap-4 text-sm font-medium text-grey-900;
-}
-
-.legend-dot {
-  @apply size-5 rounded-full;
-}
-
-.legend-dot--success {
-  @apply bg-green-500;
-}
-
-.legend-dot--pending {
-  @apply bg-yellow-500;
-}
-
-.legend-dot--failed {
-  @apply bg-red-300;
+:deep(tbody tr td:last-child) {
+  text-align: left;
 }
 </style>

@@ -2,38 +2,52 @@
   <div class="client-area-wrapper">
     <div class="client-area">
       <div class="client-area-brand">
-        {{
-          getBrandInitials(
-            getBusinessProfile?.businessName ?? "No business name",
-          )
-        }}
+        {{ getInitials(getUserDisplayName) }}
       </div>
 
       <div class="client-area-details">
         <!-- CLIENT AREA INFO -->
         <div class="client-area-info cursor-pointer">
           <div class="brand-name">
-            {{ getBusinessProfile?.businessName ?? "No business name" }}
+            {{ getUserDisplayName }}
           </div>
 
           <div class="brand-id-row">
             <div class="brand-id">Admin</div>
           </div>
         </div>
+
+        <!-- DROPDOWN TOGGLER -->
+        <div
+          class="client-toggler"
+          ref="togglerRef"
+          @click="showDropdown = !showDropdown"
+        >
+          <div class="icon-caret-down"></div>
+        </div>
+
+        <!-- DROPDOWN -->
+        <div
+          class="app-dropdown"
+          ref="dialogRef"
+          v-if="showDropdown"
+          role="dialog"
+        >
+          <div class="dropdown-wrapper">
+            <router-link
+              to="/change-password"
+              class="app-dropdown-item"
+              @click="showDropdown = false"
+            >
+              <div class="text">Change Password</div>
+            </router-link>
+            <div class="app-dropdown-item" @click="handleResetMfa">
+              <div class="text">Reset MFA</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- <div
-      class="dropdown-area-wrapper"
-      ref="dialogRef"
-      v-if="showDropdown"
-      role="dialog"
-      aria-modal="true"
-    >
-      <router-link to="/logout" class="dropdown-area select-none">
-        <div class="dropdown-item">Sign Out</div>
-      </router-link>
-    </div> -->
   </div>
 </template>
 
@@ -43,14 +57,19 @@ import { useString, useClickOutside, useEvents } from "@packages/hooks";
 
 interface IClientAreaProps {
   businessProfile: any;
+  resetMfaAction: (userId: string) => Promise<any>;
 }
 
 const props = withDefaults(defineProps<IClientAreaProps>(), {
   businessProfile: () => ({}),
+  resetMfaAction: async () => {
+    console.warn("No resetMfaAction provided");
+    return Promise.resolve(null);
+  },
 });
 
-const { pushToastAlert } = useEvents();
 const { getStringInitials } = useString();
+const { pushToastAlert, processAPIRequest } = useEvents();
 
 const profileUtil = props.businessProfile;
 
@@ -61,29 +80,37 @@ const togglerRef = ref<HTMLElement | null>(null);
 const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
 
-const copied = ref<boolean>(false);
-
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
 const getUser = computed(() => profileUtil.getUser());
 
-// GET BRAND INITIALS
-const getBrandInitials = (brandName: string): string =>
-  getStringInitials(brandName);
+const getUserDisplayName = computed(() => {
+  const user = getUser.value;
+  if (!user) return "No business name";
+  const first = user.firstName ?? "";
+  const last = user.lastName ?? "";
+  return `${first} ${last}`.trim() || "No business name";
+});
 
-// COPY MERCHANT BUSINESS ID
-const copyMerchantID = async () => {
-  // const { businessId } = getBusiness();
-  const businessId = "123456789";
-  await navigator.clipboard.writeText(businessId);
+const handleResetMfa = async () => {
+  showDropdown.value = false;
 
-  pushToastAlert({
-    message: "Merchant ID copied successfully",
-    type: "success",
+  const userId = getUser.value?.id;
+  if (!userId) return;
+
+  const response = await processAPIRequest({
+    action: () => props.resetMfaAction(userId),
+    showAlert: false,
   });
 
-  copied.value = true;
-  setTimeout(() => (copied.value = false), 2000);
+  if (response?.code === 200) {
+    pushToastAlert({
+      message: "MFA reset successfully. Please login again.",
+      type: "success",
+    });
+    location.href = "/logout";
+  }
 };
+
+const getInitials = (brandName: string): string => getStringInitials(brandName);
 </script>
 
 <style lang="scss" scoped>
@@ -118,7 +145,11 @@ const copyMerchantID = async () => {
       }
 
       .client-toggler {
-        @apply text-neutral-50/55 text-sm w-[8%];
+        @apply text-grey-600 text-sm w-[8%] cursor-pointer flex justify-center items-center;
+      }
+
+      .app-dropdown {
+        @apply w-[180px] top-10;
       }
     }
   }

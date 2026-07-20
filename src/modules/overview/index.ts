@@ -1,22 +1,17 @@
 import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import OverviewPage from "@/modules/overview/pages/overview.vue";
 
 // *********** VESICASH OVERVIEW ROUTES *********** //
 const overviewRoutes: IRouteType[] = [
   {
     path: "/overview",
-    component: () =>
-      import(
-        /* webpackChunkName: "overview-layout" */ "@/layouts/base-layout.vue"
-      ),
+    component: BaseLayout,
     children: [
-      // *********** VESICASH OVERVIEW *********** //
       {
         path: "",
         name: "VesicashOverview",
-        component: () =>
-          import(
-            /* webpackChunkName: "overview-module" */ "@/modules/overview/pages/overview.vue"
-          ),
+        component: OverviewPage,
         meta: {
           requiresAuth: true,
           title: "Dashboard Overview",

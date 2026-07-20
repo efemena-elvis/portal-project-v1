@@ -3,7 +3,7 @@ const ipageRouteType = (
   route: string,
   title: string,
   description: string,
-) => ({ name, route, title, description })
+) => ({ name, route, title, description });
 
 const complianceRouteMap = {
   dashboard: [
@@ -22,7 +22,7 @@ const complianceRouteMap = {
       "Vesicash portal compliance details",
     ),
   ],
-}
+};
 
 export const complianceRouteList = [
   {
@@ -37,7 +37,7 @@ export const complianceRouteList = [
     category: "compliance",
     metadata: complianceRouteMap.details,
   },
-]
+];
 
 const onboardingRouteMap = {
   entry: [
@@ -64,7 +64,7 @@ const onboardingRouteMap = {
       "Review merchant onboarding status",
     ),
   ],
-}
+};
 
 export const merchantOnboardingRouteList = [
   {
@@ -85,4 +85,4 @@ export const merchantOnboardingRouteList = [
     category: "status",
     metadata: onboardingRouteMap.status,
   },
-]
+];

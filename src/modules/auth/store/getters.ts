@@ -1,9 +1,10 @@
 import { computed } from "vue";
 import { useAuthState } from "./state";
 
-export function useAuthGetters() {
-  const { authToken, authUser, authBusiness, authBusinessToken } =
-    useAuthState();
+type AuthState = ReturnType<typeof useAuthState>;
+
+export function useAuthGetters(state: AuthState) {
+  const { authToken, authUser, authBusiness, authBusinessToken } = state;
 
   const getAuthToken = computed(() => authToken.value);
   const getAuthUser = computed(() => authUser.value);

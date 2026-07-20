@@ -5,11 +5,11 @@ import { NavigationGuardNext, RouteLocationNormalized } from "vue-router";
 import { useRouteGuard } from "@packages/hooks";
 import constants from "@/shared/utilities/constants";
 
-const { MOR_AUTH_TOKEN } = constants;
+const { PORTAL_AUTH_TOKEN } = constants;
 
 /* CONFIGURATION */
 const routeGuard = new useRouteGuard({
-  tokenKey: MOR_AUTH_TOKEN,
+  tokenKey: PORTAL_AUTH_TOKEN,
   loginRoute: "VesicashLogin",
   logoutRoute: "VesicashLogout",
   dashboardRoute: "VesicashOverview",

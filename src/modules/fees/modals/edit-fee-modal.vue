@@ -12,7 +12,6 @@
     <template #modal-cover-header>
       <div class="fee-modal-header">
         <h2>Update fee config</h2>
-        <p>Merchant: {{ merchantDisplayName }}</p>
       </div>
     </template>
 
@@ -22,6 +21,16 @@
           <span class="readonly-label">Merchant</span>
           <span class="readonly-value">{{ merchantDisplayName || "-" }}</span>
         </p>
+        <SelectFieldInput
+          labelId="method"
+          labelTitle="Payment Type"
+          :labelCompact="false"
+          inputPlaceholder="Select type"
+          :selectData="methodOptions"
+          :inputValue="feePayload.method"
+          isRequired
+          @onSelectionChange="feePayload.method = $event"
+        />
 
         <SelectFieldInput
           labelId="paymentMethod"
@@ -34,27 +43,16 @@
           @onSelectionChange="feePayload.payment_method = $event"
         />
 
-        <SelectFieldInput
-          labelId="method"
-          labelTitle="Payment Type"
-          :labelCompact="false"
-          inputPlaceholder="Select type"
-          :selectData="methodOptions"
-          :inputValue="feePayload.method"
-          isRequired
-          @onSelectionChange="feePayload.method = $event"
-        />
-
         <div class="field-grid">
           <SelectFieldInput
-            labelId="country"
+            labelId="country_code"
             labelTitle="Country"
             :labelCompact="false"
             inputPlaceholder="Select country"
             :selectData="countryOptions"
-            :inputValue="feePayload.country"
+            :inputValue="feePayload.country_code"
             isRequired
-            @onSelectionChange="feePayload.country = $event"
+            @onSelectionChange="feePayload.country_code = $event"
           />
 
           <SelectFieldInput
@@ -63,9 +61,9 @@
             :labelCompact="false"
             inputPlaceholder="Select type"
             :selectData="typeOptions"
-            :inputValue="feePayload.fee_type"
+            :inputValue="feePayload.type"
             isRequired
-            @onSelectionChange="feePayload.fee_type = $event"
+            @onSelectionChange="feePayload.type = $event"
           />
         </div>
 
@@ -127,24 +125,27 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
+import {
+  getCountryByCurrencyShort,
+  countryCurrencies,
+} from "@packages/constants";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
   method: string;
-  country: string;
-  fee_type: string;
-  amount: number;
+  country_code: string;
+  type: string;
+  amount: string;
   payment_method: string;
-  cap_amount: number;
+  cap_amount: string;
 };
 
 const props = defineProps<{
   feeId: string;
-  feeData: Record<string, any> | null;
 }>();
 
 const emits = defineEmits<{
@@ -152,28 +153,40 @@ const emits = defineEmits<{
   feeUpdated: [];
 }>();
 
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { getSingleFee, updateFee } = useFeeStore();
 
 const editFeeBtnRef = ref(null);
 const merchantDisplayName = ref("");
+
+// local fee data (populated from API)
+const feeData = ref<Record<string, any> | null>(null);
 
 const methodOptions = [
   { value: "payin", name: "Payin" },
   { value: "payout", name: "Payout" },
 ];
 
-const paymentMethodOptions = [
-  { value: "mobilemoney", name: "Mobile Money" },
-  { value: "card", name: "Card" },
-];
+const paymentMethodOptions = computed(() => {
+  if (feePayload.value.method === "payout") {
+    return [
+      { value: "mobilemoney", name: "Mobile Money" },
+      { value: "bank", name: "Bank" },
+    ];
+  }
+  return [
+    { value: "mobilemoney", name: "Mobile Money" },
+    { value: "card", name: "Card" },
+  ];
+});
 
 const countryOptions = [
-  { value: "nigeria", name: "Nigeria" },
-  { value: "tanzania", name: "Tanzania" },
-  { value: "ghana", name: "Ghana" },
-  { value: "zambia", name: "Zambia" },
+  { name: "Nigeria", value: "NG" },
+  { name: "Ghana", value: "GH" },
+  { name: "Zambia", value: "ZM" },
+  { name: "Tanzania", value: "TZ" },
 ];
+
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
   { value: "fixed", name: "Fixed" },
@@ -182,8 +195,8 @@ const typeOptions = [
 const feePayload = ref<IFeePayload>({
   method: "payin",
   payment_method: "",
-  country: "",
-  fee_type: "percentage",
+  country_code: "",
+  type: "percentage",
   amount: "",
   cap_amount: "",
 });
@@ -191,8 +204,8 @@ const feePayload = ref<IFeePayload>({
 const isActionReady = computed(() => {
   return !(
     feePayload.value.method &&
-    feePayload.value.country &&
-    feePayload.value.fee_type &&
+    feePayload.value.country_code &&
+    feePayload.value.type &&
     feePayload.value.amount !== "" &&
     feePayload.value.cap_amount !== "" &&
     feePayload.value.payment_method !== ""
@@ -200,10 +213,18 @@ const isActionReady = computed(() => {
 });
 
 const normalizeIncomingFee = (data: Record<string, any>) => {
+  let countryCode = "NG";
+  if (data?.currency) {
+    const match = getCountryByCurrencyShort(data.currency);
+    if (match) countryCode = match.code.toUpperCase();
+  } else if (data?.country) {
+    countryCode = data.country.toString().toUpperCase();
+  }
+
   return {
     method: (data?.method ?? "payin").toString().toLowerCase(),
-    country: (data?.country ?? "nigeria").toString().toLowerCase(),
-    fee_type: (data?.type ?? "percentage").toString().toLowerCase(),
+    country_code: countryCode,
+    type: (data?.type ?? "percentage").toString().toLowerCase(),
     amount: data?.amount ?? "",
     cap_amount: data?.cap_amount ?? data?.cap_mount ?? "",
     payment_method: data?.payment_method ?? "",
@@ -211,31 +232,40 @@ const normalizeIncomingFee = (data: Record<string, any>) => {
 };
 
 const initialiseFromFeeData = () => {
-  if (!props.feeData) return;
+  if (!feeData.value) return;
 
-  merchantDisplayName.value = props.feeData.name || "";
+  merchantDisplayName.value =
+    (feeData.value.user &&
+      (feeData.value.user.first_name || feeData.value.user.last_name
+        ? `${feeData.value.user.first_name || ""} ${feeData.value.user.last_name || ""}`.trim()
+        : feeData.value.user.email)) ||
+    feeData.value.name ||
+    "";
 
-  feePayload.value = normalizeIncomingFee(props.feeData);
+  feePayload.value = normalizeIncomingFee(feeData.value);
 };
 
 const fetchFeeDetail = async () => {
   if (!props.feeId) return;
 
   const response = await processAPIRequest({
-    action: async () => getSingleFee(props.feeId),
+    action: getSingleFee,
+    payload: { merchant_config_uuid: props.feeId },
+
     showAlert: false,
   });
 
   if (response?.code === 200 && response.data) {
-    merchantDisplayName.value = response.data?.name || "";
-    feePayload.value = normalizeIncomingFee(response.data);
+    feeData.value = response.data;
+    initialiseFromFeeData();
   }
 };
 
 const handleUpdateFee = async () => {
   const payload = {
     ...feePayload.value,
-    country: feePayload.value.country.toLowerCase(),
+    amount: parseFloat(feePayload.value.amount as string) || 0,
+    cap_amount: parseFloat(feePayload.value.cap_amount as string) || 0,
   };
 
   const response = await processAPIRequest({
@@ -243,26 +273,39 @@ const handleUpdateFee = async () => {
     payload,
     btnRef: editFeeBtnRef,
     btnText: "Update config",
-    alertHandler: {
-      200: {
-        message: "Fee configuration updated successfully",
-        type: "success",
-      },
-      400: {
-        message: "Unable to update fee configuration",
-        type: "error",
-      },
-    },
+    showAlert: false,
   });
 
-  if (response.code === 200) {
+  if (response?.code >= 200 && response?.code < 300) {
+    pushToastAlert({
+      message: "Fee configuration updated successfully",
+      type: "success",
+    });
     emits("feeUpdated");
     emits("closeTriggered");
+  } else {
+    pushToastAlert({
+      message: "Unable to update fee configuration",
+      description: response?.message || "Please try again",
+      type: "error",
+    });
   }
 };
 
+watch(
+  () => feePayload.value.method,
+  (newMethod) => {
+    const validMethods =
+      newMethod === "payout"
+        ? ["mobilemoney", "bank"]
+        : ["mobilemoney", "card"];
+    if (!validMethods.includes(feePayload.value.payment_method)) {
+      feePayload.value.payment_method = "";
+    }
+  },
+);
+
 onMounted(() => {
-  initialiseFromFeeData();
   fetchFeeDetail();
 });
 </script>
@@ -288,11 +331,11 @@ onMounted(() => {
   @apply flex flex-col;
 
   .readonly-label {
-    @apply text-sm font-medium text-grey-700 mb-0.5;
+    @apply text-[15px] font-semibold text-grey-700 mb-2;
   }
 
   .readonly-value {
-    @apply text-base text-grey-900 font-semibold bg-green-50 px-3 py-2 rounded-lg border border-green-200;
+    @apply text-base text-grey-900 font-semibold bg-green-50 p-3 rounded-lg border border-green-200;
   }
 }
 

@@ -6,31 +6,59 @@ import constants from "@/shared/utilities/constants";
 const { setStorage } = useStorage();
 const { encodeString, getRandomString } = useString();
 const {
-  MOR_AUTH_TOKEN,
-  MOR_AUTH_USER,
-  MOR_AUTH_BUSINESS,
-  MOR_AUTH_BUSINESS_TOKEN,
+  PORTAL_AUTH_TOKEN,
+  PORTAL_AUTH_USER,
+  PORTAL_AUTH_BUSINESS,
+  PORTAL_AUTH_BUSINESS_TOKEN,
+  PORTAL_REFRESH_TOKEN,
 } = constants;
 
-export function useAuthMutations() {
-  const { authToken, authUser, authBusiness, authBusinessToken } =
-    useAuthState();
+type AuthState = ReturnType<typeof useAuthState>;
+
+export function useAuthMutations(state?: AuthState) {
+  const resolved = state || useAuthState();
+  const { authToken, authUser, authBusiness, authBusinessToken, refreshToken } =
+    resolved;
 
   const mutateUserData = (responsePayload: any) => {
-    mutateAuthToken(responsePayload);
-    mutateAuthUser(responsePayload);
-    mutateAuthBusiness(responsePayload);
-    mutateAuthBusinessToken(responsePayload);
+    try {
+      mutateAuthToken(responsePayload);
+    } catch (error) {}
+
+    try {
+      mutateAuthUser(responsePayload);
+    } catch (error) {}
+
+    try {
+      mutateAuthBusiness(responsePayload);
+    } catch (error) {}
+
+    try {
+      mutateAuthBusinessToken(responsePayload);
+    } catch (error) {
+      console.error(error);
+    }
+
+    try {
+      mutateRefreshToken(responsePayload);
+    } catch (error) {}
   };
 
   // MUTATE AUTH TOKEN
   const mutateAuthToken = (payload: any) => {
-    authToken.value = payload.auth_token;
-    axios.defaults.headers.common.Authorization = payload.auth_token;
+    // Support both old (auth_token) and new (access_token) API formats
+    const token = payload.auth_token || payload.access_token;
+
+    if (!token) {
+      return;
+    }
+
+    authToken.value = token;
+    axios.defaults.headers.common.Authorization = token;
 
     setStorage({
-      storage_name: MOR_AUTH_TOKEN,
-      storage_value: payload.auth_token,
+      storage_name: PORTAL_AUTH_TOKEN,
+      storage_value: token,
     });
 
     setStorage({
@@ -43,19 +71,23 @@ export function useAuthMutations() {
   const mutateAuthUser = (payload: any) => {
     const { user } = payload;
 
+    if (!user) {
+      return;
+    }
+
     authUser.value = {
-      id: user.id,
+      id: user.id || user.uuid,
       email: user.email,
-      country: user.country,
-      firstName: user.first_name,
-      lastName: user.last_name,
-      currentBusiness: user.current_business,
-      isEmailVerified: payload.is_email_verified,
-      morAccountType: user.mor_account_type,
+      country: user.country || "",
+      firstName: user.first_name || "",
+      lastName: user.last_name || "",
+      currentBusiness: user.current_business || null,
+      isEmailVerified:
+        payload.is_email_verified || user.email_verified || false,
     };
 
     setStorage({
-      storage_name: MOR_AUTH_USER,
+      storage_name: PORTAL_AUTH_USER,
       storage_value: authUser.value,
       storage_type: "object",
     });
@@ -63,7 +95,13 @@ export function useAuthMutations() {
 
   // MUTATE AUTH BUSINESS
   const mutateAuthBusiness = (payload: any) => {
-    const { business } = payload.user.business_users[0];
+    // Handle optional business data - newer API may not include business_users
+    const businessUser = payload.user?.business_users?.[0];
+    const business = businessUser?.business;
+
+    if (!business) {
+      return;
+    }
 
     authBusiness.value = {
       businessAddress: business.address,
@@ -82,7 +120,7 @@ export function useAuthMutations() {
     };
 
     setStorage({
-      storage_name: MOR_AUTH_BUSINESS,
+      storage_name: PORTAL_AUTH_BUSINESS,
       storage_value: authBusiness.value,
       storage_type: "object",
     });
@@ -92,7 +130,7 @@ export function useAuthMutations() {
     authBusiness.value.businessMode = mode;
 
     setStorage({
-      storage_name: MOR_AUTH_BUSINESS,
+      storage_name: PORTAL_AUTH_BUSINESS,
       storage_value: authBusiness.value,
       storage_type: "object",
     });
@@ -100,7 +138,12 @@ export function useAuthMutations() {
 
   // MUTATE AUTH BUSINESS TOKEN
   const mutateAuthBusinessToken = (payload: any) => {
-    const { apikeys } = payload.user.business_users[0].business;
+    // Handle optional API keys - newer API may not include this
+    const apikeys = payload.user?.business_users?.[0]?.business?.apikeys;
+
+    if (!apikeys) {
+      return;
+    }
 
     const testData = apikeys.find((key: any) => key.type === "test") || {};
     const liveData = apikeys.find((key: any) => key.type === "live") || {};
@@ -135,14 +178,28 @@ export function useAuthMutations() {
     authBusinessToken.value = authToken;
 
     setStorage({
-      storage_name: MOR_AUTH_BUSINESS_TOKEN,
+      storage_name: PORTAL_AUTH_BUSINESS_TOKEN,
       storage_value: authBusinessToken.value,
       storage_type: "object",
+    });
+  };
+
+  const mutateRefreshToken = (payload: any) => {
+    const token = payload.refresh_token;
+    if (!token) return;
+
+    refreshToken.value = token;
+
+    setStorage({
+      storage_name: PORTAL_REFRESH_TOKEN,
+      storage_value: token,
     });
   };
 
   return {
     mutateUserData,
     mutateBusinessMode,
+    mutateAuthToken,
+    mutateRefreshToken,
   };
 }

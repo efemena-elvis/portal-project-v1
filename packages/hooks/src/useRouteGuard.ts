@@ -1,8 +1,8 @@
-import { useStorage, useString } from "@packages/hooks";
+import { useStorage } from "@packages/hooks";
 import { RouteLocationNormalized, NavigationGuardNext } from "vue-router";
+import { jwtDecode } from "jwt-decode";
 
 const { getStorage } = useStorage();
-const { checkAuthTimeout } = useString();
 
 interface IRouteGuard {
   tokenKey: string;
@@ -12,7 +12,8 @@ interface IRouteGuard {
 }
 
 class RouteGuard {
-  sessionTime: number = 90;
+  private readonly REFRESH_KEY = "PORTAL_REFRESH_TOKEN";
+  sessionTime: number = 15;
   tokenKey: string = "";
   loginRoute: string = "";
   logoutRoute: string = "";
@@ -29,6 +30,19 @@ class RouteGuard {
     return getStorage({
       storage_name: this.tokenKey,
     });
+  }
+
+  private isRefreshExpired(): boolean {
+    const token = getStorage({ storage_name: this.REFRESH_KEY }) as
+      | string
+      | null;
+    if (!token) return true;
+    try {
+      const { exp } = jwtDecode<{ exp: number }>(token);
+      return Date.now() >= exp * 1000;
+    } catch {
+      return true;
+    }
   }
 
   verifyAuthRoutes(
@@ -60,9 +74,7 @@ class RouteGuard {
     next: NavigationGuardNext,
     is_guest: boolean = false,
   ): void {
-    const is_timed_out: boolean = checkAuthTimeout(this.sessionTime);
-
-    if (is_timed_out) {
+    if (this.isRefreshExpired()) {
       if (to?.name !== this.logoutRoute) {
         next({ name: this.logoutRoute });
       } else {

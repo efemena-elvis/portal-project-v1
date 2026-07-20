@@ -5,56 +5,14 @@
     pageDescription="All Aggregators"
     @updatePage="(currentPage: number) => (page = currentPage)"
     :pagingData="tablePaging"
-    @searchEntered="processSearchEntry"
   >
     <template #pageContent>
       <section class="flex flex-col gap-7">
-        <div class="flex flex-wrap justify-between gap-6 items-start">
-          <div class="flex justify-start items-center gap-4 w-full">
-            <div class="relative w-[20%]">
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-              ></div>
-
-              <input
-                v-model="searchQuery"
-                type="search"
-                class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-                placeholder="Search"
-                aria-label="Search merchants"
-              />
-            </div>
-
-            <div
-              class="relative text-sm font-semibold text-teal-800 border rounded-lg cursor-pointer filter-select bg-white"
-            >
-              <select
-                v-model="selectedStatus"
-                class="w-[180px] p-4 bg-transparent appearance-none focus:outline-none"
-              >
-                <option value="">Status</option>
-
-                <option
-                  v-for="(status, index) in statusOptions"
-                  :key="index"
-                  :value="status.toLowerCase()"
-                >
-                  {{ status }}
-                </option>
-              </select>
-
-              <div
-                class="absolute text-[16px] text-teal-800 -translate-y-1/2 pointer-events-none icon icon-caret-down right-4 top-1/2"
-              ></div>
-            </div>
-
-            <DatePicker
-              filterSize="lg"
-              :activePeriod="activePeriod"
-              @onFilterSelected="processFilterSelection"
-            />
-          </div>
-        </div>
+        <FilterBar
+          :filters="filterConfig"
+          :values="filterValues"
+          @change="onFilterChange"
+        />
 
         <TableContainer
           :tableHeader="tableHeader"
@@ -79,58 +37,70 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted, watch, computed } from "vue";
+import { ref, h, computed, reactive } from "vue";
 import { TableHeaderType } from "@packages/models";
-import { useDate, useString, useEvents } from "@packages/hooks";
-import { useAggregatorStore } from "@/modules/aggregators/store";
-import { TableDoubleColumn } from "@packages/uikit";
-
 import {
+  useDate,
+  useString,
+  useEvents,
+  useAutoFetch,
+  useDateFilter,
+} from "@packages/hooks";
+import { useAggregatorStore } from "@/modules/aggregators/store";
+import {
+  TableDoubleColumn,
   TableContainer,
   TableContainerBody,
   PageContentWrapper,
-  DatePicker,
+  FilterBar,
 } from "@packages/uikit";
+
 import { useRouter } from "vue-router";
 
-const { getStatus, getBoldTableText, capitalizeFirstLetter } = useString();
+const { getStatus, getBoldTableText } = useString();
 const { processAPIRequest } = useEvents();
 const { getAggregators } = useAggregatorStore();
 const router = useRouter();
 
 const isLoading = ref(true);
-const selectedStatus = ref("");
 const page = ref(1);
-const searchQuery = ref("");
-const activePeriod = ref<[Date, Date] | null>(null);
+
+const filterValues = reactive({
+  search: "",
+  status: "",
+  period: null as [Date, Date] | null,
+});
+
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
+  {
+    type: "select" as const,
+    key: "status",
+    options: ["verified", "pending", "rejected"],
+    placeholder: "Status",
+  },
+  { type: "date" as const, key: "period" },
+];
+
+const { onDateSelected } = useDateFilter();
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  if (key === "period") {
+    onDateSelected(value);
+    filterValues.period = value;
+  } else {
+    (filterValues as any)[key] = value;
+  }
+  if (key !== "search") page.value = 1;
+};
 
 const tableBody = ref<any[]>([]);
 const tablePaging = ref<any>({});
 
-const statusOptions = ["verified", "pending", "rejected"];
-
-const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.toLocaleLowerCase().trim();
-};
-
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${selectedStatus.value}&from=${activePeriod.value ? activePeriod.value[0].toISOString().split("T")[0] : ""}&to=${activePeriod.value ? activePeriod.value[1].toISOString().split("T")[0] : ""}&search=${searchQuery.value}`,
+    `?page=${page.value}&status=${filterValues.status}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
 );
-
-const processFilterSelection = (
-  selectedRange: [Date | string, Date | string],
-) => {
-  if (selectedRange && selectedRange.length === 2) {
-    const normalizedRange: [Date, Date] = [
-      new Date(selectedRange[0]),
-      new Date(selectedRange[1]),
-    ];
-    activePeriod.value = normalizedRange;
-  } else {
-    activePeriod.value = null;
-  }
-};
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date added", slug: "date_created" },
@@ -178,7 +148,7 @@ const fetchAggregators = async (filters: string) => {
 
   const response = await processAPIRequest({
     action: getAggregators,
-    payload: {page: page.value, filters},
+    payload: { page: page.value, filters },
     showAlert: false,
   });
 
@@ -210,14 +180,7 @@ const handleTableClicked = (id: string) => {
   router.push(`/aggregators/${id}`);
 };
 
-watch([selectedStatus, activePeriod], () => {
-  page.value = 1;
-});
-
-watch(filters, (newFilters) => {
-  fetchAggregators(newFilters);
-});
-onMounted(fetchAggregators);
+useAutoFetch(filters, fetchAggregators);
 </script>
 
 <style lang="scss" scoped>

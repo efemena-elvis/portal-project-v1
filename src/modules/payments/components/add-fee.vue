@@ -48,8 +48,8 @@ const props = withDefaults(
 );
 
 const merchantName = computed(() => {
-  if (props.businessName) return props.businessName
-  return props.merchantDetails?.name || ""
+  if (props.businessName) return props.businessName;
+  return props.merchantDetails?.name || "";
 });
 
 const showAddFeeModal = ref(false);
@@ -63,6 +63,4 @@ const showAddFeeModal = ref(false);
 .add-fee-description {
   @apply text-sm leading-6 text-grey-600;
 }
-
-
 </style>

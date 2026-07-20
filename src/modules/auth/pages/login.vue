@@ -4,7 +4,7 @@
     meta_text="Welcome back! Please enter your details."
   >
     <form @submit.prevent="handleUserLogin">
-      <div class="flex flex-col gap-2">
+      <div class="flex flex-col gap-2 ]">
         <!-- EMAIL ADDRESS -->
         <TextFieldInput
           labelId="businessEmail"
@@ -35,6 +35,15 @@
             message: 'Password is a required field',
           }"
         />
+        <div class="helper-row justify-end mt-1 mb-4">
+          <router-link
+            :to="{ name: 'VesicashPasswordRequest' }"
+            class="text-sm text-green-600 hover:text-green-700 font-medium"
+          >
+            Forgot password?
+          </router-link>
+        </div>
+
         <button
           class="btn btn-primary w-full mt-2"
           ref="loginBtnRef"
@@ -92,12 +101,12 @@ const handleUserLogin = async () => {
     btnText: "Login to your dashboard",
     alertHandler: {
       200: {
-        message: "Merchant login successful",
-        description: "You are being redirected to your merchant dashboard",
+        message: "Admin login successful",
+        description: "You are being redirected to 2FA verification page",
         type: "success",
       },
       400: {
-        message: "Merchant login failed",
+        message: "Admin login failed",
         description: "Incorrect email address or password combination",
         type: "error",
       },
@@ -105,13 +114,15 @@ const handleUserLogin = async () => {
   });
 
   if (response && response.code === 200) {
-    const { is_email_verified } = response.data;
+    const { user } = response.data;
+    const two_factor_enabled = user?.two_factor_enabled;
+    const two_factor_verified = user?.two_factor_verified;
 
     setTimeout(() => {
       location.replace(
-        is_email_verified
-          ? "/overview"
-          : `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`,
+        two_factor_enabled && two_factor_verified
+          ? `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`
+          : `/mfa/setup?email=${encodeURIComponent(getLoginPayload.value.email)}`,
       );
     }, 1200);
   }

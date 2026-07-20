@@ -1,4 +1,4 @@
 export const teamRoutes = {
-  getTeams: 'teams',
-  getActivities: 'activities',
-}
+  getTeams: "teams",
+  getActivities: "activities",
+};

@@ -37,7 +37,7 @@
           :isRequired="true"
         />
         <MultiSelectFieldInput
-        :labelCompact="false"
+          :labelCompact="false"
           labelTitle="Country"
           labelId="team-member-country"
           inputPlaceholder="Select countries"
@@ -64,93 +64,97 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, watch } from "vue"
+import { computed, reactive, watch } from "vue";
 import {
   ModalDialog,
   SelectFieldInput,
   MultiSelectFieldInput,
   TextFieldInput,
-} from "@packages/uikit"
-import { IInputType } from "@packages/models"
+} from "@packages/uikit";
+import { IInputType } from "@packages/models";
 
 const props = withDefaults(
   defineProps<{
-    member?: { email: string; role: string; countries: string[] } | null
+    member?: { email: string; role: string; countries: string[] } | null;
   }>(),
   { member: null },
-)
+);
 
 const emit = defineEmits<{
-  closeTriggered: []
-  memberAdded: [payload: { email: string; role: string; countries: string[] }]
-  memberUpdated: [payload: { email: string; role: string; countries: string[] }]
-}>()
+  closeTriggered: [];
+  memberAdded: [payload: { email: string; role: string; countries: string[] }];
+  memberUpdated: [
+    payload: { email: string; role: string; countries: string[] },
+  ];
+}>();
 
 const form = reactive({
   email: "",
   role: "",
   countries: [] as string[],
-})
+});
 
 const countryOptions = [
   { name: "Tanzania", value: "Tanzania" },
   { name: "Nigeria", value: "Nigeria" },
   { name: "Ghana", value: "Ghana" },
   { name: "Zambia", value: "Zambia" },
-]
+];
 
 const roleOptions = [
   { name: "Admin", value: "admin" },
   { name: "Operations", value: "operations" },
-]
+];
 
 const isFormValid = computed(
   () => !!form.email && !!form.countries.length && !!form.role,
-)
+);
 
 const modalTitle = computed(() =>
   props.member ? "Edit team member" : "Add new team member",
-)
+);
 
 const modalDescription = computed(() =>
   props.member
     ? "Update the team member's role and information."
     : "Invite a team member and assign the role they need to access this portal.",
-)
+);
 
 const submitButtonText = computed(() =>
   props.member ? "Update member" : "Invite member",
-)
+);
 
 const handleSubmit = () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value) return;
 
   if (props.member) {
     emit("memberUpdated", {
       email: form.email,
       role: form.role,
       countries: form.countries,
-    })
+    });
   } else {
     emit("memberAdded", {
       email: form.email,
       role: form.role,
       countries: form.countries,
-    })
+    });
   }
-}
+};
 
 watch(
   () => props.member,
   (member) => {
     if (member) {
-      form.email = member.email
-      form.role = member.role.toLowerCase()
-      form.countries = Array.isArray(member.countries) ? [...member.countries] : []
+      form.email = member.email;
+      form.role = member.role.toLowerCase();
+      form.countries = Array.isArray(member.countries)
+        ? [...member.countries]
+        : [];
     }
   },
   { immediate: true },
-)
+);
 </script>
 
 <style scoped lang="scss">

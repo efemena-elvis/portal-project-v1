@@ -1,43 +1,40 @@
 import { createRouter, createWebHistory } from "vue-router";
 import middlewares from "@/middlewares";
+import NotFoundPage from "@/modules/error/pages/not-found.vue";
 
 // IMPORTED ROUTES FROM RESPECTIVE APPLICATION MODULES
 import authRoutes from "@/modules/auth";
 
 import paymentRoutes from "@/modules/payments";
 import merchantsRoutes from "@/modules/merchants";
-import balancesRoutes from "@/modules/balances";
 import complianceRoutes from "@/modules/compliance";
 import externalRoutes from "@/modules/external";
 import overviewRoutes from "@/modules/overview";
 import aggregatorsRoutes from "@/modules/aggregators";
 import disputesRoutes from "@/modules/disputes";
-import fundingRoutes from "@/modules/funding";
+import approvalRoutes from "@/modules/approvals";
 import feesRoutes from "@/modules/fees";
 import manageTeamsRoutes from "@/modules/manage-teams";
+import transactionsRoutes from "@/modules/transactions";
 
 const routes: import("vue-router").RouteRecordRaw[] = [
   ...(authRoutes as any),
   ...(overviewRoutes as any),
   ...(paymentRoutes as any),
+  ...(transactionsRoutes as any),
   ...(merchantsRoutes as any),
-  ...(balancesRoutes as any),
   ...(complianceRoutes as any),
   ...(externalRoutes as any),
   ...(aggregatorsRoutes as any),
   ...(disputesRoutes as any),
-  ...(fundingRoutes as any),
+  ...(approvalRoutes as any),
   ...(feesRoutes as any),
   ...(manageTeamsRoutes as any),
 
   {
     path: "/:pathMatch(.*)*",
     name: "NotFoundError",
-    component: () =>
-      import(
-        /* webpackChunkName: "errorRoute" */
-        "@/modules/error/pages/not-found.vue"
-      ),
+    component: NotFoundPage,
     meta: {
       open: true,
     },

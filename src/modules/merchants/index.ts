@@ -1,36 +1,30 @@
-import { IRouteType } from '@packages/models'
+import { IRouteType } from "@packages/models";
+import BaseLayout from "@/layouts/base-layout.vue";
+import MerchantsPage from "@/modules/merchants/pages/merchants.vue";
+import MerchantDetailsPage from "@/modules/merchants/pages/merchant-details.vue";
 
 const merchantsRoutes: IRouteType[] = [
   {
-    path: '/transactions',
-    component: () =>
-      import(
-        /* webpackChunkName: "merchants-layout" */ '@/layouts/base-layout.vue'
-      ),
+    path: "/transactions",
+    component: BaseLayout,
     children: [
       {
-        path: '/merchants',
-        name: 'VesicashMerchants',
-        component: () =>
-          import(
-            /* webpackChunkName: "merchants-module" */ '@/modules/merchants/pages/merchants.vue'
-          ),
+        path: "/merchants",
+        name: "VesicashMerchants",
+        component: MerchantsPage,
         meta: {
           requiresAuth: true,
-          title: 'Merchants',
+          title: "Merchants",
           pageMeta: {
-            title: 'Merchants',
-            description: 'Merchants',
+            title: "Merchants",
+            description: "Merchants",
           },
         },
       },
       {
-        path: '/merchant/:id',
-        name: 'MerchantDetails',
-        component: () =>
-          import(
-            /* webpackChunkName: "merchants-module" */ '@/modules/merchants/pages/merchant-details.vue'
-          ),
+        path: "/merchant/:id",
+        name: "MerchantDetails",
+        component: MerchantDetailsPage,
         meta: {
           requiresAuth: true,
           title: "Merchant's Details",
@@ -42,6 +36,6 @@ const merchantsRoutes: IRouteType[] = [
       },
     ],
   },
-]
+];
 
-export default merchantsRoutes
+export default merchantsRoutes;

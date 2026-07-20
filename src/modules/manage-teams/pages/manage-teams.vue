@@ -5,7 +5,6 @@
     pageDescription="Manage Teams"
     @updatePage="(currentPage: number) => (page = currentPage)"
     :pagingData="tablePaging"
-    @searchEntered="processSearchEntry"
   >
     <template v-slot:pageContent>
       <section class="flex flex-col gap-7">
@@ -23,18 +22,11 @@
 
         <div class="flex flex-wrap justify-between gap-6 items-start">
           <div class="flex justify-start items-center gap-4 w-full">
-            <div class="relative w-[20%]">
-              <div
-                class="absolute left-4 top-1/2 -translate-y-1/2 text-grey-700 icon icon-search-normal"
-              ></div>
-              <input
-                v-model="searchQuery"
-                type="search"
-                class="w-full rounded-lg border border-grey-200 bg-white py-4 pl-12 pr-4 text-sm text-grey-900 shadow-sm outline-none transition duration-200 ease-in-out"
-                placeholder="Search"
-                aria-label="Search team members"
-              />
-            </div>
+            <FilterBar
+              :filters="filterConfig"
+              :values="filterValues"
+              @change="onFilterChange"
+            />
 
             <button
               class="ml-auto btn btn-sm btn-primary"
@@ -88,15 +80,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, h, computed, onMounted, watch } from "vue";
+import { ref, h, computed, reactive } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { TableHeaderType } from "@packages/models";
-import { useString, useEvents } from "@packages/hooks";
+import { useString, useEvents, useAutoFetch } from "@packages/hooks";
 import { useTeamStore } from "../store";
 import {
   PageContentWrapper,
   TableContainer,
   TableContainerBody,
+  FilterBar,
 } from "@packages/uikit";
 import AddTeamMemberModal from "../modals/add-team-member-modal.vue";
 import DeleteTeamMemberModal from "../modals/delete-team-member-modal.vue";
@@ -137,7 +130,6 @@ const navigateToTab = (tab: string) => {
   }
 };
 
-const searchQuery = ref("");
 const isLoading = ref(true);
 const showAddModal = ref(false);
 const showEditModal = ref(false);
@@ -146,8 +138,16 @@ const selectedMember = ref<any>(null);
 const page = ref(1);
 const tablePaging = ref<any>({});
 
-const processSearchEntry = (searchValue: string) => {
-  searchQuery.value = searchValue.toLocaleLowerCase().trim();
+const filterValues = reactive({
+  search: "",
+});
+
+const filterConfig = [
+  { type: "search" as const, key: "search", placeholder: "Search" },
+];
+
+const onFilterChange = ({ key, value }: { key: string; value: any }) => {
+  (filterValues as any)[key] = value;
 };
 
 const tableHeader = ref<TableHeaderType[]>([
@@ -162,7 +162,7 @@ const tableHeader = ref<TableHeaderType[]>([
 const tableBody = ref<any[]>([]);
 
 const filters = computed(
-  () => `?page=${page.value}&search=${searchQuery.value}`,
+  () => `?page=${page.value}&search=${filterValues.search}`,
 );
 
 const mapMemberToRow = (data: any) => ({
@@ -246,11 +246,7 @@ const handleMemberDeleted = () => {
   fetchTeams(filters.value);
 };
 
-watch(filters, (newFilters) => {
-  fetchTeams(newFilters);
-});
-
-onMounted(() => fetchTeams(filters.value));
+useAutoFetch(filters, fetchTeams);
 </script>
 
 <style scoped lang="scss">
@@ -262,4 +258,3 @@ onMounted(() => fetchTeams(filters.value));
   @apply bg-white text-teal-800;
 }
 </style>
-
