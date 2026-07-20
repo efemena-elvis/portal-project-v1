@@ -12,8 +12,8 @@
         :emptyData="{
           title: 'No payout initiated yet',
           description:
-            'You haven\'t initiated any payout yet. This is where you\'ll be able to see all your initiated payout transactions.',
-          actionText: 'Initiate a Payout',
+            'This merchant hasn\'t initiated any payout yet.',
+  
         }"
       >
         <TableContainerBody

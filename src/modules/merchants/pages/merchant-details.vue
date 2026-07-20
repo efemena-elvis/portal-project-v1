@@ -4,6 +4,7 @@
     :merchantDetails="merchantDetails"
     :businessName="businessName"
     :businessStatus="businessStatus"
+    :wallets="wallets"
     @actionSelected="openMerchantAction"
     @payoutActionSelected="openPayoutAction"
   >
@@ -54,6 +55,7 @@ const router = useRouter();
 const id = route.params.id as string;
 
 const {
+  getMerchants,
   getSingleMerchant,
   resetMerchantPassword,
   loginMerchantAccount,
@@ -66,6 +68,7 @@ const { processAPIRequest } = useEvents();
 
 const activeTab = ref<string>("Transactions");
 const merchantDetails = ref<Record<string, any> | null>(null);
+const wallets = ref<any[]>([]);
 const businessName = ref("Tech-village Inc");
 const businessStatus = ref("Verified");
 const showActionModal = ref(false);
@@ -151,6 +154,25 @@ const fetchMerchantDetails = async () => {
   }
 };
 
+const fetchMerchantWallets = async () => {
+  const email = route.query.email as string;
+  if (!email) return;
+
+  const response = await processAPIRequest({
+    action: getMerchants,
+    payload: {
+      filters: `?page=1&email=${encodeURIComponent(email)}`,
+      page: 1,
+    },
+    showAlert: false,
+  });
+
+  if (response?.code === 200) {
+    const merchant = response.data?.merchants?.find((m: any) => m.uuid === id);
+    wallets.value = merchant?.wallets || [];
+  }
+};
+
 const openMerchantAction = (action: MerchantAction) => {
   activeAction.value = action;
   showActionModal.value = true;
@@ -226,6 +248,7 @@ const handleActionConfirmed = async () => {
 
 onMounted(() => {
   fetchMerchantDetails();
+  fetchMerchantWallets();
 });
 </script>
 

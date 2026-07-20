@@ -114,15 +114,19 @@ const handleUserLogin = async () => {
   });
 
   if (response && response.code === 200) {
+
     const { user } = response.data;
     const two_factor_enabled = user?.two_factor_enabled;
     const two_factor_verified = user?.two_factor_verified;
 
+   
+
     setTimeout(() => {
       location.replace(
-        two_factor_enabled && two_factor_verified
-          ? `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`
-          : `/mfa/setup?email=${encodeURIComponent(getLoginPayload.value.email)}`,
+        `/overview`
+        // two_factor_enabled && two_factor_verified
+        //   ? `/verify-account?email=${encodeURIComponent(getLoginPayload.value.email)}`
+        //   : `/mfa/setup?email=${encodeURIComponent(getLoginPayload.value.email)}`,
       );
     }, 1200);
   }
