@@ -102,7 +102,7 @@ const handleUserLogin = async () => {
     alertHandler: {
       200: {
         message: "Admin login successful",
-        description: "You are being redirected to 2FA verification page",
+        description: "You are being redirected to the dashboard",
         type: "success",
       },
       400: {

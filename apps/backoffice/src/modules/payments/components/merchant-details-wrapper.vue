@@ -19,29 +19,32 @@
       </div>
 
       <div class="business-copy">
-        <p>Business name</p>
+        <div class="business-label-row">
+          <p>Business name</p>
+          <span v-if="businessStatus" :class="['chip', businessStatus === 'approved' || 'verified' ? 'chip-success' : 'chip-warning']">{{ businessStatus.charAt(0).toUpperCase() + businessStatus.slice(1) }}</span>
+        </div>
         <div class="business-title-row">
           <h1>{{ businessName }}</h1>
           <span class="chip chip-warning">{{
             entityType || businessType
           }}</span>
-          <span class="chip chip-info">{{ countryName }}</span>
+          <span v-if="countryName" class="chip chip-info">{{ countryName }}</span>
         </div>
       </div>
 
       <slot name="summaryExtra" />
     </section>
 
-    <MerchantPayoutCard
+    <!-- <MerchantPayoutCard
       v-if="showPayoutRequest"
       :payoutRequest="payoutRequest"
       :selectedCurrency="selectedCurrency"
       @payoutActionSelected="
         (action: any) => $emit('payoutActionSelected', action)
       "
-    />
+    /> -->
 
-    <section v-if="showMetrics" class="metrics-card">
+    <section class="metrics-card">
       <div class="metrics-toolbar">
         <label class="currency-select">
           <select v-model="selectedCurrency">
@@ -74,8 +77,8 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { useString, useEvents } from "@packages/hooks";
-import { usePaymentStore } from "@/modules/payments/store";
+import { useString } from "@packages/hooks";
+import { getCountryByCode } from "@packages/constants";
 import MerchantAdminActions from "./merchant-admin-actions.vue";
 import MerchantDonut from "./merchant-donut.vue";
 import MerchantPayoutCard from "./merchant-payout-card.vue";
@@ -84,29 +87,17 @@ import MerchantMetricsGrid from "./merchant-metrics-grid.vue";
 type MerchantAction = "reset-password" | "login" | "reset-mfa" | "delete";
 type PayoutAction = "approve" | "reject";
 
-const props = withDefaults(
-  defineProps<{
-    merchantId: string;
-    merchantDetails?: Record<string, any> | null;
-    businessName?: string;
-    businessStatus?: string;
-    showAdminActions?: boolean;
-    showPayoutRequest?: boolean;
-    showMetrics?: boolean;
-    entityType?: string;
-    wallets?: any[];
-  }>(),
-  {
-    merchantDetails: null,
-    businessName: "Tech-village Inc",
-    businessStatus: "Verified",
-    showAdminActions: true,
-    showPayoutRequest: true,
-    showMetrics: true,
-    entityType: "",
-    wallets: () => [],
-  },
-);
+const props = defineProps<{
+  merchantId: string;
+  merchantDetails?: Record<string, any> | null;
+  businessName?: string;
+  businessStatus?: string;
+  showAdminActions?: boolean;
+  showPayoutRequest?: boolean;
+  showMetrics?: boolean;
+  entityType?: string;
+  overviewData?: Record<string, any> | null;
+}>();
 
 defineEmits<{
   actionSelected: [action: MerchantAction];
@@ -115,33 +106,59 @@ defineEmits<{
 
 const router = useRouter();
 const { formatNumber } = useString();
-const { processAPIRequest } = useEvents();
-const { getTransactions } = usePaymentStore();
 
 const selectedCurrency = ref("NGN");
-const currencyOptions = computed(() =>
-  props.wallets.length
-    ? [...new Set(props.wallets.map((w: any) => w.currency))]
-    : ["NGN", "GHS", "TZS", "ZMW", "USD"],
-);
+
 const currencySymbols: Record<string, string> = {
   NGN: "\u20A6",
   GHS: "GHS",
   TZS: "TSh",
   ZMW: "ZK",
   USD: "$",
+  KES: "KSh",
 };
 
-const isLoadingStats = ref(false);
-const transactionStats = ref<{ title: string; value: number }[]>([
-  { title: "Total Transactions", value: 0 },
-  { title: "Completed", value: 0 },
-  { title: "Pending", value: 0 },
-  { title: "Failed", value: 0 },
-]);
+const wallets = computed<any[]>(() => props.overviewData?.wallets || []);
+
+const currencyOptions = computed<string[]>(() =>
+  wallets.value.length
+    ? [...new Set(wallets.value.map((w: any) => w.currency))]
+    : ["NGN", "GHS", "TZS", "ZMW", "USD"],
+);
+
+const metricsSource = computed(() => {
+  const data = props.overviewData;
+  if (!data) return props.merchantDetails?.metrics || props.merchantDetails?.summary || {};
+
+  return {
+    available_balance: data.available_balance,
+    total_transactions: data.total_transaction_amount,
+    total_payout: data.total_payout_amount,
+    refunds: data.total_refund_amount,
+  };
+});
+
+const transactionStats = computed(() => {
+  const data = props.overviewData;
+  if (!data) {
+    return [
+      { title: "Total Transactions", value: 0 },
+      { title: "Completed", value: 0 },
+      { title: "Pending", value: 0 },
+      { title: "Failed", value: 0 },
+    ];
+  }
+
+  return [
+    { title: "Total Transactions", value: 100 },
+    { title: "Completed", value: data.transaction_successful_percentage || 0 },
+    { title: "Pending", value: data.transaction_pending_percentage || 0 },
+    { title: "Failed", value: data.transaction_failed_percentage || 0 },
+  ];
+});
 
 watch(
-  () => props.wallets,
+  () => wallets.value,
   (newWallets) => {
     if (newWallets.length && newWallets[0]?.currency) {
       selectedCurrency.value = newWallets[0].currency;
@@ -154,9 +171,6 @@ const detail = computed(() => props.merchantDetails || {});
 const payoutRequest = computed(
   () => detail.value.payout_request || detail.value.payoutRequest || {},
 );
-const metricsSource = computed(
-  () => detail.value.metrics || detail.value.summary || {},
-);
 
 const businessName = computed(
   () =>
@@ -168,13 +182,17 @@ const businessName = computed(
 const businessType = computed(
   () => detail.value.type || detail.value.business_type || "Merchant",
 );
-const countryName = computed(
-  () =>
+const countryName = computed(() => {
+  const fromMerchant =
     detail.value.country?.name ||
     detail.value.country_name ||
-    detail.value.country ||
-    "Tanzania",
-);
+    detail.value.country;
+  if (fromMerchant) return fromMerchant;
+
+  const code = props.overviewData?.profile?.business?.country_code;
+  if (!code) return "";
+  return getCountryByCode(code)?.country || code;
+});
 const businessLogo = computed(
   () =>
     detail.value.logo ||
@@ -192,54 +210,9 @@ const businessInitials = computed(() =>
     .toUpperCase(),
 );
 
-const fetchStats = async () => {
-  if (!props.merchantId) return;
-  isLoadingStats.value = true;
-
-  const base = `?page_size=1&user_id=${props.merchantId}`;
-  const call = (filters: string) =>
-    processAPIRequest({
-      action: getTransactions,
-      payload: { filters },
-      showAlert: false,
-    });
-
-  const [totalRes, completedRes, pendingRes, failedRes] = await Promise.all([
-    call(base),
-    call(`${base}&status=completed`),
-    call(`${base}&status=pending`),
-    call(`${base}&status=failed`),
-  ]);
-
-  isLoadingStats.value = false;
-
-  const parseTotal = (res: any) => {
-    const src = res?.pagination?.[0] || res?.data;
-    return src?.total_records || src?.total || 0;
-  };
-
-  transactionStats.value = [
-    { title: "Total Transactions", value: parseTotal(totalRes) },
-    { title: "Completed", value: parseTotal(completedRes) },
-    { title: "Pending", value: parseTotal(pendingRes) },
-    { title: "Failed", value: parseTotal(failedRes) },
-  ];
-};
-
 const handleGoBack = () => {
   router.back();
 };
-
-watch(
-  () => props.merchantId,
-  () => {
-    fetchStats();
-  },
-);
-
-onMounted(() => {
-  fetchStats();
-});
 </script>
 
 <style scoped lang="scss">
@@ -275,6 +248,18 @@ onMounted(() => {
   }
 }
 
+.business-label-row {
+  @apply flex items-center gap-3;
+
+  > p {
+    @apply text-sm font-medium text-grey-600;
+  }
+
+  .chip {
+    @apply px-3 py-0.5 text-xs;
+  }
+}
+
 .business-title-row {
   @apply flex flex-wrap items-center gap-4;
 
@@ -293,6 +278,10 @@ onMounted(() => {
 
 .chip-info {
   @apply bg-blue-50 text-blue-600;
+}
+
+.chip-success {
+  @apply bg-green-50 text-green-600;
 }
 
 .metrics-card {
