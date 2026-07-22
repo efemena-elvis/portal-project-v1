@@ -21,11 +21,11 @@
       <div class="business-copy">
         <div class="business-label-row">
           <p>Business name</p>
-          <span v-if="businessStatus" :class="['chip', businessStatus === 'approved' || 'verified' ? 'chip-success' : 'chip-warning']">{{ businessStatus.charAt(0).toUpperCase() + businessStatus.slice(1) }}</span>
+          <span v-if="businessStatus" :class="['chip', businessStatus === 'approved' || businessStatus === 'verified' ? 'chip-success' : 'chip-warning']">{{ businessStatus.charAt(0).toUpperCase() + businessStatus.slice(1) }}</span>
         </div>
         <div class="business-title-row">
           <h1>{{ businessName }}</h1>
-          <span class="chip chip-warning">{{
+          <span class="chip chip-type">{{
             entityType || businessType
           }}</span>
           <span v-if="countryName" class="chip chip-info">{{ countryName }}</span>
@@ -270,6 +270,10 @@ const handleGoBack = () => {
 
 .chip {
   @apply rounded-full px-5 py-2 text-sm font-semibold;
+}
+
+.chip-type {
+ @apply bg-purple-50 text-purple-700;
 }
 
 .chip-warning {
