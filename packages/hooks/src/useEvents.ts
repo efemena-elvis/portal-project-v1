@@ -23,13 +23,14 @@ interface IAlertHandler {
   [key: number]: IAlertType | undefined;
 }
 
-interface IHandleDataRequestParams<T> {
-  action: (payload: any) => Promise<T>;
+interface IHandleDataRequestParams {
+  action: (payload: any) => Promise<any>;
   payload?: Record<string, any> | string;
   btnRef?: Ref<HTMLButtonElement | null>;
   btnText?: string;
   showAlert?: boolean;
   alertHandler?: IAlertHandler;
+  onSuccess?: (data: any) => void;
 }
 
 export default function useEvents() {
@@ -38,7 +39,7 @@ export default function useEvents() {
   const clickHandler = (
     refElement: Ref<HTMLButtonElement | null>,
     text: string = "Button Text",
-    processing: boolean = true
+    processing: boolean = true,
   ) => {
     if (processing) {
       refElement.value!.disabled = true;
@@ -55,39 +56,39 @@ export default function useEvents() {
 
   const isValidAlertHandler = (
     alertHandler: IAlertHandler,
-    alertCode: number
+    alertCode: number,
   ): boolean => {
     return !!alertHandler[alertCode as keyof IAlertHandler];
   };
 
-  const processAPIRequest = async <T = any>({
+  const processAPIRequest = async ({
     action,
     payload = {},
     btnRef,
     btnText = "Button Text",
     showAlert = true,
     alertHandler = {},
-  }: IHandleDataRequestParams<T>) => {
-    // Set loading state on the button
+  }: IHandleDataRequestParams) => {
     btnRef && clickHandler(btnRef);
 
     const hasAlertHandler = Object.values(alertHandler).length > 0;
 
     try {
-      const response = await action(payload);
+      const response: any = await action(payload);
 
-      // Reset button state after action
       btnRef && clickHandler(btnRef, btnText, false);
 
-      // Handle different response codes
-      switch (response?.code || response?.status) {
+      const respCode = response?.code || response?.status;
+
+      switch (respCode) {
         case 200:
         case 201:
           if (
             hasAlertHandler &&
-            isValidAlertHandler(alertHandler, response.code)
+            respCode !== undefined &&
+            isValidAlertHandler(alertHandler, respCode)
           ) {
-            showAlert && pushToastAlert(alertHandler[response.code]);
+            showAlert && pushToastAlert(alertHandler[respCode]);
           }
           break;
         case 400:
@@ -100,7 +101,7 @@ export default function useEvents() {
               showAlert &&
                 pushToastAlert({
                   message: alertInfo?.message as string,
-                  description: response.message,
+                  description: response?.message,
                   type: "error",
                 });
             }
@@ -112,37 +113,32 @@ export default function useEvents() {
           }
           break;
         default:
-          if (response.code >= 500) {
-            // Handle server errors (500 or greater)
+          if (response?.code && response.code >= 500) {
             if (
               hasAlertHandler &&
               isValidAlertHandler(alertHandler, response.code)
             ) {
               showAlert && pushToastAlert(alertHandler[response.code]);
-            }
-            // Handle server errors if not specified
-            else {
-              if (hasAlertHandler) {
-                showAlert &&
-                  pushToastAlert({
-                    message: "Server/Network error",
-                    description:
-                      "We are currently unable to connect to the server",
-                    type: "error",
-                  });
-              }
+            } else if (hasAlertHandler) {
+              showAlert &&
+                pushToastAlert({
+                  message: "Server/Network error",
+                  description:
+                    "We are currently unable to connect to the server",
+                  type: "error",
+                });
             }
           }
           break;
       }
 
-      return response !== undefined ? response : false;
+      const finalResponse = response !== undefined ? response : false;
+
+      return finalResponse;
     } catch (error) {
-      // Reset button state in case of error
       btnRef && clickHandler(btnRef, btnText, false);
 
-      // Handle any network or unexpected errors
-      console.error("A network error occurred:", error);
+      console.error("[processAPIRequest] Error caught:", error);
 
       if (hasAlertHandler) {
         showAlert &&

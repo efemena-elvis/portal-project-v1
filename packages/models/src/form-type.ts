@@ -63,7 +63,7 @@ export interface ISelectInputField {
   inputBaseColor?: string;
   isRequired?: boolean;
   isDisabled?: boolean;
-  selectData: { value: string; name: string }[];
+  selectData: { value: string; name: string; image?: string | null }[];
   hasBottomPadding?: boolean;
 }
 

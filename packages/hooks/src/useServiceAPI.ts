@@ -14,6 +14,13 @@ interface IApiSetup {
   HEADERS?: Record<string, string>;
 }
 
+interface ApiError {
+  message: string;
+  code?: string;
+  details?: any;
+  status?: number;
+}
+
 interface ApiResponse<T = any> {
   data?: T;
   error?: ApiError;
@@ -21,13 +28,6 @@ interface ApiResponse<T = any> {
   status?: number;
   message?: string;
   pagination?: any;
-}
-
-interface ApiError {
-  message: string;
-  code?: string;
-  details?: any;
-  status?: number;
 }
 
 interface RequestOptions {
@@ -41,6 +41,13 @@ interface RequestOptions {
 // Extend AxiosRequestConfig to include the _retry property
 interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
+}
+
+// Global refresh-token callback registered at app init
+let refreshTokenFn: (() => Promise<string | null>) | null = null;
+
+export function setRefreshTokenFn(fn: () => Promise<string | null>) {
+  refreshTokenFn = fn;
 }
 
 // ======================================================
@@ -76,8 +83,6 @@ class APIService {
   //     ? `${this.API_BASE_URL}/${this.API_VERSION}`
   //     : this.API_BASE_URL;
 
-  //   // console.log("API Base URL:", axios.defaults.baseURL);
-
   //   axios.defaults.timeout = this.DEFAULT_TIMEOUT;
   // }
   private initializeAxios() {
@@ -108,15 +113,23 @@ class APIService {
       async (error: AxiosError) => {
         const originalConfig = error.config as CustomAxiosRequestConfig;
 
-        // Handle 401
-        // if (error.response?.status === 401 && !originalConfig._retry) {
-        //   originalConfig._retry = true;
-        //   location.replace("/logout");
-        //   return Promise.reject(error);
-        // }
+        if (
+          error.response?.status === 401 &&
+          !originalConfig._retry &&
+          refreshTokenFn
+        ) {
+          originalConfig._retry = true;
+          const newToken = await refreshTokenFn();
+          if (newToken) {
+            originalConfig.headers = originalConfig.headers || {};
+            originalConfig.headers.Authorization = `Bearer ${newToken}`;
+            return this.axiosInstance(originalConfig);
+          }
+          location.href = "/logout";
+        }
 
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -125,7 +138,7 @@ class APIService {
   // ======================================================
   public async fetch<T = any>(
     url: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.get<T>(urlHash(url), {
@@ -146,7 +159,7 @@ class APIService {
   public async push<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.post<T>(url, payload, {
@@ -155,7 +168,9 @@ class APIService {
         signal: options.signal,
       });
 
-      return { ...(response?.data as ApiResponse) };
+      const result = { ...(response?.data as ApiResponse) };
+
+      return result;
     } catch (error) {
       return this.handleError(error);
     }
@@ -167,7 +182,7 @@ class APIService {
   public async update<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.put<T>(url, payload, {
@@ -188,7 +203,7 @@ class APIService {
   public async patch<T = any>(
     url: string,
     payload?: any,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.patch<T>(url, payload, {
@@ -208,7 +223,7 @@ class APIService {
   // ======================================================
   public async delete<T = any>(
     url: string,
-    options: RequestOptions = {}
+    options: RequestOptions = {},
   ): Promise<ApiResponse<T>> {
     try {
       const response = await this.axiosInstance.delete<T>(url, {
@@ -247,6 +262,8 @@ class APIService {
   // ERROR HANDLING
   // ======================================================
   private handleError(error: unknown): ApiResponse {
+    console.error(" [handleError] Error received:", error);
+
     if (axios.isAxiosError(error)) {
       const apiError: ApiError = {
         message:
@@ -260,7 +277,7 @@ class APIService {
 
       // Enhanced error logging
       if (process.env.NODE_ENV === "development") {
-        console.error("API Error:", {
+        console.error(" [handleError] Axios Error:", {
           url: error.config?.url,
           method: error.config?.method,
           status: error.response?.status,
@@ -278,7 +295,7 @@ class APIService {
     };
 
     if (process.env.NODE_ENV === "development") {
-      console.error("Network Error:", error);
+      console.error("🔴 [handleError] Network Error:", error);
     }
 
     return { error: networkError };

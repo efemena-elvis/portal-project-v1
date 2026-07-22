@@ -37,6 +37,10 @@
             :defaultValue="inputValue"
             :required="isRequired"
             :disabled="isDisabled"
+            :inputmode="
+              getInputType === IInputType.Number ? 'numeric' : undefined
+            "
+            :pattern="getInputType === IInputType.Number ? '[0-9]*' : undefined"
             @input="handleFormInput"
             @paste="handleFormInput"
             @change="handleFormInput"
@@ -116,7 +120,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed , watch} from "vue";
+import { ref, computed, watch } from "vue";
 import { useValidators, useEvents } from "@packages/hooks";
 import { SearchIcon } from "@packages/uikit";
 import { ITextInputField, IInputType, IInputValidator } from "@packages/models";
@@ -126,7 +130,7 @@ const emits = defineEmits(["verifyClicked", "inputChanged", "inputValidated"]);
 const props = withDefaults(defineProps<ITextInputField>(), {
   labelId: "",
   labelTitle: "",
-  labelCompact: true,
+  labelCompact: false,
   inputType: IInputType.Text,
   inputValue: "",
   inputPlaceholder: "",
@@ -174,7 +178,7 @@ const formValue = ref<string | number>(props.inputValue);
 const formErrorMsg = ref<string>("");
 
 const isInputValid = computed(() => {
-  const isValid = formErrorMsg.value.length ? false : true;
+  const isValid = !formErrorMsg.value.length;
   emits("inputValidated", isValid);
   return isValid;
 });
@@ -211,6 +215,10 @@ const getInputTypeView = () => {
 };
 
 const handleFormInput = () => {
+  if (getInputType.value === IInputType.Number) {
+    formValue.value = String(formValue.value).replace(/\D+/g, "");
+  }
+
   errorHandler.validator && validateInputFields(errorHandler);
   emits(
     "inputChanged",
@@ -307,12 +315,11 @@ const triggerCopyText = async () => {
   }, 2000);
 };
 
-
 watch(
   () => props.inputValue,
   (val) => {
     formValue.value = val;
-  }
+  },
 );
 </script>
 

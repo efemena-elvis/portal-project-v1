@@ -27,7 +27,7 @@ defineProps({
 
 <style lang="scss" scoped>
 .double-column-entry {
-  @apply flex justify-start items-center gap-x-3 ;
+  @apply flex justify-start items-center gap-x-3;
 
   .image-display {
     @apply relative size-[60px] min-w-[55px] min-h-[60px] bg-[#f0f0f1] rounded-lg overflow-hidden flex justify-center items-center;
@@ -45,7 +45,7 @@ defineProps({
     }
 
     .secondary-column-text {
-      @apply text-grey-600 text-sm  ;
+      @apply text-grey-600 text-sm;
     }
   }
 }

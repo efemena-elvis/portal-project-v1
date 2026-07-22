@@ -22,6 +22,38 @@
     <link rel="author" :href="metaCompanyBaseUrl" />
     <meta name="creator" :content="metaCompanyCreator" />
 
+    <!-- Open Graph / Social -->
+    <meta property="og:title" :content="getMetaTitle" />
+    <meta property="og:description" :content="getMetaDescription" />
+    <meta property="og:type" content="website" />
+    <meta
+      v-if="getMetaImageUrl"
+      property="og:image"
+      :content="getMetaImageUrl"
+    />
+    <meta
+      v-if="getMetaImageUrl"
+      property="og:image:secure_url"
+      :content="getMetaImageUrl"
+    />
+    <meta
+      v-if="getMetaImageUrl"
+      property="og:image:alt"
+      :content="metaCompanyName"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      v-if="getMetaImageUrl"
+      name="twitter:image"
+      :content="getMetaImageUrl"
+    />
+    <meta
+      v-if="getMetaImageUrl"
+      name="twitter:image:alt"
+      :content="metaCompanyName"
+    />
+    <link v-if="getMetaImageUrl" rel="image_src" :href="getMetaImageUrl" />
+
     <!-- Canonical and Language Alternates -->
     <link rel="canonical" :href="metaCompanyBaseUrl" />
     <link rel="alternate" hreflang="en-US" href="/en-US" />
@@ -41,6 +73,7 @@ interface SEOProps {
   companyName: string;
   companyCreator: string;
   companyBaseUrl: string;
+  companyLogo?: string;
 }
 
 const route = useRoute();
@@ -52,6 +85,7 @@ const props = withDefaults(defineProps<SEOProps>(), {
   companyName: "",
   companyCreator: "",
   companyBaseUrl: "",
+  companyLogo: "",
 });
 
 const metaTitle = props.baseTitle;
@@ -60,6 +94,14 @@ const metaKeywords = props.keywords;
 const metaCompanyName = props.companyName;
 const metaCompanyCreator = props.companyCreator;
 const metaCompanyBaseUrl = props.companyBaseUrl;
+const metaCompanyLogo = props.companyLogo;
+
+const getMetaImageUrl = computed(() => {
+  if (!metaCompanyLogo) return "";
+  return metaCompanyLogo.startsWith("http")
+    ? metaCompanyLogo
+    : `${metaCompanyBaseUrl.replace(/\/$/, "")}${metaCompanyLogo.startsWith("/") ? "" : "/"}${metaCompanyLogo}`;
+});
 
 const getMetaLocales = computed(() => ({
   current: "en",
@@ -67,11 +109,11 @@ const getMetaLocales = computed(() => ({
 }));
 
 const getTitleText = computed(() =>
-  route.meta.title ? `${route.meta.title} -` : ""
+  route.meta.title ? `${route.meta.title} -` : "",
 );
 
 const getMetaTitle = computed(
-  () => `${getTitleText.value} ${metaTitle}` || metaTitle
+  () => `${getTitleText.value} ${metaTitle}` || metaTitle,
 );
 
 const getMetaDescription = computed(() => {

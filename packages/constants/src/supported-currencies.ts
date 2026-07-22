@@ -4,7 +4,7 @@ const supportedCurrencies: {
   currency_description: string;
   image?: string;
 }[] = [
-    {
+  {
     value: "GHS",
     name: "Ghana (GHS)",
     currency_description: "Ghanaian Cedi",
@@ -18,7 +18,7 @@ const supportedCurrencies: {
     image: "https://flagsapi.com/TZ/flat/64.png",
   },
 
-   {
+  {
     value: "ZMW",
     name: "Zambia (ZMW)",
     currency_description: "Zambian Kwacha",
@@ -69,7 +69,7 @@ const supportedCurrencies: {
   //   currency_description: "Rwandan Franc",
   //   image: "https://flagsapi.com/RW/flat/64.png",
   // },
- 
+
   // {
   //   value: "GBP",
   //   name: "United Kingdom (GBP)",

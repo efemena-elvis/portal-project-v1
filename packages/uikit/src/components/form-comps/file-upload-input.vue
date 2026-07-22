@@ -47,6 +47,7 @@
       type="file"
       :id="id"
       ref="fileUploadRef"
+      hidden
       class="hidden"
       :disabled="isUploading"
       @change="processDocumentUpload"
@@ -64,7 +65,7 @@
 </template>
 
 <script lang="ts" setup>
-import {  ref } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useString, useFile, useEvents } from "@packages/hooks";
 
@@ -85,7 +86,7 @@ const props = withDefaults(defineProps<IFileUploadType>(), {
   hasDocumentUploaded: false,
   fileUploadText: "Click here to upload your file",
   uploadAction: async (payload: any) => {
-    console.warn("No upload action provided");
+    // console.warn("No upload action provided");
     return Promise.resolve(null);
   },
 });
@@ -192,8 +193,6 @@ const processDocumentUpload = async ($event: Event) => {
     isUploading.value = false;
     isDocUploaded.value = false;
   }
-
-
 };
 
 // Remove uploaded file handler

@@ -1,128 +1,110 @@
-# Makefile for running apps via npm (staging & prod, dev & build)
-
-# App shortname mappings
-APPS = mor mg mr ma ms
-MOR = merchant-of-records
-MG  = merchant-gateway
-MR  = merchant-redstonepgs
-MA  = merchant-alexpay
-MS  = merchant-storefront
+# Makefile for portal-project-v1 monorepo
+# Apps: backoffice
 
 # ===== Default =====
 .PHONY: all
 all:
-	@echo "⚡ Please specify an environment and mode (staging/prod, dev/build)."
-	@echo "   Example: make dev-staging-all or make build-prod-mg"
+	@echo "Please specify a target."
+	@echo "   Example: make dev, make build, make check-types"
+	@make help
 
-# ====== DEV: STAGING ======
-.PHONY: dev-staging-all
-dev-staging-all:
-	@echo "🟢 Starting ALL apps in DEV (staging)..."
-	@npm run dev:staging:$(MOR) &
-	@npm run dev:staging:$(MG) &
-	@npm run dev:staging:$(MR) &
-	@npm run dev:staging:$(MA) &
-	@npm run dev:staging:$(MS) &
-	@wait
-	@echo "✅ All apps running in DEV (staging)."
+# ===== Installation =====
+.PHONY: install
+install:
+	@echo "Installing dependencies..."
+	@npm install --legacy-peer-deps
 
-dev-staging-mor:
-	@npm run dev:staging:$(MOR)
-dev-staging-mg:
-	@npm run dev:staging:$(MG)
-dev-staging-mr:
-	@npm run dev:staging:$(MR)
-dev-staging-ma:
-	@npm run dev:staging:$(MA)
-dev-staging-ms:
-	@npm run dev:staging:$(MS)
+# ===== Development =====
+.PHONY: dev dev-backoffice
+dev dev-backoffice:
+	@echo "Starting development server..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice
 
-# ====== DEV: PROD ======
-.PHONY: dev-prod-all
-dev-prod-all:
-	@echo "🟡 Starting ALL apps in DEV (prod)..."
-	@npm run dev:prod:$(MOR) &
-	@npm run dev:prod:$(MG) &
-	@npm run dev:prod:$(MR) &
-	@npm run dev:prod:$(MA) &
-	@npm run dev:prod:$(MS) &
-	@wait
-	@echo "✅ All apps running in DEV (prod)."
+.PHONY: dev-staging dev-stg dev-staging-bo
+dev-staging dev-stg dev-staging-bo:
+	@echo "Starting development server (staging)..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice -- --mode staging
 
-dev-prod-mor:
-	@npm run dev:prod:$(MOR)
-dev-prod-mg:
-	@npm run dev:prod:$(MG)
-dev-prod-mr:
-	@npm run dev:prod:$(MR)
-dev-prod-ma:
-	@npm run dev:prod:$(MA)
-dev-prod-ms:
-	@npm run dev:prod:$(MS)
+.PHONY: dev-prod dev-prd
+dev-prod dev-prd:
+	@echo "Starting development server (production)..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice -- --mode production
 
-# ====== BUILD: STAGING ======
-.PHONY: build-staging-all
-build-staging-all:
-	@echo "🔨 Building ALL apps (staging)..."
-	@npm run build:staging:$(MOR)
-	@npm run build:staging:$(MG)
-	@npm run build:staging:$(MR)
-	@npm run build:staging:$(MA)
-	@npm run build:staging:$(MS)
-	@echo "✅ All apps built (staging)."
+# ===== Build =====
+.PHONY: build build-backoffice
+build build-backoffice:
+	@echo "Building for production..."
+	@npx turbo run build --filter=@portal-project-v1/backoffice
 
-build-staging-mor:
-	@npm run build:staging:$(MOR)
-build-staging-mg:
-	@npm run build:staging:$(MG)
-build-staging-mr:
-	@npm run build:staging:$(MR)
-build-staging-ma:
-	@npm run build:staging:$(MA)
-build-staging-ms:
-	@npm run build:staging:$(MS)
+.PHONY: build-staging build-stg build-backoffice-staging
+build-staging build-stg build-backoffice-staging:
+	@echo "Building for staging..."
+	@npm run build:staging:backoffice
 
-# ====== BUILD: PROD ======
-.PHONY: build-prod-all
-build-prod-all:
-	@echo "🏗️ Building ALL apps (prod)..."
-	@npm run build:prod:$(MOR)
-	@npm run build:prod:$(MG)
-	@npm run build:prod:$(MR)
-	@npm run build:prod:$(MA)
-	@npm run build:prod:$(MS)
-	@echo "✅ All apps built (prod)."
+.PHONY: build-prod build-prd build-backoffice-prod
+build-prod build-prd build-backoffice-prod:
+	@echo "Building for production..."
+	@npm run build:prod:backoffice
 
-build-prod-mor:
-	@npm run build:prod:$(MOR)
-build-prod-mg:
-	@npm run build:prod:$(MG)
-build-prod-mr:
-	@npm run build:prod:$(MR)
-build-prod-ma:
-	@npm run build:prod:$(MA)
-build-prod-ms:
-	@npm run build:prod:$(MS)
+# ===== Verification =====
+.PHONY: check-types
+check-types:
+	@echo "Checking types..."
+	@npx turbo run check-types
 
-# ===== HELP =====
+.PHONY: lint
+lint:
+	@echo "Running linter..."
+	@npx turbo run lint
+
+.PHONY: format
+format:
+	@echo "Formatting code..."
+	@npm run format
+
+.PHONY: verify
+verify: check-types lint build
+	@echo "✅ All checks passed"
+
+# ===== Preview =====
+.PHONY: preview
+preview:
+	@echo "Previewing production build..."
+	@npx turbo run preview --filter=@portal-project-v1/backoffice
+
+# ===== Clean =====
+.PHONY: clean
+clean:
+	@echo "Cleaning build artifacts..."
+	@npx turbo run clean
+
+# ===== Help =====
 .PHONY: help
 help:
 	@echo ""
-	@echo "🛠️  Usage:"
-	@echo "   make dev-staging-all      # Run ALL apps in staging dev mode"
-	@echo "   make dev-prod-all         # Run ALL apps in prod dev mode"
-	@echo "   make build-staging-all    # Build ALL apps for staging"
-	@echo "   make build-prod-all       # Build ALL apps for prod"
+	@echo "Development"
+	@echo "   make dev / dev-backoffice       Start development server"
+	@echo "   make dev-staging                Dev server (staging mode)"
+	@echo "   make dev-prod                   Dev server (production mode)"
 	@echo ""
-	@echo "   make dev-staging-mg       # Run Merchant Gateway in staging dev mode"
-	@echo "   make dev-prod-mor         # Run Merchant of Records in prod dev mode"
-	@echo "   make build-staging-ms     # Build Merchant Storefront for staging"
-	@echo "   make build-prod-mr        # Build Merchant RedstonePGS for prod"
+	@echo "🔨 Build"
+	@echo "   make build / build-backoffice   Build for production"
+	@echo "   make build-staging / build-stg  Build for staging"
+	@echo "   make build-prod / build-prd     Build for production"
 	@echo ""
-	@echo "Shortnames:"
-	@echo "   mor = Merchant of Records"
-	@echo "   mg  = Merchant Gateway"
-	@echo "   mr  = Merchant RedstonePGS"
-	@echo "   ma  = Merchant Alexpay"
-	@echo "   ms  = Merchant Storefront"
+	@echo "Verification"
+	@echo "   make lint           Run linter"
+	@echo "   make format         Format code"
+	@echo "   make check-types    TypeScript type check"
+	@echo "   make verify         Run all checks (lint → check-types → build)"
 	@echo ""
+	@echo "Preview"
+	@echo "   make preview        Preview production build"
+	@echo ""
+	@echo "Clean"
+	@echo "   make clean          Clean all build artifacts"
+	@echo ""
+	@echo "Setup"
+	@echo "   make install        Install dependencies (legacy-peer-deps)"
+	@echo ""
+	@echo "App shortnames:  backoffice = Backoffice Portal"

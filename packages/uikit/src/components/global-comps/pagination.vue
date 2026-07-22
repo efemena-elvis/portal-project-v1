@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch, withDefaults } from "vue";
 
 interface IPaging {
   current_page: number;
@@ -75,7 +75,9 @@ interface IPaginationType {
   pageKeys?: any;
 }
 
-const props = defineProps<IPaginationType>();
+const props = withDefaults(defineProps<IPaginationType>(), {
+  pageKeys: () => ({}),
+});
 
 const emit = defineEmits(["page-change"]);
 

@@ -1,7 +1,6 @@
 export { default as AlertTopbar } from "./alert-topbar.vue";
 export { default as BaseSidebar } from "./base-sidebar.vue";
 export { default as BaseTopbar } from "./base-topbar.vue";
-export { default as BaseTopbarStore } from "./base-topbar-store.vue";
 export { default as ModalDialog } from "./modal-dialog.vue";
 export { default as PageContentWrapper } from "./page-content-wrapper.vue";
 export { default as Pagination } from "./pagination.vue";

@@ -53,14 +53,19 @@ const COLORS: Record<string, string> = {
 
   // GREY COLOR THEME
   "grey-900": "#171918",
+  "grey-850": "#292D32",
   "grey-800": "#353a39",
   "grey-700": "#525857",
   "grey-600": "#696f6e",
   "grey-500": "#818988",
   "grey-400": "#a8b1af",
   "grey-300": "#c1c9c8",
+  "grey-250": "#c6c9c9",
   "grey-200": "#d5dddc",
+  "grey-150": "#dddddd",
   "grey-100": "#e5edeb",
+  "grey-75": "#efefef",
+  "grey-60": "#e8e8e8",
   "grey-50": "#f1f7f6",
   "grey-10": "#f6faf9",
   "grey-5": "#eef2f5",
@@ -77,6 +82,10 @@ const COLORS: Record<string, string> = {
   "neutral-100": "#cecdc5",
   "neutral-50": "#e5e4db",
   "neutral-10": "#ffffff",
+
+  // OPACITY VALUES
+  "black-5": "rgba(0, 0, 0, 0.05)",
+  "black-80": "rgba(0, 0, 0, 0.8)",
 };
 
 export default COLORS;

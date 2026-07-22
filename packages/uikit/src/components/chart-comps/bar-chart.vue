@@ -1,5 +1,7 @@
 <template>
-  <Bar :data="chartData" :options="chartOptions" />
+  <div :style="{ height: height + 'px', position: 'relative' }">
+    <Bar :data="chartData" :options="chartOptions" />
+  </div>
 </template>
 
 <script setup>
@@ -20,8 +22,15 @@ ChartJS.register(
   Legend,
   BarElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
 );
+
+const props = defineProps({
+  height: {
+    type: Number,
+    default: 250,
+  },
+});
 
 const chartData = {
   labels: ["Mon", " Tue", "Wed", "Thur", "Fri", "Sat", "Sun"], // Ensure this is defined
@@ -32,6 +41,7 @@ const chartData = {
       backgroundColor: "#de7d99",
       borderRadius: 4,
       borderWidth: 1,
+      barThickness: 12,
     },
     {
       //   label: "Dataset 1",
@@ -39,17 +49,20 @@ const chartData = {
       backgroundColor: "#8ddca2",
       borderRadius: 4,
       borderWidth: 1,
+      barThickness: 12,
     },
   ],
 };
 
 const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       display: true,
 
       grid: {
-        display: false, // Hides the grid lines
+        display: true, // Hides the grid lines
       },
       ticks: {
         color: "#c6c9c9", // Gray-700
@@ -59,7 +72,7 @@ const chartOptions = {
       display: true, // Hides the y-axis
 
       grid: {
-        display: false, // Hides the grid lines
+        display: true, // Hides the grid lines
       },
       ticks: {
         color: "#c6c9c9", // Gray-700

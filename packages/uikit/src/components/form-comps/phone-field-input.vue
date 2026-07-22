@@ -1,10 +1,15 @@
 <template>
-  <div :class="['form-block form-text-block', hasBottomPadding ? 'mb-5' : 'mb-0']">
+  <div
+    :class="['form-block form-text-block', hasBottomPadding ? 'mb-5' : 'mb-0']"
+  >
     <!-- LABEL TEXT -->
     <label
       v-if="labelTitle"
       :for="labelId"
-      :class="[inputBaseColor, labelCompact ? 'form-label' : 'form-label-basic']"
+      :class="[
+        inputBaseColor,
+        labelCompact ? 'form-label' : 'form-label-basic',
+      ]"
       >{{ labelTitle }}</label
     >
 
@@ -17,7 +22,10 @@
             @click="showMoreOptions ? toggleDropdown(!showDropdown) : null"
           >
             <div class="flex justify-start items-center gap-x-1">
-              <img :src="countryFlag" class="size-5 min-h-5 min-w-5 sm:hidden" />
+              <img
+                :src="countryFlag"
+                class="size-5 min-h-5 min-w-5 sm:hidden"
+              />
               <div class="selected-text">+{{ countryCode }}</div>
 
               <div
@@ -66,7 +74,9 @@
                       <div class="primary-text">{{ country.country }}</div>
                     </div>
 
-                    <div class="secondary-text">+{{ country.dialing_code }}</div>
+                    <div class="secondary-text">
+                      +{{ country.dialing_code }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -107,7 +117,11 @@ import { IPhoneInputField, IInputValidator } from "@packages/models";
 import { useValidators, useClickOutside } from "@packages/hooks";
 import { countryCurrencies } from "@packages/constants";
 
-const emits = defineEmits(["inputChanged", "countryCodeChanged", "inputValidated"]);
+const emits = defineEmits([
+  "inputChanged",
+  "countryCodeChanged",
+  "inputValidated",
+]);
 
 const props = withDefaults(defineProps<IPhoneInputField>(), {
   labelId: "",
@@ -152,7 +166,7 @@ const toggleDropdown = (state: boolean) => (showDropdown.value = state);
 useClickOutside(dialogRef, togglerRef, toggleDropdown);
 
 const isInputValid = computed(() => {
-  const isValid = formErrorMsg.value.length ? false : true;
+  const isValid = !formErrorMsg.value.length;
   emits("inputValidated", isValid);
   return isValid;
 });
@@ -180,7 +194,7 @@ const updateCountryCode = (selectedCountry: any) => {
 const searchCountryList = () => {
   if (searchCountry.value.length) {
     countryList.value = countryListRepo.value.filter((country) =>
-      country.country.toLowerCase().includes(searchCountry.value.toLowerCase())
+      country.country.toLowerCase().includes(searchCountry.value.toLowerCase()),
     );
   } else countryList.value = countryListRepo.value;
 };
@@ -199,7 +213,11 @@ const validateInputFields = (errorHandler: IInputValidator) => {
       break;
 
     case "validatePhone":
-      formErrorMsg.value = validatePhone(formValue.value, countryCode.value, message);
+      formErrorMsg.value = validatePhone(
+        formValue.value,
+        countryCode.value,
+        message,
+      );
       break;
 
     default:
@@ -212,14 +230,15 @@ watch(
   activeCountryCode,
   (activeCode) => {
     const countryData = countryListRepo.value.find(
-      (countryData) => countryData.dialing_code === activeCode
+      (countryData) => countryData.dialing_code === activeCode,
     );
 
-    countryFlag.value = countryData?.flag || "https://flagsapi.com/NG/flat/64.png";
+    countryFlag.value =
+      countryData?.flag || "https://flagsapi.com/NG/flat/64.png";
     countryName.value = countryData?.country || "";
     countryCode.value = countryData?.dialing_code || "234";
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -234,7 +253,7 @@ watch(
     });
 
     const getActiveCountryFlag = countryListRepo.value.find(
-      (countryData) => countryData.dialing_code === newCode
+      (countryData) => countryData.dialing_code === newCode,
     );
 
     countryFlag.value =
@@ -242,7 +261,7 @@ watch(
     countryName.value = currentSelection?.country || "";
     countryCode.value = currentSelection?.dialing_code || "260";
   },
-  { immediate: true }
+  { immediate: true },
 );
 </script>
 

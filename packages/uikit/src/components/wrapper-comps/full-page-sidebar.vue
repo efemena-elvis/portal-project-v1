@@ -35,7 +35,7 @@ withDefaults(
   {
     routeList: () => [],
     activeRouteCategory: "",
-  }
+  },
 );
 </script>
 

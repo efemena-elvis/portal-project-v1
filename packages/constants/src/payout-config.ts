@@ -62,7 +62,7 @@ class PayoutConfig {
   }
 
   public getBankDetailsByCurrency(
-    currencyCode: string
+    currencyCode: string,
   ): Result | { error: string } {
     for (const [groupKey, group] of Object.entries(this.data)) {
       if (group.currencies.includes(currencyCode)) {
@@ -130,6 +130,7 @@ class PayoutConfig {
         else if (isNumber)
           return {
             validator: "validateOnlyNumbers",
+            message: `${label} must contain only numbers`,
           };
         return {
           validator: "validateRequired",
@@ -141,7 +142,7 @@ class PayoutConfig {
       return {
         labelId: field.replace(/_/g, "").toLowerCase(),
         labelTitle: label,
-        inputType: isMobileMoney ? "Phone" : "Text",
+        inputType: isMobileMoney ? "Phone" : isNumber ? "Number" : "Text",
         inputPlaceholder: `Provide your ${label.toLowerCase()}`,
         isRequired: true,
         modelKey: field,
@@ -155,7 +156,7 @@ class PayoutConfig {
 const payoutConfigData: PayoutConfigData = {
   africa_bank_only: {
     currencies: ["NGN", "ZAR", "EGP", "MAD"],
-    fields: ["account_holder_name", "account_number", ],
+    fields: ["account_holder_name", "account_number"],
   },
   africa_bank_and_mobile_money: {
     currencies: ["KES", "GHS", "UGX", "TZS", "RWF", "XAF", "XOF", "ZMW"],
