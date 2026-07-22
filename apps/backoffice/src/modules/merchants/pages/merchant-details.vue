@@ -56,7 +56,6 @@ const router = useRouter();
 const id = route.params.id as string;
 
 const {
-  getMerchants,
   getSingleMerchant,
   getMerchantOverview,
   resetMerchantPassword,
@@ -71,8 +70,8 @@ const { processAPIRequest } = useEvents();
 const activeTab = ref<string>("Transactions");
 const merchantDetails = ref<Record<string, any> | null>(null);
 const overviewData = ref<Record<string, any> | null>(null);
-const businessName = ref("Tech-village Inc");
-const businessStatus = ref("Verified");
+const businessName = ref("");
+const businessStatus = ref("");
 const showActionModal = ref(false);
 const activeAction = ref<DetailAction>("approve");
 
