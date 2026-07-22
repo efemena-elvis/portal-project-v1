@@ -1,5 +1,4 @@
 # Reusable Install Template
-# Equivalent to GitLab's .install_template
 # Installs dependencies and populates the npm cache for downstream build jobs.
 
 on:
@@ -22,7 +21,10 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
           key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies

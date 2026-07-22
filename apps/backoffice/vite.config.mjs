@@ -13,9 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@assets": path.resolve(__dirname, "packages/assets/scss"),
-      "@images": path.resolve(__dirname, "packages/assets/images"),
-      "@packages": path.resolve(__dirname, "packages"),
+      "@assets": path.resolve(__dirname, "../../packages/assets/scss"),
+      "@images": path.resolve(__dirname, "../../packages/assets/images"),
+      "@packages": path.resolve(__dirname, "../../packages"),
     },
   },
 });

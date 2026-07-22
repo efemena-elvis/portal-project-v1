@@ -2,7 +2,6 @@
   stage: build
   image: node:18
   script:
-    # - cd $APP_DIR
     - npm install --legacy-peer-deps
     - npm run ${BUILD_SCRIPT}
   artifacts:

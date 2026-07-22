@@ -1,8 +1,7 @@
-# === MERCHANT OF RECORDS ===
-# Caller workflow — mirrors GitLab's apps/merchant-of-records.yml
-# All pipeline logic lives in .github/workflows/templates/
+# === BACKOFFICE ===
+# Caller workflow — all pipeline logic lives in .github/workflows/templates/
 
-name: Deploy – Merchant of Records
+name: Deploy – Backoffice
 
 on:
   push:
@@ -24,9 +23,9 @@ jobs:
     needs: install_staging
     uses: ./.github/workflows/_template-build.yml
     with:
-      build_script: build:staging:merchant-of-records
-      build_dir: apps/merchant-of-records/dist
-      artifact_name: merchant-of-records-staging-dist
+      build_script: build:staging:backoffice
+      build_dir: apps/backoffice/dist
+      artifact_name: backoffice-staging-dist
 
   deploy_staging:
     name: "[staging] Deploy"
@@ -34,15 +33,15 @@ jobs:
     needs: build_staging
     uses: ./.github/workflows/_template-deploy.yml
     with:
-      app_name: merchant-of-records
+      app_name: backoffice
       environment: staging
-      artifact_name: merchant-of-records-staging-dist
+      artifact_name: backoffice-staging-dist
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws_region: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_AWS_REGION }}
-      s3_bucket: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_S3_BUCKET }}
-      cloudfront_distribution: ${{ secrets.MERCHANT_OF_RECORDS_STAGING_CLOUDFRONT_DISTRIBUTION }}
+      aws_region: ${{ secrets.BACKOFFICE_STAGING_AWS_REGION }}
+      s3_bucket: ${{ secrets.BACKOFFICE_STAGING_S3_BUCKET }}
+      cloudfront_distribution: ${{ secrets.BACKOFFICE_STAGING_CLOUDFRONT_DISTRIBUTION }}
 
   # ── PRODUCTION ─────────────────────────────────────────────────────────────
 
@@ -57,9 +56,9 @@ jobs:
     needs: install_production
     uses: ./.github/workflows/_template-build.yml
     with:
-      build_script: build:prod:merchant-of-records
-      build_dir: apps/merchant-of-records/dist
-      artifact_name: merchant-of-records-production-dist
+      build_script: build:prod:backoffice
+      build_dir: apps/backoffice/dist
+      artifact_name: backoffice-production-dist
 
   deploy_production:
     name: "[production] Deploy"
@@ -67,12 +66,12 @@ jobs:
     needs: build_production
     uses: ./.github/workflows/_template-deploy.yml
     with:
-      app_name: merchant-of-records
+      app_name: backoffice
       environment: production
-      artifact_name: merchant-of-records-production-dist
+      artifact_name: backoffice-production-dist
     secrets:
       aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      aws_region: ${{ secrets.MERCHANT_OF_RECORDS_PROD_AWS_REGION }}
-      s3_bucket: ${{ secrets.MERCHANT_OF_RECORDS_PROD_S3_BUCKET }}
-      cloudfront_distribution: ${{ secrets.MERCHANT_OF_RECORDS_PROD_CLOUDFRONT_DISTRIBUTION }}
+      aws_region: ${{ secrets.BACKOFFICE_PROD_AWS_REGION }}
+      s3_bucket: ${{ secrets.BACKOFFICE_PROD_S3_BUCKET }}
+      cloudfront_distribution: ${{ secrets.BACKOFFICE_PROD_CLOUDFRONT_DISTRIBUTION }}

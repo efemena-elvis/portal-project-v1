@@ -1,0 +1,69 @@
+# === Combined Anchors ===
+.backoffice_staging_vars: &backoffice_staging_vars
+  APP_NAME: backoffice
+  APP_DIR: apps/backoffice
+  BUILD_DIR: apps/backoffice/dist
+  BUILD_SCRIPT: build:staging:backoffice
+  CI_ENVIRONMENT_NAME: staging
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $BACKOFFICE_STAGING_AWS_REGION
+  S3_BUCKET: $BACKOFFICE_STAGING_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $BACKOFFICE_STAGING_CLOUDFRONT_DISTRIBUTION
+
+.backoffice_prod_vars: &backoffice_prod_vars
+  APP_NAME: backoffice
+  APP_DIR: apps/backoffice
+  BUILD_DIR: apps/backoffice/dist
+  BUILD_SCRIPT: build:prod:backoffice
+  CI_ENVIRONMENT_NAME: main
+  AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+  AWS_REGION: $BACKOFFICE_PROD_AWS_REGION
+  S3_BUCKET: $BACKOFFICE_PROD_S3_BUCKET
+  CLOUDFRONT_DISTRIBUTION: $BACKOFFICE_PROD_CLOUDFRONT_DISTRIBUTION
+
+# === Backoffice ===
+install_backoffice:
+  extends: .install_template
+  variables:
+    <<: *backoffice_staging_vars
+  only:
+    - staging
+    - main
+
+build_staging_backoffice:
+  extends: .build_template
+  variables:
+    <<: *backoffice_staging_vars
+  only:
+    - staging
+  needs:
+    - install_backoffice
+
+build_production_backoffice:
+  extends: .build_template
+  variables:
+    <<: *backoffice_prod_vars
+  only:
+    - main
+  needs:
+    - install_backoffice
+
+deploy_staging_backoffice:
+  extends: .deploy_template
+  variables:
+    <<: *backoffice_staging_vars
+  only:
+    - staging
+  needs:
+    - build_staging_backoffice
+
+deploy_production_backoffice:
+  extends: .deploy_template
+  variables:
+    <<: *backoffice_prod_vars
+  only:
+    - main
+  needs:
+    - build_production_backoffice

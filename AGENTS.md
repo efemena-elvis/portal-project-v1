@@ -3,6 +3,7 @@
 ## Stack
 
 - Vue 3 + TypeScript + Vite 6 + Pinia + Vue Router + Tailwind CSS
+- Turborepo monorepo with npm workspaces
 - Node >= 18, npm 9.8.1
 - **No test framework exists** — do not try to run tests
 
@@ -10,11 +11,13 @@
 
 ```
 npm install --legacy-peer-deps   # Required; plain `npm install` will fail
-npm run dev                       # Dev server on port 5172 (not default 5173)
+npm run dev                       # Dev server (turbo, all apps)
+npm run dev -- --filter=backoffice  # Dev server for backoffice (port 5172)
 npm run dev -- --mode staging     # Dev with staging env
-npm run build                     # Production build
-npm run build -- --mode staging   # Staging build
-npm run check-types               # vue-tsc --noEmit
+npm run build                     # Production build (all apps)
+npm run build:staging:backoffice  # Staging build for backoffice
+npm run build:prod:backoffice     # Production build for backoffice
+npm run check-types               # vue-tsc --noEmit (all packages)
 npm run lint                      # eslint over .js .ts .tsx .vue
 npm run format                    # prettier --write
 ```
@@ -27,33 +30,56 @@ Or via Makefile: `make dev`, `make build-staging`, `make check-types`, etc.
 
 ## Architecture
 
-- Single SPA entry: `src/main.ts` mounts to `#app`
-- Feature modules live in `src/modules/` (auth, balances, compliance, error, external, global, overview, payments, settings) — each exports its own routes
-- Routes assembled in `src/router/index.ts` by spreading module routes
-- `src/middlewares/index.ts` — global `beforeEach` guard using `useRouteGuard` from `@packages/hooks`
+### Monorepo structure
+
+```
+portal-project-v1/
+├── apps/
+│   └── backoffice/          # Main SPA application
+├── packages/
+│   ├── assets/              # Static assets (images, SCSS)
+│   ├── constants/           # App constants, themes, configs
+│   ├── hooks/               # Vue composables
+│   ├── models/              # TypeScript interfaces/types
+│   └── uikit/               # Shared Vue components
+├── turbo.json               # Turborepo pipeline config
+└── package.json             # Root workspace config
+```
+
+### App (apps/backoffice/)
+
+- Single SPA entry: `apps/backoffice/src/main.ts` mounts to `#app`
+- Feature modules live in `apps/backoffice/src/modules/` (auth, aggregators, approvals, compliance, disputes, error, external, fees, global, manage-teams, merchants, overview, payments, transactions) — each exports its own routes
+- Routes assembled in `apps/backoffice/src/router/index.ts` by spreading module routes
+- `apps/backoffice/src/middlewares/index.ts` — global `beforeEach` guard using `useRouteGuard` from `@packages/hooks`
 - Auth token key: `PORTAL_AUTH_TOKEN`; routes use meta flags: `public`, `requiresAuth`, `guest`, `open`
 - Global toast alerts via mitt eventBus (events: `triggerToastAlert`, `closeToastAlert`)
 
 ## Internal packages (`packages/`)
 
-Not npm workspaces — resolved via TypeScript path aliases:
-| Alias | Path | Purpose |
+npm workspaces — resolved via package.json `dependencies`:
+| Package | Path | Purpose |
 |---|---|---|
-| `@/*` | `src/*` | App source |
-| `@packages/uikit` | `packages/uikit/src` | Shared Vue components (MetaData, ToastCard, etc.) |
-| `@packages/hooks` | `packages/hooks/src` | Composables incl. `useRouteGuard` |
-| `@packages/models` | `packages/models/src` | TypeScript interfaces/types |
-| `@packages/constants` | `packages/constants/src` | App constants |
+| `@packages/uikit` | `packages/uikit/` | Shared Vue components (MetaData, ToastCard, etc.) |
+| `@packages/hooks` | `packages/hooks/` | Composables incl. `useRouteGuard` |
+| `@packages/models` | `packages/models/` | TypeScript interfaces/types |
+| `@packages/constants` | `packages/constants/` | App constants |
 | `@packages/assets` | `packages/assets/` | Static assets (images, SCSS) |
-| `@assets` | `packages/assets/scss` | Vite alias for SCSS |
-| `@images` | `packages/assets/images` | Vite alias for images |
+
+Path aliases (in `vite.config.mjs` and `tsconfig.json`):
+| Alias | Resolves to |
+|---|---|
+| `@/*` | `apps/backoffice/src/*` |
+| `@packages/*` | `packages/*` |
+| `@assets` | `packages/assets/scss` |
+| `@images` | `packages/assets/images` |
 
 ## CI/CD
 
 - Both GitLab CI (`.gitlab-ci.yml`) and GitHub Actions (`.github/workflows/`) configured
 - Deploys to S3 + CloudFront on push to `staging` or `main`
-- Two apps defined in CI: **merchant-of-records** and **alexpay**
-- CI references `apps/merchant-of-records/` and `apps/merchant-dashboard/` dirs and `build:staging:*` / `build:prod:*` scripts that **do not exist yet** in `package.json` — this is future multi-app scaffolding
+- App: **backoffice** — deploys from `apps/backoffice/dist`
+- Build scripts: `build:staging:backoffice`, `build:prod:backoffice`
 
 ## Style conventions
 
@@ -64,4 +90,4 @@ Not npm workspaces — resolved via TypeScript path aliases:
 ## Env loading
 
 - Vite `--mode` flag selects `.env.<mode>` file (staging, production)
-- Default `.env` points to production API: `https://api.mor.vesicash.com`
+- Default `.env` points to production API: `https://api.portal.vesicash.com`
