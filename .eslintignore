@@ -2,3 +2,4 @@ node_modules
 dist
 *.config.js
 *.config.cjs
+*.config.mjs

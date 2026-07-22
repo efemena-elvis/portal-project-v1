@@ -92,13 +92,13 @@ export const useMerchantUtils = defineStore("merchant", {
     },
 
     getFullPayload() {
-      const merchantCount = this.businessProfile.length;
+      const merchantCount = this.business.length;
 
       const payload = Array.from({ length: merchantCount }, (_, idx) => {
         const merchantId = idx + 1;
 
         return {
-          businessProfile: this.businessProfile[idx] || {},
+          businessProfile: this.business[idx] || {},
           businessAddress: this.businessAddress[idx] || {},
           representatives: this.representative.filter(
             (rep) => rep.id === merchantId,

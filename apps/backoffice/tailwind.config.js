@@ -1,4 +1,4 @@
-import { designThemes } from "./packages/constants";
+import { designThemes } from "../../packages/constants";
 
 const { COLOR_THEME, SCREEN_SIZES, ANIMATION_SET, ANIMATION_KEYFRAMES } =
   designThemes();
@@ -7,7 +7,7 @@ const { COLOR_THEME, SCREEN_SIZES, ANIMATION_SET, ANIMATION_KEYFRAMES } =
 module.exports = {
   content: [
     "./src/**/*.{vue,js,ts,jsx,tsx}",
-    "./packages/*/src/**/*.{vue,js,ts,jsx,tsx}",
+    "../../packages/*/src/**/*.{vue,js,ts,jsx,tsx}",
   ],
   theme: {
     screens: {

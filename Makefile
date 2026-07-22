@@ -1,65 +1,65 @@
-# Makefile for single-repo Vite project
-# Apps: merchant-of-records (mor), alexpay (ma)
+# Makefile for portal-project-v1 monorepo
+# Apps: backoffice
 
 # ===== Default =====
 .PHONY: all
 all:
-	@echo "⚡ Please specify a target."
+	@echo "Please specify a target."
 	@echo "   Example: make dev, make build, make check-types"
 	@make help
 
 # ===== Installation =====
 .PHONY: install
 install:
-	@echo "📦 Installing dependencies..."
+	@echo "Installing dependencies..."
 	@npm install --legacy-peer-deps
 
 # ===== Development =====
-.PHONY: dev dev-mor dev-ma
-dev dev-mor dev-ma:
-	@echo "🟢 Starting development server..."
-	@npm run dev
+.PHONY: dev dev-backoffice
+dev dev-backoffice:
+	@echo "Starting development server..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice
 
-.PHONY: dev-staging dev-stg dev-mor-staging dev-ma-staging
-dev-staging dev-stg dev-mor-staging dev-ma-staging:
-	@echo "🟢 Starting development server (staging)..."
-	@npm run dev -- --mode staging
+.PHONY: dev-staging dev-stg dev-staging-bo
+dev-staging dev-stg dev-staging-bo:
+	@echo "Starting development server (staging)..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice -- --mode staging
 
-.PHONY: dev-prod dev-prd dev-mor-prod dev-ma-prod
-dev-prod dev-prd dev-mor-prod dev-ma-prod:
-	@echo "🟡 Starting development server (production)..."
-	@npm run dev -- --mode production
+.PHONY: dev-prod dev-prd
+dev-prod dev-prd:
+	@echo "Starting development server (production)..."
+	@npx turbo run dev --filter=@portal-project-v1/backoffice -- --mode production
 
 # ===== Build =====
-.PHONY: build build-mor build-ma
-build build-mor build-ma:
-	@echo "🔨 Building for production..."
-	@npm run build
+.PHONY: build build-backoffice
+build build-backoffice:
+	@echo "Building for production..."
+	@npx turbo run build --filter=@portal-project-v1/backoffice
 
-.PHONY: build-staging build-stg build-mor-staging build-ma-staging
-build-staging build-stg build-mor-staging build-ma-staging:
-	@echo "🔨 Building for staging..."
-	@npm run build -- --mode staging
+.PHONY: build-staging build-stg build-backoffice-staging
+build-staging build-stg build-backoffice-staging:
+	@echo "Building for staging..."
+	@npm run build:staging:backoffice
 
-.PHONY: build-prod build-prd build-mor-prod build-ma-prod
-build-prod build-prd build-mor-prod build-ma-prod:
-	@echo "🏗️ Building for production..."
-	@npm run build -- --mode production
+.PHONY: build-prod build-prd build-backoffice-prod
+build-prod build-prd build-backoffice-prod:
+	@echo "Building for production..."
+	@npm run build:prod:backoffice
 
 # ===== Verification =====
 .PHONY: check-types
 check-types:
-	@echo "🔍 Checking types..."
-	@npm run check-types
+	@echo "Checking types..."
+	@npx turbo run check-types
 
 .PHONY: lint
 lint:
-	@echo "🔍 Running linter..."
-	@npm run lint
+	@echo "Running linter..."
+	@npx turbo run lint
 
 .PHONY: format
 format:
-	@echo "✨ Formatting code..."
+	@echo "Formatting code..."
 	@npm run format
 
 .PHONY: verify
@@ -69,33 +69,42 @@ verify: check-types lint build
 # ===== Preview =====
 .PHONY: preview
 preview:
-	@echo "👁️  Previewing production build..."
-	@npm run preview
+	@echo "Previewing production build..."
+	@npx turbo run preview --filter=@portal-project-v1/backoffice
+
+# ===== Clean =====
+.PHONY: clean
+clean:
+	@echo "Cleaning build artifacts..."
+	@npx turbo run clean
 
 # ===== Help =====
 .PHONY: help
 help:
 	@echo ""
-	@echo "🛠️  Development"
-	@echo "   make dev / dev-mor / dev-ma    Start development server"
-	@echo "   make dev-staging               Dev server (staging mode)"
-	@echo "   make dev-prod                  Dev server (production mode)"
+	@echo "Development"
+	@echo "   make dev / dev-backoffice       Start development server"
+	@echo "   make dev-staging                Dev server (staging mode)"
+	@echo "   make dev-prod                   Dev server (production mode)"
 	@echo ""
 	@echo "🔨 Build"
-	@echo "   make build / build-mor / build-ma    Build for production"
-	@echo "   make build-staging / build-stg       Build for staging"
-	@echo "   make build-prod / build-prd          Build for production"
+	@echo "   make build / build-backoffice   Build for production"
+	@echo "   make build-staging / build-stg  Build for staging"
+	@echo "   make build-prod / build-prd     Build for production"
 	@echo ""
-	@echo "🔍 Verification"
+	@echo "Verification"
 	@echo "   make lint           Run linter"
 	@echo "   make format         Format code"
 	@echo "   make check-types    TypeScript type check"
-	@echo "   make verify         Run all checks (lint \u2192 check-types \u2192 build)"
+	@echo "   make verify         Run all checks (lint → check-types → build)"
 	@echo ""
-	@echo "👁️  Preview"
+	@echo "Preview"
 	@echo "   make preview        Preview production build"
 	@echo ""
-	@echo "📦 Setup"
+	@echo "Clean"
+	@echo "   make clean          Clean all build artifacts"
+	@echo ""
+	@echo "Setup"
 	@echo "   make install        Install dependencies (legacy-peer-deps)"
 	@echo ""
-	@echo "App shortnames:  mor = Merchant of Records,  ma  = Alexpay"
+	@echo "App shortnames:  backoffice = Backoffice Portal"

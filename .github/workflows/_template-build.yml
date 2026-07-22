@@ -1,17 +1,16 @@
 # Reusable Build Template
-# Equivalent to GitLab's .build_template
-# Restores the npm cache, runs the app-specific build script,
+# Restores the npm cache, runs the app-specific build script via turbo,
 # and uploads the dist folder as a workflow artifact.
 
 on:
   workflow_call:
     inputs:
       build_script:
-        description: "npm script to run (e.g. build:staging:merchant-alexpay)"
+        description: "npm script to run (e.g. build:staging:backoffice)"
         required: true
         type: string
       build_dir:
-        description: "Path to the built output directory (e.g. apps/merchant-dashboard/dist)"
+        description: "Path to the built output directory (e.g. apps/backoffice/dist)"
         required: true
         type: string
       artifact_name:
@@ -36,7 +35,10 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: node_modules
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
           key: ${{ runner.os }}-node_modules-${{ hashFiles('package-lock.json') }}
 
       - name: Install dependencies (cache miss fallback)
