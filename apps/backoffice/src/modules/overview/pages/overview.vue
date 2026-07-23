@@ -117,9 +117,9 @@ interface StatisticsCardData {
 const statisticsCards = computed(() => {
   const cards: StatisticsCardData[] = [
     { label: "Total Volume Processed", value: "₦1.2M" },
-    { label: "Collection", value: "₦10.04B" },
-    { label: "Payout", value: "₦2.8B" },
-    { label: "Revenue", value: "₦1.2M" },
+    { label: "Collections", value: "₦10.04B" },
+    { label: "Payouts", value: "₦2.8B" },
+    { label: "Revenues", value: "₦1.2M" },
   ];
 
   if (selectedPaymentMethod.value === "card") {
