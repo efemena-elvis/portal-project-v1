@@ -78,6 +78,7 @@ export function useTransactionsData() {
         { value: "GHS", name: "GHS" },
         { value: "USD", name: "USD" },
         { value: "TZS", name: "TZS" },
+            { value: "KES", name: "KES" },
       ],
       placeholder: "Currency",
     },
@@ -104,12 +105,11 @@ export function useTransactionsData() {
 
   const tableHeader = ref<TableHeaderType[]>([
     { title: "Date", slug: "date" },
-    { title: "Customer", slug: "customer" },
+    { title: "Business Name", slug: "merchant" },
     { title: "Amount", slug: "amount" },
     { title: "Payment Method", slug: "method" },
     {title: "Reference", slug: "reference"},
     { title: "Status", slug: "status" },
-    {title: "Reason", slug: "reason"},
     { title: "", slug: "action" },
   ]);
 
@@ -146,39 +146,18 @@ export function useTransactionsData() {
     return `${w2}, ${d3} ${m3}, ${y1}`;
   };
 
-  const getCustomerName = (data: any) => {
-    if (!data) return "-";
-    const firstName = data?.first_name?.toString().trim();
-    const lastName = data?.last_name?.toString().trim();
-    if (firstName || lastName) {
-      return `${firstName || ""} ${lastName || ""}`.trim();
-    }
-    const account = data?.account_number?.toString().trim();
-    if (account) return account;
-    return data?.reference || "-";
-  };
-
-  const getCustomerSecondary = (data: any) => {
-    if (!data) return "-";
-    const email = data?.email?.toString().trim();
-    if (email) return email;
-    const phone = data?.phone?.toString().trim();
-    if (phone) return phone;
-    else return "-";
-  };
+ 
 
   const normalizeTransaction = (data: any) => {
     return {
       id: data?.uuid,
       uuid: data?.uuid,
       date: data?.created_at || "-",
-      customer: getCustomerName(data),
-      customer_secondary: getCustomerSecondary(data),
+      merchant: data?.user?.name || "-",
       amount: `${data?.currency || ""} ${formatNumber(data?.amount ?? 0)}`,
       currency: data?.currency || "",
       method: data?.method || "-",
       type: data?.type || "-",
-      reason: data?.failure_reason || "-",
       reference: data?.reference || "-",
       status: data?.status || "-",
       raw: data,
@@ -197,12 +176,7 @@ export function useTransactionsData() {
             secondaryText: date !== "-" ? useDate.formatTime(date) : "",
           },
         }),
-        customer: h(TableDoubleColumn, {
-          entry: {
-            primaryText: tx.customer || "-",
-            secondaryText: tx.customer_secondary,
-          },
-        }),
+        "merchant":tx.merchant,
         amount: getBoldTableText(tx.amount),
         method: h(TableDoubleColumn, {
           entry: {
@@ -215,8 +189,7 @@ export function useTransactionsData() {
           tx.status === "completed" ? "successful" : tx.status,
           tx.status,
         ),
-        reason: tx.reason,
-
+      
         action: h("div", { class: "flex items-center gap-3" }, [
           h(
             "button",

@@ -27,16 +27,9 @@
         <div class="section-block">
           <h3 class="section-title">Transaction</h3>
           <div class="detail-list">
-            <DetailRow label="UUID" :value="transaction?.uuid" />
+          
             <DetailRow label="Reference" :value="transaction?.reference" />
-            <DetailRow
-              label="Merchant Reference"
-              :value="transaction?.merchant_reference"
-            />
-            <DetailRow
-              label="Provider Reference"
-              :value="transaction?.provider_reference"
-            />
+          
             <DetailRow
               label="Type"
               :value="
@@ -46,8 +39,8 @@
               "
             />
             <DetailRow label="Method" :value="transaction?.method" />
-            <DetailRow label="Status" :value="transaction?.status" />
-            <DetailRow label="Source" :value="transaction?.source" />
+    
+       
             <DetailRow label="Environment" :value="transaction?.environment" />
           </div>
         </div>
@@ -83,11 +76,6 @@
             <DetailRow
               label="Webhook Sent"
               :value="transaction?.webhook_sent ? 'Yes' : 'No'"
-            />
-            <DetailRow label="Webhook URL" :value="transaction?.webhook_url" />
-            <DetailRow
-              label="Redirect URL"
-              :value="transaction?.redirect_url"
             />
           </div>
         </div>

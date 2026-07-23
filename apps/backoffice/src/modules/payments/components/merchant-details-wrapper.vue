@@ -53,7 +53,7 @@
               :key="currency"
               :value="currency"
             >
-              {{ currency }} ({{ currencySymbols[currency] || currency }})
+              {{ currency }} ({{ getCurrencySign(currency) }})
             </option>
           </select>
           <span class="icon icon-caret-down"></span>
@@ -78,7 +78,7 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useString } from "@packages/hooks";
-import { getCountryByCode } from "@packages/constants";
+import { getCountryByCode, countryCurrencies } from "@packages/constants";
 import MerchantAdminActions from "./merchant-admin-actions.vue";
 import MerchantDonut from "./merchant-donut.vue";
 import MerchantPayoutCard from "./merchant-payout-card.vue";
@@ -109,14 +109,9 @@ const { formatNumber } = useString();
 
 const selectedCurrency = ref("NGN");
 
-const currencySymbols: Record<string, string> = {
-  NGN: "\u20A6",
-  GHS: "GHS",
-  TZS: "TSh",
-  ZMW: "ZK",
-  USD: "$",
-  KES: "KSh",
-};
+const getCurrencySign = (code: string) =>
+  countryCurrencies.find((c) => c.currency.short === code)?.currency.sign ||
+  code;
 
 const wallets = computed<any[]>(() => props.overviewData?.wallets || []);
 
@@ -142,7 +137,7 @@ const transactionStats = computed(() => {
   const data = props.overviewData;
   if (!data) {
     return [
-      { title: "Total Transactions", value: 0 },
+      { title: "Total Collections", value: 0 },
       { title: "Completed", value: 0 },
       { title: "Pending", value: 0 },
       { title: "Failed", value: 0 },
@@ -150,7 +145,7 @@ const transactionStats = computed(() => {
   }
 
   return [
-    { title: "Total Transactions", value: 100 },
+    { title: "Total Collections", value: 100 },
     { title: "Completed", value: data.transaction_successful_percentage || 0 },
     { title: "Pending", value: data.transaction_pending_percentage || 0 },
     { title: "Failed", value: data.transaction_failed_percentage || 0 },

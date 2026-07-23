@@ -41,6 +41,12 @@
       @page-change="onPageChange"
     />
   </section>
+
+  <TransactionDetailModal
+    v-if="showDetailModal"
+    :transaction="selectedTransaction"
+    @closeTriggered="showDetailModal = false"
+  />
 </template>
 
 <script setup lang="ts">
@@ -56,6 +62,7 @@ import {
 } from "@packages/uikit";
 import { usePaymentStore } from "@/modules/payments/store";
 import { exportTransactionsCSV } from "@/shared/utils/transaction-export";
+import TransactionDetailModal from "@/modules/transactions/modals/transaction-detail-modal.vue";
 
 interface MerchantTransaction {
   date: string;
@@ -66,8 +73,8 @@ interface MerchantTransaction {
   amount: string;
   status: string;
   reference: string;
-  reason: string;
   type: string;
+  raw?: Record<string, any>;
 }
 
 const props = withDefaults(
@@ -94,6 +101,8 @@ const currencyOptions = computed<string[]>(() => {
 const isLoading = ref(false);
 const page = ref(1);
 const tablePaging = ref<any>({});
+const showDetailModal = ref(false);
+const selectedTransaction = ref<Record<string, any> | null>(null);
 
 const filterValues = reactive({
   search: "",
@@ -143,8 +152,7 @@ const tableHeader: TableHeaderType[] = [
   { title: "Amount", slug: "amount" },
   {title: "Reference", slug: "reference" },
   { title: "Status", slug: "status" },
-
-  {title: "Reason", slug: "reason"}
+  { title: "", slug: "action" },
 ];
 
 const formatDate = (date?: string) => {
@@ -192,8 +200,8 @@ const normalizeTransaction = (
     : "-",
   status: (transaction.status || "").toLowerCase(),
   reference: transaction.reference || "-",
-  reason: transaction.failure_reason || "-",
   type: transaction.type || "-",
+  raw: transaction,
 });
 
 const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z");
@@ -299,10 +307,29 @@ const filteredTableBody = computed(() =>
       amount: getBoldTableText(transaction.amount),
       status: getStatus(key, label),
       reference: transaction.reference,
-      reason: transaction.reason,
+      action: h("div", { class: "flex items-center gap-3" }, [
+        h(
+          "button",
+          {
+            type: "button",
+            class:
+              "text-sm font-semibold text-teal-800 transition hover:text-green-600",
+            onClick: (event: Event) => {
+              event.stopPropagation();
+              openDetailModal(transaction);
+            },
+          },
+          "View",
+        ),
+      ]),
     };
   }),
 );
+
+const openDetailModal = (tx: MerchantTransaction) => {
+  selectedTransaction.value = tx.raw || null;
+  showDetailModal.value = true;
+};
 
 watch(
   () => [props.merchantId, apiFilters.value] as const,
@@ -361,5 +388,18 @@ const handleExport = async () => {
 
 :deep(tbody tr td:last-child) {
   text-align: left;
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
 }
 </style>

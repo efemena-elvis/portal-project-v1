@@ -10,6 +10,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useString } from "@packages/hooks";
+import { countryCurrencies } from "@packages/constants";
 
 const props = withDefaults(
   defineProps<{
@@ -22,22 +23,17 @@ const props = withDefaults(
   },
 );
 
-const currencySymbols: Record<string, string> = {
-  NGN: "\u20A6",
-  GHS: "GHS",
-  TZS: "TSh",
-  ZMW: "ZK",
-  USD: "$",
-  KES: "KSh",
-};
+const getCurrencySign = (code: string) =>
+  countryCurrencies.find((c) => c.currency.short === code)?.currency.sign ||
+  code;
 
 const { formatNumber } = useString();
 
 const formatMetric = (value: unknown) => {
+  const symbol = getCurrencySign(props.selectedCurrency);
   if (value === undefined || value === null || value === "")
-    return `${currencySymbols[props.selectedCurrency] || ""}0`;
-  if (typeof value === "number")
-    return `${currencySymbols[props.selectedCurrency] || ""}${formatNumber(value)}`;
+    return `${symbol}0`;
+  if (typeof value === "number") return `${symbol}${formatNumber(value)}`;
   return `${value}`;
 };
 
@@ -53,7 +49,7 @@ const metrics = computed(() => [
     ),
   },
   {
-    label: "Total Transactions",
+    label: "Total Collections",
     value: formatMetric(props.source.total_transactions),
   },
   {
@@ -61,7 +57,7 @@ const metrics = computed(() => [
     value: formatMetric(props.source.total_payout),
   },
   {
-    label: "Refunds",
+    label: "Total Refunds",
     value: formatMetric(props.source.refunds),
   },
 ]);
