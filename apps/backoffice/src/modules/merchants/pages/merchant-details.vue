@@ -4,7 +4,7 @@
     :merchantDetails="merchantDetails"
     :businessName="businessName"
     :businessStatus="businessStatus"
-    :wallets="wallets"
+    :overviewData="overviewData"
     @actionSelected="openMerchantAction"
     @payoutActionSelected="openPayoutAction"
   >
@@ -15,6 +15,7 @@
       :merchantId="id"
       :merchantDetails="merchantDetails"
       :businessName="businessName"
+      :overviewData="overviewData"
     />
   </MerchantDetailsWrapper>
 
@@ -55,8 +56,8 @@ const router = useRouter();
 const id = route.params.id as string;
 
 const {
-  getMerchants,
   getSingleMerchant,
+  getMerchantOverview,
   resetMerchantPassword,
   loginMerchantAccount,
   deleteMerchant,
@@ -68,9 +69,9 @@ const { processAPIRequest } = useEvents();
 
 const activeTab = ref<string>("Transactions");
 const merchantDetails = ref<Record<string, any> | null>(null);
-const wallets = ref<any[]>([]);
-const businessName = ref("Tech-village Inc");
-const businessStatus = ref("Verified");
+const overviewData = ref<Record<string, any> | null>(null);
+const businessName = ref("");
+const businessStatus = ref("");
 const showActionModal = ref(false);
 const activeAction = ref<DetailAction>("approve");
 
@@ -154,22 +155,28 @@ const fetchMerchantDetails = async () => {
   }
 };
 
-const fetchMerchantWallets = async () => {
-  const email = route.query.email as string;
-  if (!email) return;
-
+const fetchMerchantOverview = async () => {
   const response = await processAPIRequest({
-    action: getMerchants,
-    payload: {
-      filters: `?page=1&email=${encodeURIComponent(email)}`,
-      page: 1,
-    },
+    action: getMerchantOverview,
+    payload: id,
     showAlert: false,
   });
 
-  if (response?.code === 200) {
-    const merchant = response.data?.merchants?.find((m: any) => m.uuid === id);
-    wallets.value = merchant?.wallets || [];
+  if (response?.code === 200 && response.data) {
+    overviewData.value = response.data;
+
+    const business = response.data.profile?.business;
+    const user = response.data.profile?.user;
+
+    if (business?.name) {
+      businessName.value = business.name;
+    } else if (user?.email) {
+      businessName.value = user.email;
+    }
+
+    if (business?.status) {
+      businessStatus.value = business.status;
+    }
   }
 };
 
@@ -248,7 +255,7 @@ const handleActionConfirmed = async () => {
 
 onMounted(() => {
   fetchMerchantDetails();
-  fetchMerchantWallets();
+  fetchMerchantOverview();
 });
 </script>
 

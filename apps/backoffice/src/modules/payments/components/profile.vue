@@ -36,9 +36,11 @@ export interface ProfileSection {
 const props = withDefaults(
   defineProps<{
     profiles?: ProfileSection[];
+    overviewData?: Record<string, any> | null;
   }>(),
   {
     profiles: undefined,
+    overviewData: null,
   },
 );
 
@@ -63,9 +65,77 @@ const defaultProfiles: ProfileSection[] = [
   },
 ];
 
-const displayProfiles = computed(() =>
-  props.profiles?.length ? props.profiles : defaultProfiles,
-);
+const buildProfilesFromOverview = (): ProfileSection[] | null => {
+  const business = props.overviewData?.profile?.business;
+  const user = props.overviewData?.profile?.user;
+  const setting = props.overviewData?.profile?.setting;
+
+  if (!business && !user) return null;
+
+  const sections: ProfileSection[] = [];
+
+  if (business) {
+    sections.push({
+      section: "Business information",
+      fields: [
+        { label: "Business name", value: business.name || "-" },
+        { label: "Trading name", value: business.trading_name || "-" },
+        { label: "Operation", value: business.operation || "-" },
+        { label: "Category", value: business.category || "-" },
+      ],
+    });
+
+    sections.push({
+      section: "Business contacts",
+      fields: [
+        { label: "Phone number", value: business.phone_number || "-" },
+        { label: "Website", value: business.website || "-" },
+        { label: "Address", value: business.address || "-" },
+        { label: "City", value: business.city || "-" },
+      ],
+    });
+  }
+
+  if (user) {
+    sections.push({
+      section: "Account information",
+      fields: [
+        { label: "Email", value: user.email || "-" },
+        {
+          label: "Email verified",
+          value: user.email_verified ? "Yes" : "No",
+        },
+        {
+          label: "2FA enabled",
+          value: user.two_factor_enabled ? "Yes" : "No",
+        },
+        {
+          label: "Account active",
+          value: user.is_active ? "Yes" : "No",
+        },
+      ],
+    });
+  }
+
+  if (setting) {
+    sections.push({
+      section: "Settings",
+      fields: [
+        { label: "Environment", value: setting.environment || "-" },
+        { label: "Payout frequency", value: setting.payout_frequency || "-" },
+        { label: "Payin fee by", value: setting.payin_fee_by || "-" },
+        { label: "Payout fee by", value: setting.payout_fee_by || "-" },
+      ],
+    });
+  }
+
+  return sections.length > 0 ? sections : null;
+};
+
+const displayProfiles = computed(() => {
+  const fromOverview = buildProfilesFromOverview();
+  return fromOverview || props.profiles || defaultProfiles;
+});
 </script>
 
 <style scoped></style>

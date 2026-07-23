@@ -50,3 +50,7 @@ export const rejectMerchantPayoutRequest = async (id: string) => {
 export const resetMerchantMfa = async (userId: string) => {
   return await $api.push(merchantRoutes.resetMfa, { user_id: userId });
 };
+
+export const getMerchantOverview = async (id: string) => {
+  return await $api.fetch(`${merchantRoutes.getMerchantOverview}/${id}/overview`);
+};

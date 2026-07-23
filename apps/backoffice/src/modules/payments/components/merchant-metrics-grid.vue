@@ -28,6 +28,7 @@ const currencySymbols: Record<string, string> = {
   TZS: "TSh",
   ZMW: "ZK",
   USD: "$",
+  KES: "KSh",
 };
 
 const { formatNumber } = useString();
@@ -56,7 +57,7 @@ const metrics = computed(() => [
     value: formatMetric(props.source.total_transactions),
   },
   {
-    label: "Total Payout",
+    label: "Total Payouts",
     value: formatMetric(props.source.total_payout),
   },
   {

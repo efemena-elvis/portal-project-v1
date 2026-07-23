@@ -74,14 +74,22 @@ const props = withDefaults(
   defineProps<{
     merchantId?: string;
     merchantDetails?: Record<string, any> | null;
+    overviewData?: Record<string, any> | null;
   }>(),
-  { merchantId: "", merchantDetails: null },
+  { merchantId: "", merchantDetails: null, overviewData: null },
 );
 
 const { getTransactions } = usePaymentStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } =
   useString();
+
+const currencyOptions = computed<string[]>(() => {
+  const wallets: any[] = props.overviewData?.wallets || [];
+  return wallets.length
+    ? [...new Set<string>(wallets.map((w: any) => String(w.currency).toUpperCase()))]
+    : ["NGN", "GHS", "TZS", "ZMW", "USD"];
+});
 
 const isLoading = ref(false);
 const page = ref(1);
@@ -91,10 +99,11 @@ const filterValues = reactive({
   search: "",
   paymentMethod: "",
   status: "",
+  currency: "",
   period: null as [Date, Date] | null,
 });
 
-const filterConfig = [
+const filterConfig = computed(() => [
   { type: "search" as const, key: "search", placeholder: "Search" },
   {
     type: "select" as const,
@@ -104,12 +113,18 @@ const filterConfig = [
   },
   {
     type: "select" as const,
+    key: "currency",
+    options: currencyOptions.value,
+    placeholder: "Currency",
+  },
+  {
+    type: "select" as const,
     key: "status",
     options: ["Completed", "Pending", "Failed", "Cancelled"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
-];
+]);
 
 const onFilterChange = ({ key, value }: { key: string; value: any }) => {
   if (key === "period") {
@@ -193,6 +208,9 @@ const apiFilters = computed(() => {
 
   if (filterValues.paymentMethod)
     filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`;
+
+  if (filterValues.currency)
+    filters += `&currency=${filterValues.currency.toUpperCase()}`;
 
   if (filterValues.period) {
     filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`;
