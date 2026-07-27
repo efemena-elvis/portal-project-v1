@@ -58,7 +58,7 @@ import { TableHeaderType } from "@packages/models";
 import {
   Pagination,
   TableContainer,
-  TableContainerBody
+  TableContainerBody,
 } from "@packages/uikit";
 import AddFeeModal from "@/modules/payments/modals/add-fee-modal.vue";
 
@@ -117,7 +117,7 @@ const normalizedFees = computed(() =>
     amount:
       item.type === "percentage"
         ? `${item.amount}%`
-        : `${item.currency} ${item.amount}`,
+        :  item.amount,
     is_active: item.is_active,
     dateCreated: item.created_at,
   })),

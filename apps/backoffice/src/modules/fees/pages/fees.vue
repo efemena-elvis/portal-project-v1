@@ -191,7 +191,9 @@ const normalizeFeeData = (data: any) => {
       "-",
     fee_type: capitalizeFirstLetter(data?.type || "-"),
     amount: getBoldTableText(
-      `${data?.currency} ${formatNumber(data?.amount ?? 0)}`,
+      data?.type === "percentage"
+        ? `${data?.amount ?? 0}%`
+        : `${data?.currency} ${formatNumber(data?.amount ?? 0)}`,
       data?.method === "payin" ? "text-green-600" : "text-red-600",
     ),
     capAmount: data?.cap_amount
