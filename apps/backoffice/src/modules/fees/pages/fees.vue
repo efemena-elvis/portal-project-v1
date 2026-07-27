@@ -166,7 +166,7 @@ const fetchMerchants = async () => {
     const merchants = response.data.merchants || [];
     merchantOptions.value = merchants.map((merchant: any) => ({
       value: merchant.uuid || "",
-      name: merchant.user.business_name || merchant.user.email
+      name: merchant.business_name || merchant.email,
     }));
   }
 };
