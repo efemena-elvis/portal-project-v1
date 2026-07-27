@@ -250,7 +250,7 @@ export function useApprovalsData() {
             secondaryText: useDate.formatTime(data.created_at),
           },
         }),
-        merchant: request.accountNumber || "-",
+        merchant: getBoldTableText(capitalizeFirstLetter(request.merchantName)),
         amount: getBoldTableText(
           `${data.currency} ${formatNumber(data.amount)}`,
         ),
