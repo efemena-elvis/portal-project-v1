@@ -19,24 +19,30 @@ const props = defineProps<{
 
 const statusBreakdown = computed(() => {
   const total =
-    props.stats.find((s) => s.title === "Total Transactions")?.value || 0;
+    props.stats.find((stat) => stat.title === "Total Transactions")?.value || 0;
   const completed =
-    props.stats.find((s) => s.title === "Completed")?.value || 0;
-  const pending = props.stats.find((s) => s.title === "Pending")?.value || 0;
-  const failed = props.stats.find((s) => s.title === "Failed")?.value || 0;
+    props.stats.find((stat) => stat.title === "Completed")?.value || 0;
+  const pending = props.stats.find((stat) => stat.title === "Pending")?.value || 0;
+  const failed = props.stats.find((stat) => stat.title === "Failed")?.value || 0;
 
-  const c = total ? Math.round((completed / total) * 100) : 0;
-  const p = total ? Math.round((pending / total) * 100) : 0;
-  const f = total ? Math.round((failed / total) * 100) : 0;
+  const completedPercentage = total ? Math.round((completed / total) * 100) : 0;
+  const pendingPercentage = total ? Math.round((pending / total) * 100) : 0;
+  const failedPercentage = total ? Math.round((failed / total) * 100) : 0;
 
   return [
     {
-      label: "Successful",
-      value: c,
+      label: "Completed",
+      value: completedPercentage,
       className: "legend-dot legend-dot--success",
     },
-    { label: "Pending", value: p, className: "legend-dot legend-dot--pending" },
-    { label: "Failed", value: f, className: "legend-dot legend-dot--failed" },
+    { 
+      label: "Pending", 
+      value: pendingPercentage,
+       className: "legend-dot legend-dot--pending" },
+    { 
+      label: "Failed", 
+      value: failedPercentage,
+       className: "legend-dot legend-dot--failed" },
   ];
 });
 

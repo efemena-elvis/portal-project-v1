@@ -25,7 +25,7 @@ export function useApprovalsData() {
     decideWithdrawalRequest,
   } = useApprovalsStore();
   const { processAPIRequest, pushToastAlert } = useEvents();
-  const { formatNumber, getBoldTableText, getStatus } = useString();
+  const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter} = useString();
   const router = useRouter();
 
   const isLoading = ref(true);
@@ -70,9 +70,10 @@ export function useApprovalsData() {
     { title: "Fundings Failed", value: "-" },
   ]);
 
-  const fmtStartISO = (d: Date) => d.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (d: Date) => {
-    const end = new Date(d);
+  const fmtStartISO = (date: Date) =>
+    date.toISOString().replace(/\.\d+Z$/, "Z");
+  const fmtEndISO = (date: Date) => {
+    const end = new Date(date);
     end.setHours(23, 59, 59, 0);
     return end.toISOString().replace(/\.\d+Z$/, "Z");
   };
@@ -89,7 +90,7 @@ export function useApprovalsData() {
 
   const withdrawalTableHeader: TableHeaderType[] = [
     { title: "Date", slug: "date_created" },
-    { title: "Account Number", slug: "merchant" },
+    { title: "Merchant", slug: "merchant" },
     { title: "Amount", slug: "amount" },
     { title: "Status", slug: "status" },
     { title: "Reference", slug: "reference" },
@@ -213,7 +214,7 @@ export function useApprovalsData() {
             secondaryText: date ? useDate.formatTime(date) : "",
           },
         }),
-        merchant: request.merchantName,
+        merchant: getBoldTableText(capitalizeFirstLetter(request.merchantName)),
         amount: getBoldTableText(
           `${request.currency} ${request.amount}`.trim(),
         ),

@@ -577,7 +577,7 @@ const countries = [
   },
 ];
 
-const dialingCodes = countries.map((c) => c.dialing_code);
+const dialingCodes = countries.map((country) => country.dialing_code);
 const escapedCodes = dialingCodes.map((dc) =>
   dc.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&"),
 );
@@ -589,14 +589,17 @@ export const dialingCodeRegex = new RegExp(
 export function getCountryByCurrencyShort(shortCode: string) {
   return (
     countries.find(
-      (c) => c.currency.short.toUpperCase() === shortCode.toUpperCase(),
+      (country) =>
+        country.currency.short.toUpperCase() === shortCode.toUpperCase(),
     ) || null
   );
 }
 
 export function getCountryByCode(code: string) {
   return (
-    countries.find((c) => c.code?.toLowerCase() === code?.toLowerCase()) || null
+    countries.find(
+      (country) => country.code?.toLowerCase() === code?.toLowerCase(),
+    ) || null
   );
 }
 
@@ -609,7 +612,7 @@ export function getDialingCode(phone: string, fallback = "260") {
 
   // sort dialing codes longest → shortest (to handle overlaps like "1" vs "1-876")
   const dialingCodes = countries
-    .map((c) => c.dialing_code)
+    .map((country) => country.dialing_code)
     .sort((a, b) => b.length - a.length);
 
   for (const code of dialingCodes) {

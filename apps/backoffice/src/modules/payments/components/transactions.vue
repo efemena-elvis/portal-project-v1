@@ -250,9 +250,9 @@ const fetchTransactions = async () => {
     : data?.transactions || [];
 
   transactions.value = transactionsList
-    .map((t: Record<string, any>) => {
+    .map((transaction: Record<string, any>) => {
       try {
-        return normalizeTransaction(t);
+        return normalizeTransaction(transaction);
       } catch {
         return null;
       }

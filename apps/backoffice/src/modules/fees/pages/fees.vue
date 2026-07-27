@@ -16,7 +16,7 @@
               type="button"
               @click="showAddFeeModal = true"
             >
-              + Add Config
+              + Add Fee Config
             </button>
           </div>
         </div>
@@ -143,7 +143,7 @@ const onFilterChange = ({ key, value }: { key: string; value: any }) => {
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date_created" },
-  { title: "Merchant", slug: "name" },
+  { title: "Merchant", slug: "merchant" },
   { title: "Payment Type", slug: "payment_type" },
   { title: "Fee Type", slug: "fee_type" },
   { title: "Amount", slug: "amount" },
@@ -164,10 +164,9 @@ const fetchMerchants = async () => {
   });
   if (response?.code === 200 && response.data) {
     const merchants = response.data.merchants || [];
-    merchantOptions.value = merchants.map((m: any) => ({
-      value: m.uuid || "",
-      name:
-        m.email || `${m.first_name || ""} ${m.last_name || ""}`.trim() || "-",
+    merchantOptions.value = merchants.map((merchant: any) => ({
+      value: merchant.uuid || "",
+      name: merchant.user.business_name || merchant.user.email
     }));
   }
 };
@@ -177,32 +176,20 @@ const getDateCreated = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const getMerchantName = (data: any) => {
-  if (!data) return "-";
 
-  const merchant = data.user || data;
-  const firstName = merchant?.first_name?.toString().trim();
-  const lastName = merchant?.last_name?.toString().trim();
-
-  if (firstName || lastName) {
-    return `${firstName || ""} ${lastName || ""}`.trim();
-  }
-
-  return merchant?.email || merchant?.name || "-";
-};
 
 const normalizeFeeData = (data: any) => {
   return {
     id: data?.id,
     date: data?.created_at || "-",
-    name: getMerchantName(data),
+    merchant: data?.user.business_name || "-",
     merchantId: data?.user_id,
-    payment_type: data?.method || data?.payment_type || "-",
+    payment_type: capitalizeFirstLetter(data?.method || "-"),
     country:
       getCountryByCurrencyShort(data?.currency)?.country ||
       data?.country ||
       "-",
-    fee_type: data?.type || data?.fee_type || "-",
+    fee_type: capitalizeFirstLetter(data?.type || "-"),
     amount: getBoldTableText(
       `${data?.currency} ${formatNumber(data?.amount ?? 0)}`,
       data?.method === "payin" ? "text-green-600" : "text-red-600",
@@ -227,7 +214,7 @@ const buildFeeTableRows = (fees: any[]) => {
           secondaryText: date ? useDate.formatTime(date) : "",
         },
       }),
-      name: getBoldTableText(fee.name),
+      merchant: getBoldTableText(capitalizeFirstLetter(fee.merchant)),
       payment_type: capitalizeFirstLetter(fee.payment_type),
       fee_type: capitalizeFirstLetter(fee.fee_type),
       amount: fee.amount,

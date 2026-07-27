@@ -237,8 +237,9 @@ const complianceDetails = computed(() => ({
 
 const countryData = computed(() =>
   countryCurrencies.find(
-    (c) =>
-      c.country.toLowerCase() === complianceDetails.value.country.toLowerCase(),
+    (countryCurrency) =>
+      countryCurrency.country.toLowerCase() ===
+      complianceDetails.value.country.toLowerCase(),
   ),
 );
 

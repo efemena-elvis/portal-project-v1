@@ -11,7 +11,7 @@
         <div class="" v-for="(field, index) in profile.fields" :key="index">
           <div class="flex flex-col gap-2">
             <p class="uppercase text-grey-600">{{ field.label }}</p>
-            <p class="text-grey-900 font-[600]">{{ field.value }}</p>
+            <p class="text-grey-900 font-[600] break-words">{{ field.value }}</p>
           </div>
         </div>
       </div>
