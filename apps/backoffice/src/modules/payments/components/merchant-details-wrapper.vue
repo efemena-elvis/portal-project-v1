@@ -21,14 +21,25 @@
       <div class="business-copy">
         <div class="business-label-row">
           <p>Business name</p>
-          <span v-if="businessStatus" :class="['chip', businessStatus === 'approved' || businessStatus === 'verified' ? 'chip-success' : 'chip-warning']">{{ businessStatus.charAt(0).toUpperCase() + businessStatus.slice(1) }}</span>
+          <span
+            v-if="businessStatus"
+            :class="[
+              'chip',
+              businessStatus === 'approved' || businessStatus === 'verified'
+                ? 'chip-success'
+                : 'chip-warning',
+            ]"
+            >{{
+              businessStatus.charAt(0).toUpperCase() + businessStatus.slice(1)
+            }}</span
+          >
         </div>
         <div class="business-title-row">
           <h1>{{ businessName }}</h1>
-          <span class="chip chip-type">{{
-            entityType || businessType
+          <span class="chip chip-type">{{ entityType || businessType }}</span>
+          <span v-if="countryName" class="chip chip-info">{{
+            countryName
           }}</span>
-          <span v-if="countryName" class="chip chip-info">{{ countryName }}</span>
         </div>
       </div>
 
@@ -110,34 +121,44 @@ const { formatNumber } = useString();
 const selectedCurrency = ref("NGN");
 
 const getCurrencySign = (code: string) =>
-  countryCurrencies.find((c) => c.currency.short === code)?.currency.sign ||
-  code;
+  countryCurrencies.find(
+    (countryCurrency) => countryCurrency.currency.short === code,
+  )?.currency.sign || code;
 
 const wallets = computed<any[]>(() => props.overviewData?.wallets || []);
 
+const selectedWallet = computed(() =>
+  wallets.value.find(
+    (wallet: any) => wallet.currency === selectedCurrency.value,
+  ),
+);
+
 const currencyOptions = computed<string[]>(() =>
   wallets.value.length
-    ? [...new Set(wallets.value.map((w: any) => w.currency))]
+    ? [...new Set(wallets.value.map((wallet: any) => wallet.currency))]
     : ["NGN", "GHS", "TZS", "ZMW", "USD"],
 );
 
 const metricsSource = computed(() => {
-  const data = props.overviewData;
-  if (!data) return props.merchantDetails?.metrics || props.merchantDetails?.summary || {};
+  const wallet = selectedWallet.value;
+  if (!wallet)
+    return (
+      props.merchantDetails?.metrics || props.merchantDetails?.summary || {}
+    );
 
   return {
-    available_balance: data.available_balance,
-    total_transactions: data.total_transaction_amount,
-    total_payout: data.total_payout_amount,
-    refunds: data.total_refund_amount,
+    available_balance: wallet.available_balance,
+    total_transactions: wallet.total_transaction_amount,
+    total_payout: wallet.total_payout_amount,
+    refunds: wallet.total_refund_amount,
   };
 });
 
 const transactionStats = computed(() => {
-  const data = props.overviewData;
-  if (!data) {
+  const wallet = selectedWallet.value;
+  if (!wallet) {
     return [
-      { title: "Total Collections", value: 0 },
+      { title: "Total Transactions", value: 0 },
       { title: "Completed", value: 0 },
       { title: "Pending", value: 0 },
       { title: "Failed", value: 0 },
@@ -145,10 +166,16 @@ const transactionStats = computed(() => {
   }
 
   return [
-    { title: "Total Collections", value: 100 },
-    { title: "Completed", value: data.transaction_successful_percentage || 0 },
-    { title: "Pending", value: data.transaction_pending_percentage || 0 },
-    { title: "Failed", value: data.transaction_failed_percentage || 0 },
+    { title: "Total Transactions", value: 100 },
+    {
+      title: "Completed",
+      value: wallet.transaction_successful_percentage || 0,
+    },
+    {
+      title: "Pending",
+      value: wallet.transaction_pending_percentage || 0,
+    },
+    { title: "Failed", value: wallet.transaction_failed_percentage || 0 },
   ];
 });
 
@@ -268,7 +295,7 @@ const handleGoBack = () => {
 }
 
 .chip-type {
- @apply bg-purple-50 text-purple-700;
+  @apply bg-purple-50 text-purple-700;
 }
 
 .chip-warning {

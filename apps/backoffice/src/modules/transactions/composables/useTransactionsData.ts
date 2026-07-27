@@ -78,7 +78,8 @@ export function useTransactionsData() {
         { value: "GHS", name: "GHS" },
         { value: "USD", name: "USD" },
         { value: "TZS", name: "TZS" },
-            { value: "KES", name: "KES" },
+        { value: "KES", name: "KES" },
+        { value: "XOF", name: "XOF" },
       ],
       placeholder: "Currency",
     },
@@ -108,14 +109,15 @@ export function useTransactionsData() {
     { title: "Business Name", slug: "merchant" },
     { title: "Amount", slug: "amount" },
     { title: "Payment Method", slug: "method" },
-    {title: "Reference", slug: "reference"},
+    { title: "Reference", slug: "reference" },
     { title: "Status", slug: "status" },
     { title: "", slug: "action" },
   ]);
 
-  const fmtStartISO = (d: Date) => d.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (d: Date) => {
-    const end = new Date(d);
+  const fmtStartISO = (date: Date) =>
+    date.toISOString().replace(/\.\d+Z$/, "Z");
+  const fmtEndISO = (date: Date) => {
+    const end = new Date(date);
     end.setHours(23, 59, 59, 0);
     return end.toISOString().replace(/\.\d+Z$/, "Z");
   };
@@ -134,6 +136,7 @@ export function useTransactionsData() {
       merchantOptions.value = merchants.map((merchant: any) => ({
         value: merchant.uuid || "",
         name:
+          merchant.business_name ||
           merchant.email ||
           `${merchant.first_name || ""} ${merchant.last_name || ""}`.trim() ||
           "-",
@@ -146,14 +149,12 @@ export function useTransactionsData() {
     return `${w2}, ${d3} ${m3}, ${y1}`;
   };
 
- 
-
   const normalizeTransaction = (data: any) => {
     return {
       id: data?.uuid,
       uuid: data?.uuid,
       date: data?.created_at || "-",
-      merchant: data?.user?.name || "-",
+      merchant: data?.business_name || "-",
       amount: `${data?.currency || ""} ${formatNumber(data?.amount ?? 0)}`,
       currency: data?.currency || "",
       method: data?.method || "-",
@@ -176,7 +177,7 @@ export function useTransactionsData() {
             secondaryText: date !== "-" ? useDate.formatTime(date) : "",
           },
         }),
-        "merchant":tx.merchant,
+        merchant: getBoldTableText(capitalizeFirstLetter(tx.merchant)),
         amount: getBoldTableText(tx.amount),
         method: h(TableDoubleColumn, {
           entry: {
@@ -189,7 +190,7 @@ export function useTransactionsData() {
           tx.status === "completed" ? "successful" : tx.status,
           tx.status,
         ),
-      
+
         action: h("div", { class: "flex items-center gap-3" }, [
           h(
             "button",

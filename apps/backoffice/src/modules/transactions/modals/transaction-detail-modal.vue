@@ -157,14 +157,14 @@ const displayProviderAmount = computed(() => {
 });
 
 const customerName = computed(() => {
-  const t = props.transaction;
-  if (!t) return "-";
-  const first = t.first_name?.toString().trim() || "";
-  const last = t.last_name?.toString().trim() || "";
+  const transactionData = props.transaction;
+  if (!transactionData) return "-";
+  const first = transactionData.first_name?.toString().trim() || "";
+  const last = transactionData.last_name?.toString().trim() || "";
   if (first || last) return `${first} ${last}`.trim();
-  const account = t.account_number?.toString().trim();
+  const account = transactionData.account_number?.toString().trim();
   if (account) return account;
-  return t.email || "-";
+  return transactionData.email || "-";
 });
 
 const isFailed = computed(() => {

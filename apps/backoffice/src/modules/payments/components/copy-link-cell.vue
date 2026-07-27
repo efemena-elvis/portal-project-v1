@@ -32,7 +32,7 @@ const copyLink = async () => {
       type: "success",
       message: "Copied to clipboard",
     });
-  } catch (e) {
+  } catch (error) {
     console.error("Copy failed");
   }
 };

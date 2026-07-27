@@ -195,10 +195,12 @@ const paymentMethodOptions = computed(() => {
   ];
 });
 const countryOptions = [
-  { name: "Nigeria", value: "NG" },
-  { name: "Ghana", value: "GH" },
-  { name: "Zambia", value: "ZM" },
-  { name: "Tanzania", value: "TZ" },
+  { value: "NG", name: "Nigeria" },
+  { value: "TZ", name: "Tanzania" },
+  { value: "GH", name: "Ghana" },
+  { value: "ZM", name: "Zambia" },
+   { value: "KES", name: "Kenya" },
+    { value: "XOF", name: "Ivory Coast" },
 ];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -218,7 +220,7 @@ const feePayload = ref<IFeePayload>({
 const selectedMerchantName = computed(() => {
   if (feePayload.value.user_id) {
     const merchant = merchantOptions.value.find(
-      (m) => m.value === feePayload.value.user_id,
+      (merchant) => merchant.value === feePayload.value.user_id,
     );
     if (merchant?.name) return merchant.name;
   }
@@ -247,7 +249,11 @@ const fetchMerchants = async () => {
       const merchants = response.data.merchants || [];
       merchantOptions.value = merchants.map((m: any) => ({
         value: m.uuid || "",
-        name: m.email || `${m.first_name || ""} ${m.last_name || ""}` || "-",
+        name:
+          m.business_name ||
+          m.email ||
+          `${m.first_name || ""} ${m.last_name || ""}` ||
+          "-",
       }));
     }
   } catch {

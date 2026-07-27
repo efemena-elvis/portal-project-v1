@@ -61,7 +61,7 @@ import {
 
 import { useRouter } from "vue-router";
 
-const { getStatus, getBoldTableText } = useString();
+const { getStatus, getBoldTableText, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
 const { getMerchants } = useMerchantStore();
 const router = useRouter();
@@ -84,7 +84,7 @@ const filterConfig = [
   {
     type: "select" as const,
     key: "status",
-    options: ["Active", "Pending", "Deactivated"],
+    options: ["Approved", "Pending", "Deactivated"],
     placeholder: "Status",
   },
 ];
@@ -150,10 +150,7 @@ const fetchMerchants = async (filters: string) => {
     ];
 
     tableBody.value = merchants.map((data: any) => {
-      const businessName =
-        data.first_name && data.last_name
-          ? `${data.first_name} ${data.last_name}`
-          : data.first_name || data.last_name || "-";
+
 
       return {
         date_created: h(TableDoubleColumn, {
@@ -163,12 +160,11 @@ const fetchMerchants = async (filters: string) => {
           },
         }),
 
-        business: getBoldTableText(businessName),
+        business: getBoldTableText(capitalizeFirstLetter(data.business_name || "-")),
         id: data.uuid,
         email: data.email,
         status: getStatus(
-          data.is_active ? "successful" : "failed",
-          data.is_active ? "active" : "deactivated",
+          data.status === "approved" ? "successful" : data.status === "deactivated" ? "failed" : data.status, data.status
         ),
       };
     });

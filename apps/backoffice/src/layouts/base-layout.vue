@@ -39,6 +39,7 @@ import { useAuthStore } from "@/modules/auth/store";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { useApprovalsStore } from "@/modules/approvals/store";
 import { useTransactionStore } from "@/modules/transactions/store";
+import { useMerchantStore } from "@/modules/merchants/store";
 
 const route = useRoute();
 
@@ -48,6 +49,7 @@ const { getCompliances } = useComplianceStore() as any;
 const { getAllWithdrawalRequests } = useApprovalsStore();
 const { getAllApprovals } = useApprovalsStore();
 const { getAllTransactions } = useTransactionStore();
+const { getMerchants } = useMerchantStore();
 
 const { setPageBackgroundColor } = useColor();
 const { processAPIRequest } = useEvents();
@@ -73,6 +75,7 @@ const getSidebarPendingData = async () => {
     approvalResponse,
     transactionResponse,
     withdrawalResponse,
+    merchantResponse,
   ] = await Promise.all([
     processAPIRequest({
       action: getCompliances,
@@ -94,6 +97,11 @@ const getSidebarPendingData = async () => {
       payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
       showAlert: false,
     }),
+    processAPIRequest({
+      action: getMerchants,
+      payload: { filters: "?page=1&page_size=1&status=pending" },
+      showAlert: false,
+    }),
   ]);
 
   sidebarBadgeConfig.value = {
@@ -101,6 +109,7 @@ const getSidebarPendingData = async () => {
     Approvals:
       getPendingCount(approvalResponse) + getPendingCount(withdrawalResponse),
     Transactions: getPendingCount(transactionResponse),
+    Merchants: getPendingCount(merchantResponse),
   };
 };
 

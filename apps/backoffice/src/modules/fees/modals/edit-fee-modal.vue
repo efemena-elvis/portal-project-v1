@@ -235,12 +235,7 @@ const initialiseFromFeeData = () => {
   if (!feeData.value) return;
 
   merchantDisplayName.value =
-    (feeData.value.user &&
-      (feeData.value.user.first_name || feeData.value.user.last_name
-        ? `${feeData.value.user.first_name || ""} ${feeData.value.user.last_name || ""}`.trim()
-        : feeData.value.user.email)) ||
-    feeData.value.name ||
-    "";
+    (feeData.value.user && feeData.value.user.business_name) || "";
 
   feePayload.value = normalizeIncomingFee(feeData.value);
 };

@@ -24,8 +24,9 @@ const props = withDefaults(
 );
 
 const getCurrencySign = (code: string) =>
-  countryCurrencies.find((c) => c.currency.short === code)?.currency.sign ||
-  code;
+  countryCurrencies.find(
+    (countryCurrency) => countryCurrency.currency.short === code,
+  )?.currency.sign || code;
 
 const { formatNumber } = useString();
 
@@ -38,7 +39,7 @@ const formatMetric = (value: unknown) => {
 };
 
 const selectedWallet = computed(() =>
-  props.wallets.find((w) => w.currency === props.selectedCurrency),
+  props.wallets.find((wallet) => wallet.currency === props.selectedCurrency),
 );
 
 const metrics = computed(() => [

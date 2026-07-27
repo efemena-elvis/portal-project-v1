@@ -98,9 +98,10 @@ const {
 const { pushToastAlert } = useEvents();
 
 const handleExport = async () => {
-  const fmtStartISO = (d: Date) => d.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (d: Date) => {
-    const end = new Date(d);
+  const fmtStartISO = (date: Date) =>
+    date.toISOString().replace(/\.\d+Z$/, "Z");
+  const fmtEndISO = (date: Date) => {
+    const end = new Date(date);
     end.setHours(23, 59, 59, 0);
     return end.toISOString().replace(/\.\d+Z$/, "Z");
   };

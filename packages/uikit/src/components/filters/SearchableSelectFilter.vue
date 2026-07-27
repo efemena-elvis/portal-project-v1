@@ -89,17 +89,19 @@ const triggerRef = ref<HTMLElement | null>(null);
 
 const selectedLabel = computed(() => {
   if (!props.modelValue) return "";
-  const found = props.options.find((o) => o.value === props.modelValue);
+  const found = props.options.find(
+    (option) => option.value === props.modelValue,
+  );
   return found?.name ?? "";
 });
 
 const filteredOptions = computed(() => {
-  const q = searchQuery.value.toLocaleLowerCase().trim();
-  if (!q) return props.options;
+  const normalizedQuery = searchQuery.value.toLocaleLowerCase().trim();
+  if (!normalizedQuery) return props.options;
   return props.options.filter(
     (opt) =>
-      opt.name.toLocaleLowerCase().includes(q) ||
-      opt.value.toLocaleLowerCase().includes(q),
+      opt.name.toLocaleLowerCase().includes(normalizedQuery) ||
+      opt.value.toLocaleLowerCase().includes(normalizedQuery),
   );
 });
 

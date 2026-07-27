@@ -106,17 +106,24 @@ const emit = defineEmits<{
 const defaultSize = computed(() => (props.variant === "panel" ? "sm" : "lg"));
 
 const searchFilters = computed(() =>
-  props.filters.filter((f): f is SearchFilterConfig => f.type === "search"),
+  props.filters.filter(
+    (item): item is SearchFilterConfig => item.type === "search",
+  ),
 );
 const selectFilters = computed(() =>
-  props.filters.filter((f): f is SelectFilterConfig => f.type === "select"),
+  props.filters.filter(
+    (item): item is SelectFilterConfig => item.type === "select",
+  ),
 );
 const dateFilters = computed(() =>
-  props.filters.filter((f): f is DateFilterConfig => f.type === "date"),
+  props.filters.filter(
+    (item): item is DateFilterConfig => item.type === "date",
+  ),
 );
 const searchableSelectFilters = computed(() =>
   props.filters.filter(
-    (f): f is SearchableSelectFilterConfig => f.type === "searchable-select",
+    (item): item is SearchableSelectFilterConfig =>
+      item.type === "searchable-select",
   ),
 );
 

@@ -11,7 +11,7 @@
     <template #modal-cover-header>
       <div class="fee-modal-header">
         <h2>Configure fee</h2>
-        <p>Merchant: {{ selectedMerchantName }}</p>
+
       </div>
     </template>
 
@@ -174,6 +174,8 @@ const countryOptions = [
   { value: "TZ", name: "Tanzania" },
   { value: "GH", name: "Ghana" },
   { value: "ZM", name: "Zambia" },
+   { value: "KES", name: "Kenya" },
+    { value: "XOF", name: "Ivory Coast" },
 ];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -284,14 +286,14 @@ const handleAddFee = async () => {
 }
 
 .merchant-field-readonly {
-  @apply flex flex-col;
+  @apply flex flex-col mb-4;
 
   .readonly-label {
-    @apply text-sm font-medium text-grey-700 mb-0.5;
+    @apply text-sm font-semibold text-grey-900 mb-2;
   }
 
   .readonly-value {
-    @apply text-base text-grey-900 font-semibold bg-green-50 px-3 py-2 rounded-lg border border-green-200;
+    @apply text-base text-grey-900 font-semibold bg-green-50 p-3  rounded-lg border border-green-200;
   }
 }
 

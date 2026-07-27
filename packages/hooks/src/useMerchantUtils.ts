@@ -81,7 +81,7 @@ export const useMerchantUtils = defineStore("merchant", {
     },
 
     updateRow(id: number, data: Partial<TableRow>) {
-      const index = this.merchantTable.findIndex((r) => r.id === id);
+      const index = this.merchantTable.findIndex((row) => row.id === id);
       if (index !== -1) {
         this.merchantTable[index] = { ...this.merchantTable[index], ...data };
       }

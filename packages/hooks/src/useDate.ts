@@ -119,9 +119,9 @@ class serviceDate {
   }
 
   formatTime = (date: string) => {
-    const d = new Date(date);
-    const hours = d.getHours();
-    const minutes = d.getMinutes();
+    const parsedDate = new Date(date);
+    const hours = parsedDate.getHours();
+    const minutes = parsedDate.getMinutes();
     const ampm = hours >= 12 ? "PM" : "AM";
     const formattedHours = hours % 12 || 12;
     const formattedMinutes = minutes.toString().padStart(2, "0");

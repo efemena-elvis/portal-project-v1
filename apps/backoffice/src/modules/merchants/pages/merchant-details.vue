@@ -39,8 +39,8 @@ import MerchantDetailsWrapper from "@/modules/payments/components/merchant-detai
 import MerchantTabs from "@/modules/payments/components/merchant-tabs.vue";
 import Profile from "@/modules/payments/components/profile.vue";
 import TaxRecord from "@/modules/payments/components/tax-record.vue";
-import Refund from "@/modules/payments/components/refund.vue";
-import AddFee from "@/modules/payments/components/add-fee.vue";
+import Refunds from "@/modules/payments/components/refunds.vue";
+import Fees from "@/modules/payments/components/fees.vue";
 import Transactions from "@/modules/payments/components/transactions.vue";
 import PayoutHistory from "@/modules/payments/components/payout-history.vue";
 import Disputes from "@/modules/payments/components/disputes.vue";
@@ -77,10 +77,10 @@ const activeAction = ref<DetailAction>("approve");
 
 const tabComponents: Record<string, any> = {
   Transactions,
-  Refunds: Refund,
+  Refunds,
   Payouts: PayoutHistory,
   "Tax Records": TaxRecord,
-  Fees: AddFee,
+  Fees: Fees,
   Disputes,
   Profile,
 };

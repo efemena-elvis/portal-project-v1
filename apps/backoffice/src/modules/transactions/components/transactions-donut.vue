@@ -26,7 +26,7 @@ const props = defineProps<{
 
 const donutData = computed(() => {
   const parseStat = (title: string) => {
-    const stat = props.stats.find((s) => s.title === title);
+    const stat = props.stats.find((statEntry) => statEntry.title === title);
     return stat ? Number(stat.value.replace(/,/g, "")) : 0;
   };
   const total = parseStat("Total Transactions");
