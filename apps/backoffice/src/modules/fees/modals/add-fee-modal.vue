@@ -11,9 +11,6 @@
     <template #modal-cover-header>
       <div class="fee-modal-header">
         <h2>Configure fee</h2>
-        <p>
-          <span v-if="selectedMerchantName">{{ selectedMerchantName }}</span>
-        </p>
       </div>
     </template>
 
@@ -99,7 +96,6 @@
             :inputType="IInputType.Number"
             inputPlaceholder="Enter cap amount"
             :inputValue="feePayload.cap_amount"
-            isRequired
             @inputChanged="feePayload.cap_amount = $event"
             :errorHandler="{
               validator: 'validateNumberEntry',
@@ -150,7 +146,7 @@ type IFeePayload = {
   type: string;
   amount: number | string;
   payment_method: string;
-  cap_amount: number | string;
+  cap_amount?: number | string;
 };
 
 const props = withDefaults(
@@ -184,14 +180,11 @@ const methodOptions = [
 
 const paymentMethodOptions = computed(() => {
   if (feePayload.value.method === "payout") {
-    return [
-      { value: "mobilemoney", name: "Mobile Money" },
-      { value: "bank", name: "Bank" },
-    ];
+    return [{ value: "mobilemoney", name: "Mobile Money" }];
   }
   return [
     { value: "mobilemoney", name: "Mobile Money" },
-    { value: "card", name: "Card" },
+    { value: "bank", name: "Bank" },
   ];
 });
 const countryOptions = [
@@ -234,8 +227,7 @@ const isActionReady = computed(() => {
     feePayload.value.country_code &&
     feePayload.value.type &&
     feePayload.value.amount !== "" &&
-    feePayload.value.payment_method !== "" &&
-    feePayload.value.cap_amount !== ""
+    feePayload.value.payment_method !== "" 
   );
 });
 
@@ -250,9 +242,7 @@ const fetchMerchants = async () => {
       merchantOptions.value = merchants.map((m: any) => ({
         value: m.uuid || "",
         name:
-          m.business_name ||
-          m.email ||
-          `${m.first_name || ""} ${m.last_name || ""}` ||
+          m.business_name || m.email || 
           "-",
       }));
     }
@@ -297,8 +287,8 @@ watch(
   (newMethod) => {
     const validMethods =
       newMethod === "payout"
-        ? ["mobilemoney", "bank"]
-        : ["mobilemoney", "card"];
+        ? ["mobilemoney"]
+        : ["mobilemoney", "bank"];
     if (!validMethods.includes(feePayload.value.payment_method)) {
       feePayload.value.payment_method = "";
     }
