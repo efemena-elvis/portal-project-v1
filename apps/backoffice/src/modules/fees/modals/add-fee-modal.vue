@@ -16,16 +16,17 @@
 
     <template #modal-cover-body>
       <div class="modal-cover-body fee-modal-body">
-        <SelectFieldInput
-          labelId="merchant"
-          labelTitle="Merchant"
-          :labelCompact="false"
-          inputPlaceholder="Select merchant"
-          :selectData="merchantOptions"
-          :inputValue="feePayload.user_id"
-          isRequired
-          @onSelectionChange="feePayload.user_id = $event"
-        />
+        <div class="merchant-field">
+          <label class="block text-sm font-semibold text-grey-900 mb-2">
+            Merchant 
+          </label>
+          <SearchableSelectFilter
+            v-model="feePayload.user_id"
+            :options="merchantOptions"
+            placeholder="merchant"
+            widthClass="w-full"
+          />
+        </div>
 
         <SelectFieldInput
           labelId="method"
@@ -137,7 +138,7 @@ import { useEvents } from "@packages/hooks";
 import { useMerchantStore } from "@/modules/merchants/store";
 import { useFeeStore } from "@/modules/fees/store";
 import { countryCurrencies } from "@packages/constants";
-import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
+import { ModalDialog, SelectFieldInput, TextFieldInput, SearchableSelectFilter } from "@packages/uikit";
 
 type IFeePayload = {
   user_id: string;
@@ -234,7 +235,7 @@ const isActionReady = computed(() => {
 const fetchMerchants = async () => {
   try {
     const response = await processAPIRequest({
-      action: async () => getMerchants({ page: 1 }),
+      action: async () => getMerchants({ filters: "?page=1&page_size=100" }),
       showAlert: false,
     });
     if (response?.code === 200 && response.data) {
@@ -313,6 +314,17 @@ onMounted(fetchMerchants);
 
 .fee-modal-body {
   @apply flex flex-col gap-3 px-10 pt-10 sm:gap-5 sm:px-5 sm:pt-7;
+}
+
+.merchant-field {
+  @apply mb-4;
+}
+
+:deep(.scrollbar-hidden::-webkit-scrollbar) {
+  display: none;
+}
+:deep(.scrollbar-hidden) {
+  scrollbar-width: none;
 }
 
 .field-grid {

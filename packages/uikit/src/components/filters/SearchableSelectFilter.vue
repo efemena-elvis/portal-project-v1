@@ -3,8 +3,11 @@
     <div
       ref="triggerRef"
       @click="toggleDropdown()"
-      class="flex items-center justify-between w-[250px] h-12 px-4 border rounded-lg cursor-pointer bg-white select-none"
-      :class="dropdownOpen ? 'border-teal-800' : 'border-grey-200'"
+      :class="[
+        'flex items-center justify-between h-12 px-4 border rounded-lg cursor-pointer bg-white select-none',
+        props.widthClass,
+        dropdownOpen ? 'border-teal-800' : 'border-grey-200',
+      ]"
     >
       <span class="truncate text-teal-800">
         {{ selectedLabel || placeholder }}
@@ -24,7 +27,7 @@
     <div
       ref="dropdownRef"
       v-if="dropdownOpen"
-      class="absolute left-0 mt-1 w-[250px] bg-white border border-grey-200 rounded-lg shadow-lg z-50"
+      :class="['absolute left-0 mt-1 bg-white border border-grey-200 rounded-lg shadow-lg z-50', props.widthClass]"
     >
       <div class="p-2 border-b border-grey-100">
         <div class="">
@@ -71,10 +74,12 @@ const props = withDefaults(
     modelValue: string;
     options?: Option[];
     placeholder?: string;
+    widthClass?: string;
   }>(),
   {
     options: () => [],
     placeholder: "Select",
+    widthClass: "w-[250px]",
   },
 );
 
