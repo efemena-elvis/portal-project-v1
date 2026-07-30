@@ -16,6 +16,7 @@
       :merchantDetails="merchantDetails"
       :businessName="businessName"
       :overviewData="overviewData"
+      @feeConfigSaved="fetchMerchantOverview"
     />
   </MerchantDetailsWrapper>
 

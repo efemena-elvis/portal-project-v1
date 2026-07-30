@@ -22,6 +22,18 @@
           <span class="readonly-value">{{ selectedMerchantName }}</span>
         </p>
 
+
+        <SelectFieldInput
+          labelId="method"
+          labelTitle="Method"
+          :labelCompact="false"
+          inputPlaceholder="Select type"
+          :selectData="methodOptions"
+          :inputValue="feePayload.method"
+          isRequired
+          @onSelectionChange="feePayload.method = $event"
+        />
+
         <SelectFieldInput
           labelId="paymentMethod"
           labelTitle="Payment Method"
@@ -33,15 +45,6 @@
           @onSelectionChange="feePayload.payment_method = $event"
         />
 
-        <SelectFieldInput
-          labelId="method"
-          labelTitle="Method"
-          :labelCompact="false"
-          inputPlaceholder="Select type"
-          :selectData="methodOptions"
-          isRequired
-          @onSelectionChange="feePayload.method = $event"
-        />
 
         <div class="field-grid">
           <SelectFieldInput
@@ -62,7 +65,7 @@
             inputPlaceholder="Select type"
             :selectData="typeOptions"
             isRequired
-            @onSelectionChange="feePayload.fee_type = $event"
+            @onSelectionChange="feePayload.type = $event"
           />
         </div>
 
@@ -87,7 +90,6 @@
             :labelCompact="false"
             :inputType="IInputType.Number"
             inputPlaceholder="Enter cap amount"
-            isRequired
             @inputChanged="feePayload.cap_amount = $event"
             :errorHandler="{
               validator: 'validateNumberEntry',
@@ -125,6 +127,7 @@
 import { computed, ref, watch, onMounted } from "vue";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
+import { useFeeStore } from "@/modules/fees/store";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
@@ -132,9 +135,9 @@ type IFeePayload = {
   user_id: string;
   method: string;
   country_code: string;
-  fee_type: string;
+  type: string;
   amount: number | string;
-  cap_amount: number | string;
+  cap_amount?: number | string;
   payment_method: string;
 };
 
@@ -154,20 +157,21 @@ const emits = defineEmits<{
   feeAdded: [];
 }>();
 
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
+const { createFee } = useFeeStore();
 
 const methodOptions = [
   { value: "payin", name: "Payin" },
   { value: "payout", name: "Payout" },
 ];
 const paymentMethodOptions = computed(() => {
-  const methods = [{ value: "mobilemoney", name: "Mobile Money" }];
-  if (feePayload.value.method === "payin") {
-    methods.push({ value: "card", name: "Card" });
-  } else {
-    methods.push({ value: "bank", name: "Bank" });
+  if (feePayload.value.method === "payout") {
+    return [{ value: "mobilemoney", name: "Mobile Money" }];
   }
-  return methods;
+  return [
+    { value: "mobilemoney", name: "Mobile Money" },
+    { value: "bank", name: "Bank" },
+  ];
 });
 const countryOptions = [
   { value: "NG", name: "Nigeria" },
@@ -190,13 +194,13 @@ const feePayload = ref<IFeePayload>({
   method: "payin",
   country_code: "NG",
   payment_method: "",
-  fee_type: "percentage",
+  type: "percentage",
   amount: "",
   cap_amount: "",
 });
 
 const selectedMerchantName = computed(() => {
-  return props.merchantName || "Select merchant";
+  return props.merchantName;
 });
 
 onMounted(() => {
@@ -206,8 +210,8 @@ onMounted(() => {
 });
 
 const validPaymentMethods: Record<string, string[]> = {
-  payin: ["mobilemoney", "card"],
-  payout: ["mobilemoney", "bank"],
+  payin: ["mobilemoney", "bank"],
+  payout: ["mobilemoney"],
 };
 
 watch(
@@ -225,9 +229,8 @@ const isActionReady = computed(() => {
     feePayload.value.merchant &&
     feePayload.value.method &&
     feePayload.value.country_code &&
-    feePayload.value.fee_type &&
+    feePayload.value.type &&
     feePayload.value.amount !== "" &&
-    feePayload.value.cap_amount !== "" &&
     feePayload.value.payment_method !== ""
   );
 });
@@ -243,27 +246,26 @@ const handleAddFee = async () => {
   };
 
   const response = await processAPIRequest({
-    action: async () => {
-      return { code: 200 };
-    },
+    action: async () => createFee(apiPayload),
     payload: apiPayload,
     btnRef: addFeeBtnRef,
     btnText: "Save config",
-    alertHandler: {
-      200: {
-        message: "Fee configured successfully",
-        type: "success",
-      },
-      400: {
-        message: "Unable to configure fee",
-        type: "error",
-      },
-    },
+    showAlert: false,
   });
 
-  if (response.code === 200) {
+  if (response?.code >= 200 && response?.code < 300) {
+    pushToastAlert({
+      message: "Fee configured successfully",
+      type: "success",
+    });
     emits("feeAdded");
     emits("closeTriggered");
+  } else {
+    pushToastAlert({
+      message: "Unable to configure fee",
+      description: response?.error?.message || "Please try again",
+      type: "error",
+    });
   }
 };
 </script>

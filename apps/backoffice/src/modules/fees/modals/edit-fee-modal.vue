@@ -141,7 +141,7 @@ type IFeePayload = {
   type: string;
   amount: string;
   payment_method: string;
-  cap_amount: string;
+  cap_amount?: string;
 };
 
 const props = defineProps<{
@@ -169,14 +169,11 @@ const methodOptions = [
 
 const paymentMethodOptions = computed(() => {
   if (feePayload.value.method === "payout") {
-    return [
-      { value: "mobilemoney", name: "Mobile Money" },
-      { value: "bank", name: "Bank" },
-    ];
+    return [{ value: "mobilemoney", name: "Mobile Money" }];
   }
   return [
     { value: "mobilemoney", name: "Mobile Money" },
-    { value: "card", name: "Card" },
+    { value: "bank", name: "Bank" },
   ];
 });
 
@@ -207,7 +204,6 @@ const isActionReady = computed(() => {
     feePayload.value.country_code &&
     feePayload.value.type &&
     feePayload.value.amount !== "" &&
-    feePayload.value.cap_amount !== "" &&
     feePayload.value.payment_method !== ""
   );
 });
@@ -292,8 +288,8 @@ watch(
   (newMethod) => {
     const validMethods =
       newMethod === "payout"
-        ? ["mobilemoney", "bank"]
-        : ["mobilemoney", "card"];
+        ? ["mobilemoney"]
+        : ["mobilemoney", "bank"];
     if (!validMethods.includes(feePayload.value.payment_method)) {
       feePayload.value.payment_method = "";
     }

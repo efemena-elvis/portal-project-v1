@@ -45,7 +45,7 @@
       :merchantId="merchantId"
       :merchantName="merchantName"
       @closeTriggered="showAddFeeModal = false"
-      @feeAdded="showAddFeeModal = false"
+      @feeAdded="onFeeAdded"
     />
   </div>
 </template>
@@ -84,7 +84,16 @@ const merchantName = computed(() => {
   return props.merchantDetails?.name || "";
 });
 
+const emit = defineEmits<{
+  feeConfigSaved: [];
+}>();
+
 const showAddFeeModal = ref(false);
+
+const onFeeAdded = () => {
+  showAddFeeModal.value = false;
+  emit("feeConfigSaved");
+};
 
 const PAGE_SIZE = 10;
 const page = ref(1);
