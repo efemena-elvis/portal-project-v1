@@ -129,10 +129,8 @@ import { computed, ref, watch, onMounted } from "vue";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
-import {
-  getCountryByCurrencyShort,
-  countryCurrencies,
-} from "@packages/constants";
+import { useCountries } from "@/modules/global/composables/useCountries";
+import { countryCurrencies } from "@packages/constants";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
@@ -155,6 +153,7 @@ const emits = defineEmits<{
 
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getSingleFee, updateFee } = useFeeStore();
+const { countryOptions, fetchCountries } = useCountries();
 
 const editFeeBtnRef = ref(null);
 const merchantDisplayName = ref("");
@@ -176,15 +175,6 @@ const paymentMethodOptions = computed(() => {
     { value: "card", name: "Card" },
   ];
 });
-
-const countryOptions = [
-  { name: "Nigeria", value: "NG" },
-  { name: "Ghana", value: "GH" },
-  { name: "Zambia", value: "ZM" },
-  { name: "Tanzania", value: "TZ" },
-   { name: "Kenya", value: "KE" },
-   { name: "Ivory Coast", value: "C" },
-];
 
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -210,20 +200,30 @@ const isActionReady = computed(() => {
 });
 
 const normalizeIncomingFee = (data: Record<string, any>) => {
-  let countryCode = "NG";
-  if (data?.currency) {
-    const match = getCountryByCurrencyShort(data.currency);
-    if (match) countryCode = match.code.toUpperCase();
-  } else if (data?.country) {
-    countryCode = data.country.toString().toUpperCase();
-  }
+  const resolveCountryCode = (value: string | undefined) => {
+    if (!value) return "";
+    const normalized = value.toString().trim().toUpperCase();
+    const match = countryCurrencies.find(
+      (country) =>
+        country.code?.toUpperCase() === normalized ||
+        country.country?.toUpperCase() === normalized ||
+        country.currency?.short?.toUpperCase() === normalized,
+    );
+    return match?.code?.toUpperCase() || "";
+  };
+
+  const countryCode =
+    resolveCountryCode(data?.country_code) ||
+    resolveCountryCode(data?.currency) ||
+    resolveCountryCode(data?.country) ||
+    "NG";
 
   return {
     method: (data?.method ?? "payin").toString().toLowerCase(),
     country_code: countryCode,
     type: (data?.type ?? "percentage").toString().toLowerCase(),
     amount: data?.amount ?? "",
-    cap_amount: data?.cap_amount && data?.cap_mount,
+    cap_amount: data?.cap_amount ?? "",
     payment_method: data?.payment_method ?? "",
   };
 };
@@ -298,6 +298,7 @@ watch(
 );
 
 onMounted(() => {
+  fetchCountries();
   fetchFeeDetail();
 });
 </script>

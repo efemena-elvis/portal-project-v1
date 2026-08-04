@@ -137,7 +137,7 @@ import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useMerchantStore } from "@/modules/merchants/store";
 import { useFeeStore } from "@/modules/fees/store";
-import { countryCurrencies } from "@packages/constants";
+import { useCountries } from "@/modules/global/composables/useCountries";
 import { ModalDialog, SelectFieldInput, TextFieldInput, SearchableSelectFilter } from "@packages/uikit";
 
 type IFeePayload = {
@@ -169,6 +169,7 @@ const emits = defineEmits<{
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getAllMerchants } = useMerchantStore();
 const { createFee } = useFeeStore();
+const { countryOptions, fetchCountries } = useCountries();
 
 const addFeeBtnRef = ref(null);
 
@@ -188,14 +189,6 @@ const paymentMethodOptions = computed(() => {
     { value: "card", name: "Card" },
   ];
 });
-const countryOptions = [
-  { value: "NG", name: "Nigeria" },
-  { value: "TZ", name: "Tanzania" },
-  { value: "GH", name: "Ghana" },
-  { value: "ZM", name: "Zambia" },
-   { value: "KE", name: "Kenya" },
-    { value: "CI", name: "Ivory Coast" },
-];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
   { value: "fixed", name: "Fixed" },
@@ -295,7 +288,10 @@ watch(
   },
 );
 
-onMounted(fetchMerchants);
+onMounted(() => {
+  fetchCountries();
+  fetchMerchants();
+});
 </script>
 
 <style scoped lang="scss">

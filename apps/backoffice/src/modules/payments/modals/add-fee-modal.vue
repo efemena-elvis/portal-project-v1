@@ -128,6 +128,7 @@ import { computed, ref, watch, onMounted } from "vue";
 import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
+import { useCountries } from "@/modules/global/composables/useCountries";
 import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
@@ -159,6 +160,7 @@ const emits = defineEmits<{
 
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { createFee } = useFeeStore();
+const { countryOptions, fetchCountries } = useCountries();
 
 const methodOptions = [
   { value: "payin", name: "Payin" },
@@ -173,14 +175,6 @@ const paymentMethodOptions = computed(() => {
     { value: "card", name: "Card" },
   ];
 });
-const countryOptions = [
-  { value: "NG", name: "Nigeria" },
-  { value: "TZ", name: "Tanzania" },
-  { value: "GH", name: "Ghana" },
-  { value: "ZM", name: "Zambia" },
-   { value: "KE", name: "Kenya" },
-    { value: "CI", name: "Ivory Coast" },
-];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
   { value: "fixed", name: "Fixed" },
@@ -203,6 +197,7 @@ const selectedMerchantName = computed(() => {
 });
 
 onMounted(() => {
+  fetchCountries();
   if (props.merchantId) {
     feePayload.value.merchant = props.merchantId;
   }
