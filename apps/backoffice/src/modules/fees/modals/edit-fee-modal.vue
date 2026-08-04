@@ -68,35 +68,43 @@
         </div>
 
         <div class="field-grid">
-          <TextFieldInput
-            labelId="amount"
-            labelTitle="Amount"
-            :labelCompact="false"
-            :inputType="IInputType.Number"
-            inputPlaceholder="Enter amount"
-            :inputValue="feePayload.amount"
-            isRequired
-            @inputChanged="feePayload.amount = $event"
-            :errorHandler="{
-              validator: 'validateNumberEntry',
-              message: 'Please enter a valid amount',
-            }"
-          />
+          <div class="form-block form-text-block mb-5">
+            <label for="amount" class="bg-neutral-10 form-label-basic">
+              Amount
+            </label>
+            <div class="form-block-input">
+              <input
+                id="amount"
+                class="form-control"
+                type="text"
+                inputmode="decimal"
+                pattern="[0-9]*([.][0-9]{0,2})?"
+                placeholder="Enter amount"
+                :value="feePayload.amount"
+                required
+                @input="updateDecimalValue('amount', $event)"
+              />
+            </div>
+          </div>
 
-          <TextFieldInput
-            labelId="capAmount"
-            labelTitle="Cap Amount"
-            :labelCompact="false"
-            :inputType="IInputType.Number"
-            inputPlaceholder="Enter cap amount"
-            :inputValue="feePayload.cap_amount"
-            isRequired
-            @inputChanged="feePayload.cap_amount = $event"
-            :errorHandler="{
-              validator: 'validateNumberEntry',
-              message: 'Please enter a valid cap amount',
-            }"
-          />
+          <div class="form-block form-text-block mb-5">
+            <label for="capAmount" class="bg-neutral-10 form-label-basic">
+              Cap Amount
+            </label>
+            <div class="form-block-input">
+              <input
+                id="capAmount"
+                class="form-control"
+                type="text"
+                inputmode="decimal"
+                pattern="[0-9]*([.][0-9]{0,2})?"
+                placeholder="Enter cap amount"
+                :value="feePayload.cap_amount"
+                required
+                @input="updateDecimalValue('cap_amount', $event)"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -126,14 +134,11 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch, onMounted } from "vue";
-import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
-import {
-  getCountryByCurrencyShort,
-  countryCurrencies,
-} from "@packages/constants";
-import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
+import { useCountries } from "@/modules/global/composables/useCountries";
+import { countryCurrencies } from "@packages/constants";
+import { ModalDialog, SelectFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
   method: string;
@@ -155,6 +160,7 @@ const emits = defineEmits<{
 
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getSingleFee, updateFee } = useFeeStore();
+const { countryOptions, fetchCountries } = useCountries();
 
 const editFeeBtnRef = ref(null);
 const merchantDisplayName = ref("");
@@ -177,15 +183,6 @@ const paymentMethodOptions = computed(() => {
   ];
 });
 
-const countryOptions = [
-  { name: "Nigeria", value: "NG" },
-  { name: "Ghana", value: "GH" },
-  { name: "Zambia", value: "ZM" },
-  { name: "Tanzania", value: "TZ" },
-   { name: "Kenya", value: "KE" },
-   { name: "Ivory Coast", value: "C" },
-];
-
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
   { value: "fixed", name: "Fixed" },
@@ -199,6 +196,24 @@ const feePayload = ref<IFeePayload>({
   amount: ""
 });
 
+const updateDecimalValue = (
+  field: "amount" | "cap_amount",
+  event: Event,
+) => {
+  const input = event.target as HTMLInputElement;
+  const normalizedValue = input.value
+    .replace(/,/g, ".")
+    .replace(/[^\d.]/g, "");
+  const [wholeNumber, ...decimalParts] = normalizedValue.split(".");
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  const value = decimalParts.length
+    ? `${wholeNumber || "0"}.${decimalPart}`
+    : wholeNumber;
+
+  feePayload.value[field] = value;
+  input.value = value;
+};
+
 const isActionReady = computed(() => {
   return !(
     feePayload.value.method &&
@@ -210,20 +225,30 @@ const isActionReady = computed(() => {
 });
 
 const normalizeIncomingFee = (data: Record<string, any>) => {
-  let countryCode = "NG";
-  if (data?.currency) {
-    const match = getCountryByCurrencyShort(data.currency);
-    if (match) countryCode = match.code.toUpperCase();
-  } else if (data?.country) {
-    countryCode = data.country.toString().toUpperCase();
-  }
+  const resolveCountryCode = (value: string | undefined) => {
+    if (!value) return "";
+    const normalized = value.toString().trim().toUpperCase();
+    const match = countryCurrencies.find(
+      (country) =>
+        country.code?.toUpperCase() === normalized ||
+        country.country?.toUpperCase() === normalized ||
+        country.currency?.short?.toUpperCase() === normalized,
+    );
+    return match?.code?.toUpperCase() || "";
+  };
+
+  const countryCode =
+    resolveCountryCode(data?.country_code) ||
+    resolveCountryCode(data?.currency) ||
+    resolveCountryCode(data?.country) ||
+    "NG";
 
   return {
     method: (data?.method ?? "payin").toString().toLowerCase(),
     country_code: countryCode,
     type: (data?.type ?? "percentage").toString().toLowerCase(),
     amount: data?.amount ?? "",
-    cap_amount: data?.cap_amount && data?.cap_mount,
+    cap_amount: data?.cap_amount ?? "",
     payment_method: data?.payment_method ?? "",
   };
 };
@@ -298,6 +323,7 @@ watch(
 );
 
 onMounted(() => {
+  fetchCountries();
   fetchFeeDetail();
 });
 </script>

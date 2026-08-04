@@ -23,12 +23,13 @@
         @change="handleFormInput"
         :name="labelId"
       >
-        <option value="" disabled selected hidden>
+        <option value="" :selected="selectedValue === ''" disabled hidden>
           {{ inputPlaceholder }}
         </option>
 
         <option
           :value="item.value"
+          :selected="selectedValue === item.value"
           v-for="(item, index) in selectData"
           :key="index"
         >
