@@ -167,7 +167,7 @@ const emits = defineEmits<{
 }>();
 
 const { processAPIRequest, pushToastAlert } = useEvents();
-const { getMerchants } = useMerchantStore();
+const { getAllMerchants } = useMerchantStore();
 const { createFee } = useFeeStore();
 
 const addFeeBtnRef = ref(null);
@@ -185,7 +185,7 @@ const paymentMethodOptions = computed(() => {
   }
   return [
     { value: "mobilemoney", name: "Mobile Money" },
-    { value: "bank", name: "Bank" },
+    { value: "card", name: "Card" },
   ];
 });
 const countryOptions = [
@@ -193,8 +193,8 @@ const countryOptions = [
   { value: "TZ", name: "Tanzania" },
   { value: "GH", name: "Ghana" },
   { value: "ZM", name: "Zambia" },
-   { value: "KES", name: "Kenya" },
-    { value: "XOF", name: "Ivory Coast" },
+   { value: "KE", name: "Kenya" },
+    { value: "CI", name: "Ivory Coast" },
 ];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -207,8 +207,7 @@ const feePayload = ref<IFeePayload>({
   country_code: "NG",
   type: "percentage",
   amount: "",
-  payment_method: "",
-  cap_amount: "",
+  payment_method: ""
 });
 
 const selectedMerchantName = computed(() => {
@@ -232,20 +231,20 @@ const isActionReady = computed(() => {
   );
 });
 
+const mapMerchantOptions = (merchants: any[]) =>
+  merchants.map((m: any) => ({
+    value: m.uuid || "",
+    name: m.business_name || m.email || "-",
+  }));
+
 const fetchMerchants = async () => {
   try {
     const response = await processAPIRequest({
-      action: async () => getMerchants({ filters: "?page=1&page_size=100" }),
+      action: getAllMerchants,
       showAlert: false,
     });
-    if (response?.code === 200 && response.data) {
-      const merchants = response.data.merchants || [];
-      merchantOptions.value = merchants.map((m: any) => ({
-        value: m.uuid || "",
-        name:
-          m.business_name || m.email || 
-          "-",
-      }));
+    if (Array.isArray(response)) {
+      merchantOptions.value = mapMerchantOptions(response);
     }
   } catch {
     console.error("Failed to fetch merchants");
@@ -256,7 +255,7 @@ const handleSaveFee = async () => {
   const payload = {
     ...feePayload.value,
     amount: parseFloat(feePayload.value.amount as string) || 0,
-    cap_amount: parseFloat(feePayload.value.cap_amount as string) || 0,
+    cap_amount: feePayload.value.cap_amount && parseFloat(feePayload.value.cap_amount as string),
   };
 
   const response = await processAPIRequest({
@@ -289,7 +288,7 @@ watch(
     const validMethods =
       newMethod === "payout"
         ? ["mobilemoney"]
-        : ["mobilemoney", "bank"];
+        : ["mobilemoney", "card"];
     if (!validMethods.includes(feePayload.value.payment_method)) {
       feePayload.value.payment_method = "";
     }
