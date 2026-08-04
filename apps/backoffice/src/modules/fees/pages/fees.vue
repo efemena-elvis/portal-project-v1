@@ -91,7 +91,7 @@ import EditFeeModal from "@/modules/fees/modals/edit-fee-modal.vue";
 import MerchantActionModal from "@/modules/payments/modals/merchant-action-modal.vue";
 
 const { getFees, deleteFee } = useFeeStore();
-const { getMerchants } = useMerchantStore();
+const { getAllMerchants } = useMerchantStore();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
   useString();
@@ -112,6 +112,22 @@ const filterValues = reactive({
   status: "",
   period: null as [Date, Date] | null,
 });
+
+const mapMerchantOptions = (merchants: any[]) =>
+  merchants.map((merchant: any) => ({
+    value: merchant.uuid || "",
+    name: merchant.business_name || merchant.email,
+  }));
+
+const fetchMerchants = async () => {
+  const response = await processAPIRequest({
+    action: getAllMerchants,
+    showAlert: false,
+  });
+  if (Array.isArray(response)) {
+    merchantOptions.value = mapMerchantOptions(response);
+  }
+};
 
 const filterConfig = [
   {
@@ -156,20 +172,6 @@ const filters = computed(
   () =>
     `?page=${page.value}&status=${filterValues.status}&user_id=${filterValues.merchant}&from=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}`,
 );
-
-const fetchMerchants = async () => {
-  const response = await processAPIRequest({
-    action: async () => getMerchants({ filters: "?page=1&page_size=100000" }),
-    showAlert: false,
-  });
-  if (response?.code === 200 && response.data) {
-    const merchants = response.data.merchants || [];
-    merchantOptions.value = merchants.map((merchant: any) => ({
-      value: merchant.uuid || "",
-      name: merchant.business_name || merchant.email,
-    }));
-  }
-};
 
 const getDateCreated = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();

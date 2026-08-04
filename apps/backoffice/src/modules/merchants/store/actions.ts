@@ -17,6 +17,31 @@ export const getMerchants = async (payload: any) => {
   );
 };
 
+export const getAllMerchants = async () => {
+  const all: any[] = [];
+  const pageSize = 100;
+  let page = 1;
+  let total = Infinity;
+
+  while ((page - 1) * pageSize < total) {
+    const response = await getMerchants({
+      filters: `?page=${page}&page_size=${pageSize}`,
+    });
+
+    if (response?.code === 200 && response.data) {
+      const batch = response.data.merchants || [];
+      all.push(...batch);
+      total = response.data.total_records ?? total;
+      if (batch.length < pageSize) break;
+      page += 1;
+    } else {
+      break;
+    }
+  }
+
+  return all;
+};
+
 export const getSingleMerchant = async (id: string) => {
   return await $api.fetch(`${merchantRoutes.getSingleMerchant}/${id}`);
 };

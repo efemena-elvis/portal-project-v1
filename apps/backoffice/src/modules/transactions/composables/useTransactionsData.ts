@@ -7,7 +7,7 @@ import { TableDoubleColumn } from "@packages/uikit";
 
 export function useTransactionsData() {
   const { getAllTransactions } = useTransactionStore();
-  const { getMerchants } = useMerchantStore();
+  const { getAllMerchants } = useMerchantStore();
   const { processAPIRequest } = useEvents();
   const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter } =
     useString();
@@ -26,6 +26,26 @@ export function useTransactionsData() {
   const showDetailModal = ref(false);
   const selectedTransaction = ref<Record<string, any> | null>(null);
   const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
+
+  const mapMerchantOptions = (merchants: any[]) =>
+    merchants.map((merchant: any) => ({
+      value: merchant.uuid || "",
+      name:
+        merchant.business_name ||
+        merchant.email ||
+        `${merchant.first_name || ""} ${merchant.last_name || ""}`.trim() ||
+        "-",
+    }));
+
+  const fetchMerchants = async () => {
+    const response = await processAPIRequest({
+      action: getAllMerchants,
+      showAlert: false,
+    });
+    if (Array.isArray(response)) {
+      merchantOptions.value = mapMerchantOptions(response);
+    }
+  };
 
   const filterValues = reactive({
     search: "",
@@ -125,24 +145,6 @@ export function useTransactionsData() {
   const filters = computed(() => {
     return `?page=${page.value}&status=${filterValues.status}&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
   });
-
-  const fetchMerchants = async () => {
-    const response = await processAPIRequest({
-      action: async () => getMerchants({ filters: "?page=1&page_size=100" }),
-      showAlert: false,
-    });
-    if (response?.code === 200 && response.data) {
-      const merchants = response.data.merchants || [];
-      merchantOptions.value = merchants.map((merchant: any) => ({
-        value: merchant.uuid || "",
-        name:
-          merchant.business_name ||
-          merchant.email ||
-          `${merchant.first_name || ""} ${merchant.last_name || ""}`.trim() ||
-          "-",
-      }));
-    }
-  };
 
   const getDateCreated = (date: string) => {
     const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();

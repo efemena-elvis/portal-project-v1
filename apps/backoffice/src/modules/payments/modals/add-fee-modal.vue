@@ -170,7 +170,7 @@ const paymentMethodOptions = computed(() => {
   }
   return [
     { value: "mobilemoney", name: "Mobile Money" },
-    { value: "bank", name: "Bank" },
+    { value: "card", name: "Card" },
   ];
 });
 const countryOptions = [
@@ -178,8 +178,8 @@ const countryOptions = [
   { value: "TZ", name: "Tanzania" },
   { value: "GH", name: "Ghana" },
   { value: "ZM", name: "Zambia" },
-   { value: "KES", name: "Kenya" },
-    { value: "XOF", name: "Ivory Coast" },
+   { value: "KE", name: "Kenya" },
+    { value: "CI", name: "Ivory Coast" },
 ];
 const typeOptions = [
   { value: "percentage", name: "Percentage" },
@@ -195,8 +195,7 @@ const feePayload = ref<IFeePayload>({
   country_code: "NG",
   payment_method: "",
   type: "percentage",
-  amount: "",
-  cap_amount: "",
+  amount: ""
 });
 
 const selectedMerchantName = computed(() => {
@@ -210,7 +209,7 @@ onMounted(() => {
 });
 
 const validPaymentMethods: Record<string, string[]> = {
-  payin: ["mobilemoney", "bank"],
+  payin: ["mobilemoney", "card"],
   payout: ["mobilemoney"],
 };
 
@@ -242,7 +241,7 @@ const handleAddFee = async () => {
   const apiPayload = {
     ...payload,
     amount: parseFloat(payload.amount as string) || 0,
-    cap_amount: parseFloat(payload.cap_amount as string) || 0,
+    cap_amount: payload.cap_amount && parseFloat(payload.cap_amount as string),
   };
 
   const response = await processAPIRequest({

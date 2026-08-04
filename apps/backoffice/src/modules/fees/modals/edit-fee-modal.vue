@@ -159,7 +159,7 @@ const { getSingleFee, updateFee } = useFeeStore();
 const editFeeBtnRef = ref(null);
 const merchantDisplayName = ref("");
 
-// local fee data (populated from API)
+
 const feeData = ref<Record<string, any> | null>(null);
 
 const methodOptions = [
@@ -173,7 +173,7 @@ const paymentMethodOptions = computed(() => {
   }
   return [
     { value: "mobilemoney", name: "Mobile Money" },
-    { value: "bank", name: "Bank" },
+    { value: "card", name: "Card" },
   ];
 });
 
@@ -182,6 +182,8 @@ const countryOptions = [
   { name: "Ghana", value: "GH" },
   { name: "Zambia", value: "ZM" },
   { name: "Tanzania", value: "TZ" },
+   { name: "Kenya", value: "KE" },
+   { name: "Ivory Coast", value: "C" },
 ];
 
 const typeOptions = [
@@ -194,8 +196,7 @@ const feePayload = ref<IFeePayload>({
   payment_method: "",
   country_code: "",
   type: "percentage",
-  amount: "",
-  cap_amount: "",
+  amount: ""
 });
 
 const isActionReady = computed(() => {
@@ -222,7 +223,7 @@ const normalizeIncomingFee = (data: Record<string, any>) => {
     country_code: countryCode,
     type: (data?.type ?? "percentage").toString().toLowerCase(),
     amount: data?.amount ?? "",
-    cap_amount: data?.cap_amount ?? data?.cap_mount ?? "",
+    cap_amount: data?.cap_amount && data?.cap_mount,
     payment_method: data?.payment_method ?? "",
   };
 };
@@ -289,7 +290,7 @@ watch(
     const validMethods =
       newMethod === "payout"
         ? ["mobilemoney"]
-        : ["mobilemoney", "bank"];
+        : ["mobilemoney", "card"];
     if (!validMethods.includes(feePayload.value.payment_method)) {
       feePayload.value.payment_method = "";
     }
