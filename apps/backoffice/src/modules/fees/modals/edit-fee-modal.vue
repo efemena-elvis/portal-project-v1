@@ -68,35 +68,43 @@
         </div>
 
         <div class="field-grid">
-          <TextFieldInput
-            labelId="amount"
-            labelTitle="Amount"
-            :labelCompact="false"
-            :inputType="IInputType.Number"
-            inputPlaceholder="Enter amount"
-            :inputValue="feePayload.amount"
-            isRequired
-            @inputChanged="feePayload.amount = $event"
-            :errorHandler="{
-              validator: 'validateNumberEntry',
-              message: 'Please enter a valid amount',
-            }"
-          />
+          <div class="form-block form-text-block mb-5">
+            <label for="amount" class="bg-neutral-10 form-label-basic">
+              Amount
+            </label>
+            <div class="form-block-input">
+              <input
+                id="amount"
+                class="form-control"
+                type="text"
+                inputmode="decimal"
+                pattern="[0-9]*([.][0-9]{0,2})?"
+                placeholder="Enter amount"
+                :value="feePayload.amount"
+                required
+                @input="updateDecimalValue('amount', $event)"
+              />
+            </div>
+          </div>
 
-          <TextFieldInput
-            labelId="capAmount"
-            labelTitle="Cap Amount"
-            :labelCompact="false"
-            :inputType="IInputType.Number"
-            inputPlaceholder="Enter cap amount"
-            :inputValue="feePayload.cap_amount"
-            isRequired
-            @inputChanged="feePayload.cap_amount = $event"
-            :errorHandler="{
-              validator: 'validateNumberEntry',
-              message: 'Please enter a valid cap amount',
-            }"
-          />
+          <div class="form-block form-text-block mb-5">
+            <label for="capAmount" class="bg-neutral-10 form-label-basic">
+              Cap Amount
+            </label>
+            <div class="form-block-input">
+              <input
+                id="capAmount"
+                class="form-control"
+                type="text"
+                inputmode="decimal"
+                pattern="[0-9]*([.][0-9]{0,2})?"
+                placeholder="Enter cap amount"
+                :value="feePayload.cap_amount"
+                required
+                @input="updateDecimalValue('cap_amount', $event)"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -126,12 +134,11 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch, onMounted } from "vue";
-import { IInputType } from "@packages/models";
 import { useEvents } from "@packages/hooks";
 import { useFeeStore } from "@/modules/fees/store";
 import { useCountries } from "@/modules/global/composables/useCountries";
 import { countryCurrencies } from "@packages/constants";
-import { ModalDialog, SelectFieldInput, TextFieldInput } from "@packages/uikit";
+import { ModalDialog, SelectFieldInput } from "@packages/uikit";
 
 type IFeePayload = {
   method: string;
@@ -188,6 +195,24 @@ const feePayload = ref<IFeePayload>({
   type: "percentage",
   amount: ""
 });
+
+const updateDecimalValue = (
+  field: "amount" | "cap_amount",
+  event: Event,
+) => {
+  const input = event.target as HTMLInputElement;
+  const normalizedValue = input.value
+    .replace(/,/g, ".")
+    .replace(/[^\d.]/g, "");
+  const [wholeNumber, ...decimalParts] = normalizedValue.split(".");
+  const decimalPart = decimalParts.join("").slice(0, 2);
+  const value = decimalParts.length
+    ? `${wholeNumber || "0"}.${decimalPart}`
+    : wholeNumber;
+
+  feePayload.value[field] = value;
+  input.value = value;
+};
 
 const isActionReady = computed(() => {
   return !(
