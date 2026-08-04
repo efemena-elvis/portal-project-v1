@@ -212,7 +212,7 @@ const fmtEndISO = (date: Date) => {
 };
 
 const apiFilters = computed(() => {
-  let filters = `?page=${page.value}&user_id=${props.merchantId}&status=${filterValues.status}&reference=${filterValues.search}`;
+   let filters = `?page=${page.value}&user_id=${props.merchantId}&type=pay_in&status=${filterValues.status}&reference=${filterValues.search}`;
 
   if (filterValues.paymentMethod)
     filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`;
@@ -293,17 +293,9 @@ const filteredTableBody = computed(() =>
           secondaryText: transaction.customerSecondary,
         },
       }),
-      payment_method: h(TableDoubleColumn, {
-        entry: {
-          primaryText: capitalizeFirstLetter(
-            transaction.paymentMethod.replace(/_/g, " "),
-          ),
-          secondaryText: capitalizeFirstLetter(
-            transaction.type.replace(/_/g, " "),
-          ),
-        },
-      }),
-   
+      payment_method: capitalizeFirstLetter(
+            transaction.paymentMethod.replace(/_/g, " ")
+        ),
       amount: getBoldTableText(transaction.amount),
       status: getStatus(key, label),
       reference: transaction.reference,
