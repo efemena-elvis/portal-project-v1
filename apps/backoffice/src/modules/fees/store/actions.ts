@@ -28,7 +28,7 @@ export const createFee = async (payload: any) => {
 };
 
 export const updateFee = async (id: string, payload: any) => {
-  return await $api.update(`${feeRoutes.updateFee}/${id}`, payload);
+  return await $api.push(`${feeRoutes.updateFee}/${id}`, payload);
 };
 
 export const deleteFee = async (id: string) => {
