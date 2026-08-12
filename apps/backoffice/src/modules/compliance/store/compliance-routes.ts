@@ -1,6 +1,6 @@
 const nameSpace: string = "compliance";
 
 export const complianceRoutes = {
-  getCompliance: `${nameSpace}/all`,
+  getCompliance: `admin/${nameSpace}/documents`,
   uploadCompliance: `${nameSpace}/upload`,
 };

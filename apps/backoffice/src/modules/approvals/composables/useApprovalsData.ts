@@ -1,9 +1,11 @@
 import { ref, computed, h, reactive } from "vue";
+import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useDate, useEvents, useString, useAutoFetch } from "@packages/hooks";
 import { TableDoubleColumn } from "@packages/uikit";
 import { TableHeaderType } from "@packages/models";
 import { useApprovalsStore } from "@/modules/approvals/store";
+import { useGlobalStore } from "@/modules/global/store";
 import {
   getDateCreated,
   mapStatusKey,
@@ -25,6 +27,7 @@ export function useApprovalsData() {
     decideWithdrawalRequest,
   } = useApprovalsStore();
   const { processAPIRequest, pushToastAlert } = useEvents();
+  const { environment } = storeToRefs(useGlobalStore());
   const { formatNumber, getBoldTableText, getStatus, capitalizeFirstLetter} = useString();
   const router = useRouter();
 
@@ -104,7 +107,7 @@ export function useApprovalsData() {
 
   const filters = computed(
     () =>
-      `?page=${page.value}&tab=${activeTab.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}`,
+      `?page=${page.value}&tab=${activeTab.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}&environment=${environment.value}`,
   );
 
   const openRequestModal = async (request: any) => {

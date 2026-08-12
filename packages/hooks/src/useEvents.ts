@@ -26,6 +26,7 @@ interface IAlertHandler {
 interface IHandleDataRequestParams {
   action: (payload: any) => Promise<any>;
   payload?: Record<string, any> | string;
+  environment?: string;
   btnRef?: Ref<HTMLButtonElement | null>;
   btnText?: string;
   showAlert?: boolean;

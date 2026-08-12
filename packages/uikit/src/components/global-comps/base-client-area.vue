@@ -16,36 +16,6 @@
             <div class="brand-id">Admin</div>
           </div>
         </div>
-
-        <!-- DROPDOWN TOGGLER -->
-        <div
-          class="client-toggler"
-          ref="togglerRef"
-          @click="showDropdown = !showDropdown"
-        >
-          <div class="icon-caret-down"></div>
-        </div>
-
-        <!-- DROPDOWN -->
-        <div
-          class="app-dropdown"
-          ref="dialogRef"
-          v-if="showDropdown"
-          role="dialog"
-        >
-          <div class="dropdown-wrapper">
-            <router-link
-              to="/change-password"
-              class="app-dropdown-item"
-              @click="showDropdown = false"
-            >
-              <div class="text">Change Password</div>
-            </router-link>
-            <!-- <div class="app-dropdown-item" @click="handleResetMfa">
-              <div class="text">Reset MFA</div>
-            </div> -->
-          </div>
-        </div>
       </div>
     </div>
   </div>

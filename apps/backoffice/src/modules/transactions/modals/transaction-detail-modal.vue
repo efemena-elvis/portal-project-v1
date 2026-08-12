@@ -29,7 +29,7 @@
           <div class="detail-list">
           
             <DetailRow label="Reference" :value="transaction?.reference" />
-          
+           <DetailRow label="Provider Reference" :value="transaction?.provider_reference" />
             <DetailRow
               label="Type"
               :value="

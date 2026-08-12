@@ -42,10 +42,6 @@ export const getAllMerchants = async () => {
   return all;
 };
 
-export const getSingleMerchant = async (id: string) => {
-  return await $api.fetch(`${merchantRoutes.getSingleMerchant}/${id}`);
-};
-
 export const resetMerchantPassword = async (id: string) => {
   return await $api.push(
     `${merchantRoutes.resetMerchantPassword}/${id}/reset-password`,

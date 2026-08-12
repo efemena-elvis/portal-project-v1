@@ -7,6 +7,24 @@
     </div>
 
     <div class="topbar--right">
+      <!-- MODE TOGGLER -->
+      <div class="relative right-0">
+        <div class="mode-toggler" ref="togglerModeRef" @click="canSwtchMode">
+          <div
+            class="mode-toggler-control"
+            :class="
+              activeMode === 'live'
+                ? 'toggler-control-active'
+                : 'toggler-control-inactive'
+            "
+          >
+            <div class="mode-toggler-control-pin"></div>
+          </div>
+
+          <div class="text text-grey-900">{{ activeMode }} mode</div>
+        </div>
+      </div>
+
       <!-- USER PROFILE -->
       <div class="relative">
         <div
@@ -26,6 +44,12 @@
           aria-modal="true"
         >
           <div class="dropdown-wrapper">
+            <router-link to="/change-password" class="app-dropdown-item">
+              <div class="text-lg text-red-600 icon icon-pen-edit"></div>
+              <div class="text-red-600 text">Change Password</div>
+            </router-link>
+          </div>
+          <div class="dropdown-wrapper">
             <router-link to="/logout" class="app-dropdown-item">
               <div class="text-lg text-red-600 icon icon-logout"></div>
               <div class="text-red-600 text">Sign Out</div>
@@ -38,15 +62,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, inject, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { ref, watch, inject } from "vue";
+import { useRoute } from "vue-router";
 import { Emitter } from "mitt";
-import { useEvents, useClickOutside } from "@packages/hooks";
-import NavNotificationItem from "./nav-notification-item.vue";
+import { useClickOutside } from "@packages/hooks";
 
 // Define the type of the event bus
 type Events = {
   triggerSidebar: void;
+  environmentChange: string;
 };
 
 interface ITopbarProps {
@@ -63,18 +87,8 @@ const props = withDefaults(defineProps<ITopbarProps>(), {
 });
 
 const route = useRoute();
-const router = useRouter();
 
 const eventBus = inject<Emitter<Events>>("eventBus");
-
-const { pushToastAlert, processAPIRequest } = useEvents();
-
-const profileUtil = props.businessProfile;
-
-const getBusinessProfile = computed(() => profileUtil.getBusiness());
-const isBusinessActivated = computed(() =>
-  profileUtil.getBusinessActivatedStatus(),
-);
 
 watch(route, () => {
   toggleNotificationDropdown(false);
@@ -83,52 +97,16 @@ watch(route, () => {
 });
 
 // UPDATE ENVIRONMENT MODE
-const activeMode = ref<string>(
-  getBusinessProfile?.value?.businessMode || "test",
-);
+const activeMode = ref<string>("live");
 
 const updateActiveMode = (mode: string) => {
-  triggerModeChange(mode);
-  activeMode.value = mode;
-};
 
-const triggerModeChange = async (mode: string) => {
-  const response = await processAPIRequest({
-    action: props.switchModeAction,
-    payload: { mode },
-    alertHandler: {
-      200: {
-        message: "Business mode updated successfully",
-        description: `Your business is currently running on ${mode} mode`,
-        type: "success",
-      },
-      400: {
-        message: "Failed to update business mode",
-        type: "error",
-      },
-    },
-  });
-  if (response?.code === 200) {
-    setTimeout(() => location.reload(), 1500);
-  } else {
-    activeMode.value = mode === "live" ? "test" : "live";
-    pushToastAlert({
-      message: "Reversed to previous business mode",
-      type: "warning",
-    });
-  }
+  activeMode.value = mode;
+  eventBus?.emit("environmentChange", mode);
 };
 
 const canSwtchMode = () => {
-  if (isBusinessActivated.value === "true") {
-    updateActiveMode(activeMode.value === "live" ? "test" : "live");
-  } else {
-    pushToastAlert({
-      message: "Business is not activated.",
-      description: "Complete your business compliance profile",
-      type: "warning",
-    });
-  }
+  updateActiveMode(activeMode.value === "live" ? "test" : "live");
 };
 
 const triggerMenuSidebar = () => {
