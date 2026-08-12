@@ -57,7 +57,6 @@ const router = useRouter();
 const id = route.params.id as string;
 
 const {
-  getSingleMerchant,
   getMerchantOverview,
   resetMerchantPassword,
   loginMerchantAccount,
@@ -143,18 +142,7 @@ const modalContent = computed(() => {
   return content[activeAction.value];
 });
 
-const fetchMerchantDetails = async () => {
-  const response = await processAPIRequest({
-    action: async () => getSingleMerchant(id),
-    showAlert: false,
-  });
 
-  if (response?.code === 200) {
-    merchantDetails.value = response.data || {};
-    businessName.value = response.data?.name;
-    businessStatus.value = response.data?.status;
-  }
-};
 
 const fetchMerchantOverview = async () => {
   const response = await processAPIRequest({
@@ -250,12 +238,12 @@ const handleActionConfirmed = async () => {
   }
 
   if (action === "approve" || action === "reject") {
-    fetchMerchantDetails();
+    fetchMerchantOverview();
   }
 };
 
 onMounted(() => {
-  fetchMerchantDetails();
+
   fetchMerchantOverview();
 });
 </script>

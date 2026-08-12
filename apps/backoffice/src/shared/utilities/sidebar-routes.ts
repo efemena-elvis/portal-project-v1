@@ -86,15 +86,7 @@ export const sidebarRoutes: ISidebarRouteType = {
 
   subLevel: [],
 
-  bottomLevel: [
-    {
-      link: "/logout",
-      title: "Sign Out",
-      icon: "icon-logout",
-      active: true,
-      category: "auth",
-    },
-  ],
+  bottomLevel: [],
 };
 
 export const settingsSidebarRoutes: ISideNavType[] = [

@@ -78,8 +78,9 @@ import {
 import { useString, useEvents, useDate, useAutoFetch } from "@packages/hooks";
 import { useComplianceStore } from "@/modules/compliance/store";
 import ComplianceConfig from "../components/compliance-config.vue";
+import { title } from "process";
 
-const { getStatus } = useString();
+const { getStatus, getBoldTableText, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
 
 const complianceStore = useComplianceStore() as any;
@@ -87,10 +88,9 @@ const { getCompliances } = complianceStore;
 const router = useRouter();
 
 const complianceStats = ref<{ title: string; value: string }[]>([
-  { title: "Total Requests", value: "-" },
-  { title: "Approved", value: "-" },
-  { title: "Pending", value: "-" },
-  { title: "Rejected", value: "-" },
+  { title: "Total", value: "-" },
+  { title: "Verified", value: "-" },
+  { title: "Unverified", value: "-" },
 ]);
 
 const selectedTab = ref("requests");
@@ -118,7 +118,7 @@ const filterConfig = [
   {
     type: "select" as const,
     key: "status",
-    options: ["Approved", "Pending", "Rejected"],
+    options: ["Verified", "Unverified"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
@@ -138,17 +138,24 @@ const onFilterChange = ({ key, value }: { key: string; value: any }) => {
 
 const tableHeader = ref<TableHeaderType[]>([
   { title: "Date", slug: "date" },
-  { title: "Name", slug: "name" },
-  { title: "Type", slug: "type" },
+  { title: "Business Name", slug: "business" },
+  { title: "Email", slug: "email" },
   { title: "Status", slug: "status" },
   { title: "", slug: "action" },
 ]);
 
 const tableBody = ref<any[]>([]);
 
+const isVerifiedParam = computed(() => {
+  const status = (filterValues.status || "").toLowerCase();
+  if (status === "verified") return "true";
+  if (status === "unverified") return "false";
+  return "";
+});
+
 const filters = computed(
   () =>
-    `?page=${page.value}&status=${filterValues.status}&from_created_at=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to_created_at=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
+    `?page=${page.value}&page_size=20&is_verified=${isVerifiedParam.value}&from_created_at=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to_created_at=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
 );
 
 const getDateFormatted = (date: string) => {
@@ -156,21 +163,64 @@ const getDateFormatted = (date: string) => {
   return `${w2}, ${d3} ${m3}, ${y1}`;
 };
 
-const openComplianceDetails = (data: any, customerName: string) => {
+const openComplianceDetails = (data: any) => {
   router.push({
     name: "ComplianceDetails",
-    params: { id: data.id || "New" },
-    query: {
-      business: data.business_name || data.business?.name || customerName,
-      email: data.customer?.email || data.email || "",
-      type: data.type || "Merchant",
-      status: data.status || "",
-      country: data.country || data.business?.country || "Ghana",
-      aggregator:
-        data.aggregator?.business_name ||
-        data.aggregator?.name ||
-        "Olamide Pro Inc",
-    },
+    params: { id: data.uuid },
+  });
+};
+
+const buildBusinessRows = (documents: any[]) => {
+  const grouped = documents.reduce<Record<string, any[]>>((acc, doc) => {
+    const key = doc.uuid;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(doc);
+    return acc;
+  }, {});
+
+  return Object.values(grouped).map((docs) => {
+    const first = docs[0];
+    const isVerified =
+      first.is_verified === true 
+    const latest = docs.reduce((a, b) =>
+      new Date(a.created_at) > new Date(b.created_at) ? a : b,
+    );
+
+    return {
+      date: h(TableDoubleColumn, {
+        entry: {
+          primaryText: latest?.created_at
+            ? getDateFormatted(latest.created_at)
+            : "-",
+          secondaryText: latest?.created_at
+            ? useDate.formatTime(latest.created_at)
+            : "",
+        },
+      }),
+      business: getBoldTableText(
+        capitalizeFirstLetter(first.business_name || "No business info"),
+      ),
+      email: first.merchant_email || "-",
+      status: getStatus(
+        isVerified ? "verified" : "pending",
+        isVerified ? "Verified" :  "Unverified",
+      ),
+     
+      action: h(
+        "button",
+        {
+          class:
+            "text-sm font-semibold text-teal-800 transition hover:text-green-600",
+          type: "button",
+          onClick: (event: Event) => {
+            event.stopPropagation();
+            openComplianceDetails(first);
+          },
+        },
+        "View",
+      ),
+      isVerified,
+    };
   });
 };
 
@@ -186,57 +236,20 @@ const fetchCompliances = async (filters: string) => {
   isLoading.value = false;
 
   if (response && response.code === 200) {
-    tableBody.value = response.data.map((data: any) => {
-      const customerName = data.customer
-        ? `${data.customer.firstname} ${data.customer.lastname}`
-        : "No business info";
-      const customerEmail = data.customer ? data.customer.email : "";
+    const documents = response.data?.documents || [];
+    const rows = buildBusinessRows(documents);
+    tableBody.value = rows;
 
-      return {
-        date: h(TableDoubleColumn, {
-          entry: {
-            primaryText: getDateFormatted(data.created_at),
-            secondaryText: useDate.formatTime(data.created_at),
-          },
-        }),
-        name: h(TableDoubleColumn, {
-          entry: { primaryText: customerName, secondaryText: customerEmail },
-        }),
+    const total = response.data?.total_records || documents.length;
+    tablePaging.value = {
+      current_page: response.data?.page || page.value,
+      page_count: rows.length,
+      total_pages_count: Math.ceil(total / (response.data?.page_size || 20)),
+    };
 
-        type: data.type,
-
-        status: getStatus(data.status, data.status),
-
-        action: h(
-          "button",
-          {
-            class: "text-sm font-medium text-green-500 hover:text-teal-800",
-            onClick: () => openComplianceDetails(data, customerName),
-          },
-          "View details",
-        ),
-      };
-    });
-
-    tablePaging.value = response.pagination[0] || {};
-
-    const data = response.data || [];
-    const total = data.length;
-    const approved = data.filter(
-      (d: any) => d.status?.toLowerCase() === "approved",
-    ).length;
-    const pending = data.filter(
-      (d: any) => d.status?.toLowerCase() === "pending",
-    ).length;
-    const rejected = data.filter(
-      (d: any) => d.status?.toLowerCase() === "rejected",
-    ).length;
 
     complianceStats.value = [
-      { title: "Total Requests", value: total.toLocaleString() },
-      { title: "Approved", value: approved.toLocaleString() },
-      { title: "Pending", value: pending.toLocaleString() },
-      { title: "Rejected", value: rejected.toLocaleString() },
+      { title: "Total", value: total.toLocaleString() }
     ];
   }
 };

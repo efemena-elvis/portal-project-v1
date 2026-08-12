@@ -17,6 +17,15 @@
 
       <!-- MAIN CONTENT AREA -->
       <div class="main-content-area">
+        <!-- TOPBAR AREA -->
+        <div class="topbar-area">
+          <!-- BASE TOP BAR -->
+          <BaseTopbar
+            :businessProfile="profileUtil"
+            :switchModeAction="switchAppMode"
+          />
+        </div>
+
         <!-- MAIN CONTENT -->
         <div class="main-content">
           <router-view v-slot="{ Component }">
@@ -29,13 +38,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted, inject } from "vue";
 import { useRoute } from "vue-router";
 import { jwtDecode } from "jwt-decode";
+import { Emitter } from "mitt";
 import { useColor, useProfile, useEvents } from "@packages/hooks";
-import { BaseSidebar } from "@packages/uikit";
+import { BaseSidebar, BaseTopbar } from "@packages/uikit";
 import { sidebarRoutes } from "@/shared/utilities/sidebar-routes";
 import { useAuthStore } from "@/modules/auth/store";
+import { useGlobalStore } from "@/modules/global/store";
 import { useComplianceStore } from "@/modules/compliance/store";
 import { useApprovalsStore } from "@/modules/approvals/store";
 import { useTransactionStore } from "@/modules/transactions/store";
@@ -45,17 +56,23 @@ const route = useRoute();
 
 const authStore = useAuthStore();
 const { resetAdminMfa } = authStore;
+const globalStore = useGlobalStore();
+const { switchAppMode, updateEnvironment } = globalStore;
+const eventBus = inject<Emitter<{ environmentChange: string }>>("eventBus");
 const { getCompliances } = useComplianceStore() as any;
 const { getAllWithdrawalRequests } = useApprovalsStore();
 const { getAllApprovals } = useApprovalsStore();
-const { getAllTransactions } = useTransactionStore();
-const { getMerchants } = useMerchantStore();
+
 
 const { setPageBackgroundColor } = useColor();
 const { processAPIRequest } = useEvents();
 const profileUtil = new useProfile(authStore);
 
 const showMobileSidebar = ref<boolean>(false);
+
+eventBus?.on("environmentChange", (mode: string) => {
+  updateEnvironment(mode || "live");
+});
 
 let refreshCheckInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -73,9 +90,8 @@ const getSidebarPendingData = async () => {
   const [
     complianceResponse,
     approvalResponse,
-    transactionResponse,
     withdrawalResponse,
-    merchantResponse,
+
   ] = await Promise.all([
     processAPIRequest({
       action: getCompliances,
@@ -88,28 +104,18 @@ const getSidebarPendingData = async () => {
       showAlert: false,
     }),
     processAPIRequest({
-      action: getAllTransactions,
-      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
-      showAlert: false,
-    }),
-    processAPIRequest({
       action: getAllWithdrawalRequests,
       payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
       showAlert: false,
     }),
-    processAPIRequest({
-      action: getMerchants,
-      payload: { filters: "?page=1&page_size=1&status=pending" },
-      showAlert: false,
-    }),
+
   ]);
 
   sidebarBadgeConfig.value = {
     Compliance: getPendingCount(complianceResponse),
     Approvals:
       getPendingCount(approvalResponse) + getPendingCount(withdrawalResponse),
-    Transactions: getPendingCount(transactionResponse),
-    Merchants: getPendingCount(merchantResponse),
+
   };
 };
 
@@ -166,8 +172,13 @@ setPageBackgroundColor("#F1F7F6");
   .main-content-area {
     @apply relative w-[85%] xl:w-[83%] lg:w-[81%] mdLg:w-full left-[15%] xl:left-[17%] lg:left-[19%] mdLg:left-0 sm:mt-6;
 
+    .topbar-area {
+      @apply fixed top-0 w-[85%] xl:w-[83%] lg:w-[81%] mdLg:w-full;
+      z-index: 99;
+    }
+
     .main-content {
-      @apply relative  w-full h-full pb-7 px-9 xl:px-6 mdLg:px-4 bg-grey-50;
+      @apply relative top-[70px] w-full h-full pb-7 px-9 xl:px-6 mdLg:px-4 bg-grey-50;
     }
   }
 }

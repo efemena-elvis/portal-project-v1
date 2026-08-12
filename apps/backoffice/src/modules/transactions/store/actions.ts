@@ -12,8 +12,11 @@ const $api = new useServiceAPI({
 });
 
 export const getAllTransactions = async (payload: any) => {
+  const filters = payload.filters
+    ? `${payload.filters}&environment=${payload.environment || "live"}`
+    : `?page=${payload.page}&environment=${payload.environment || "live"}`;
   return await $api.fetch(
-    `${transactionRoutes.getTransactions}${payload.filters ? payload.filters : `?page=${payload.page}`}`,
+    `${transactionRoutes.getTransactions}${filters}`,
   );
 };
 

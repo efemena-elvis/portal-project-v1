@@ -60,10 +60,12 @@
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 import { IInputType } from "@packages/models";
 import { useEvents, useString, useProfile } from "@packages/hooks";
 import { ModalDialog, TextFieldInput, FileUploadInput } from "@packages/uikit";
 import { useAuthStore } from "@/modules/auth/store";
+import { useGlobalStore } from "@/modules/global/store";
 import { usePaymentStore } from "../store";
 
 type IPayoutType = {
@@ -80,6 +82,7 @@ const profileUtil = new useProfile(authStore);
 const { capitalizeFirstLetter } = useString();
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { initiatePayout } = usePaymentStore();
+const { environment } = storeToRefs(useGlobalStore());
 
 const payoutPayload = ref<IPayoutType>({
   amount: 0,
@@ -105,7 +108,7 @@ const handlePayoutInitiation = async () => {
 
   const response = await processAPIRequest({
     action: initiatePayout,
-    payload: payoutPayload.value,
+    payload: { ...payoutPayload.value, environment: environment.value },
     btnRef: initiatePayoutBtnRef,
     btnText: "Confirm Request",
     alertHandler: {

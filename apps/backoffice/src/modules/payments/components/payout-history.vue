@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { computed, ref, reactive, watch, onMounted, h } from "vue";
+import { storeToRefs } from "pinia";
 import { useString, useEvents, useDate } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import {
@@ -53,6 +54,7 @@ import {
   TableDoubleColumn,
 } from "@packages/uikit";
 import { usePaymentStore } from "@/modules/payments/store";
+import { useGlobalStore } from "@/modules/global/store";
 import TransactionDetailModal from "@/modules/transactions/modals/transaction-detail-modal.vue";
 
 interface PayoutRow {
@@ -76,6 +78,7 @@ const props = withDefaults(
 );
 
 const { getTransactions } = usePaymentStore();
+const { environment } = storeToRefs(useGlobalStore());
 const { processAPIRequest } = useEvents();
 const { getStatus, formatNumber, getBoldTableText } = useString();
 
@@ -159,7 +162,7 @@ const fmtEndISO = (date: Date) => {
 };
 
 const apiFilters = computed(() => {
-  let filters = `?page=${page.value}&user_id=${props.merchantId}&category=payout`;
+  let filters = `?page=${page.value}&user_id=${props.merchantId}&category=payout&environment=${environment.value}`;
 
   if (filterValues.status)
     filters += `&status=${filterValues.status.toLowerCase()}`;

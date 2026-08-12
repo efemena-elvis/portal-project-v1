@@ -1,7 +1,9 @@
 import { ref, computed, h, reactive, watch, onMounted } from "vue";
+import { storeToRefs } from "pinia";
 import { useDate, useEvents, useString } from "@packages/hooks";
 import { useTransactionStore } from "@/modules/transactions/store";
 import { useMerchantStore } from "@/modules/merchants/store";
+import { useGlobalStore } from "@/modules/global/store";
 import { TableHeaderType } from "@packages/models";
 import { TableDoubleColumn } from "@packages/uikit";
 
@@ -27,6 +29,8 @@ export function useTransactionsData() {
   const selectedTransaction = ref<Record<string, any> | null>(null);
   const debounceTimer = ref<ReturnType<typeof setTimeout> | null>(null);
 
+  const { environment } = storeToRefs(useGlobalStore());
+
   const mapMerchantOptions = (merchants: any[]) =>
     merchants.map((merchant: any) => ({
       value: merchant.uuid || "",
@@ -40,6 +44,7 @@ export function useTransactionsData() {
   const fetchMerchants = async () => {
     const response = await processAPIRequest({
       action: getAllMerchants,
+      environment: environment.value,
       showAlert: false,
     });
     if (Array.isArray(response)) {
@@ -225,7 +230,10 @@ export function useTransactionsData() {
     if (filterValues.status) {
       const statusRes = await processAPIRequest({
         action: getAllTransactions,
-        payload: { filters: `${base}&status=${filterValues.status}` },
+        payload: {
+          filters: `${base}&status=${filterValues.status}`,
+          environment: environment.value,
+        },
         showAlert: false,
       });
       const count = statusRes?.data?.total_records || 0;
@@ -254,22 +262,31 @@ export function useTransactionsData() {
     const [totalRes, completedRes, pendingRes, failedRes] = await Promise.all([
       processAPIRequest({
         action: getAllTransactions,
-        payload: { filters: base },
+        payload: { filters: base, environment: environment.value },
         showAlert: false,
       }),
       processAPIRequest({
         action: getAllTransactions,
-        payload: { filters: `${base}&status=completed` },
+        payload: {
+          filters: `${base}&status=completed`,
+          environment: environment.value,
+        },
         showAlert: false,
       }),
       processAPIRequest({
         action: getAllTransactions,
-        payload: { filters: `${base}&status=pending` },
+        payload: {
+          filters: `${base}&status=pending`,
+          environment: environment.value,
+        },
         showAlert: false,
       }),
       processAPIRequest({
         action: getAllTransactions,
-        payload: { filters: `${base}&status=failed` },
+        payload: {
+          filters: `${base}&status=failed`,
+          environment: environment.value,
+        },
         showAlert: false,
       }),
     ]);
@@ -293,7 +310,7 @@ export function useTransactionsData() {
 
     const response = await processAPIRequest({
       action: getAllTransactions,
-      payload: { filters, page: page.value },
+      payload: { filters, page: page.value, environment: environment.value },
       showAlert: false,
     });
 
@@ -316,6 +333,14 @@ export function useTransactionsData() {
   watch(filters, (newFilters) => {
     if (debounceTimer.value) clearTimeout(debounceTimer.value);
     debounceTimer.value = setTimeout(() => fetchTransactions(newFilters), 300);
+  });
+
+  watch(environment, () => {
+    if (debounceTimer.value) clearTimeout(debounceTimer.value);
+    debounceTimer.value = setTimeout(() => {
+      fetchMerchants();
+      fetchTransactions(filters.value);
+    }, 300);
   });
 
   onMounted(() => {

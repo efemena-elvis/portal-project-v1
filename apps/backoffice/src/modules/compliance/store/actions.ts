@@ -12,8 +12,10 @@ const $api = new useServiceAPI({
   TOKEN_KEY: PORTAL_AUTH_TOKEN,
 });
 
-export const getCompliance = async () => {
-  return await $api.fetch(complianceRoutes.getCompliance);
+export const getCompliance = async (payload: any) => {
+  return await $api.fetch(
+    `${complianceRoutes.getCompliance}${payload?.filters ? payload.filters : `?page=${payload?.page ?? 1}&page_size=20`}`,
+  );
 };
 
 export const mutateCompliance = (payload: any) => {

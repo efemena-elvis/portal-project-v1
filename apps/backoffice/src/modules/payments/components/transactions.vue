@@ -51,6 +51,8 @@
 
 <script setup lang="ts">
 import { computed, ref, reactive, watch, onMounted, h } from "vue";
+import { storeToRefs } from "pinia";
+import { useGlobalStore } from "@/modules/global/store";
 import { TableHeaderType } from "@packages/models";
 import { useDate, useString, useEvents } from "@packages/hooks";
 import {
@@ -87,6 +89,7 @@ const props = withDefaults(
 );
 
 const { getTransactions } = usePaymentStore();
+const { environment } = storeToRefs(useGlobalStore());
 const { processAPIRequest, pushToastAlert } = useEvents();
 const { getStatus, formatNumber, getBoldTableText, capitalizeFirstLetter } =
   useString();
@@ -212,7 +215,7 @@ const fmtEndISO = (date: Date) => {
 };
 
 const apiFilters = computed(() => {
-   let filters = `?page=${page.value}&user_id=${props.merchantId}&type=pay_in&status=${filterValues.status}&reference=${filterValues.search}`;
+   let filters = `?page=${page.value}&user_id=${props.merchantId}&type=pay_in&status=${filterValues.status}&reference=${filterValues.search}&environment=${environment.value}`;
 
   if (filterValues.paymentMethod)
     filters += `&method=${filterValues.paymentMethod === "bank transfer" ? "bank" : filterValues.paymentMethod}`;
