@@ -50,6 +50,25 @@ export function setRefreshTokenFn(fn: () => Promise<string | null>) {
   refreshTokenFn = fn;
 }
 
+// Endpoints where a 401 means invalid credentials/OTP rather than an expired
+// session, so the refresh-token flow must NOT run (and no /logout redirect).
+const PUBLIC_AUTH_URLS = [
+  "auth/login",
+  "auth/signup",
+  "auth/forgot-password",
+  "auth/reset-password",
+  "auth/send-verify-email",
+  "auth/verify-email",
+  "auth/verify-login",
+  "mfa/setup/authenticator",
+  "mfa/verify",
+];
+
+const isPublicAuthUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return PUBLIC_AUTH_URLS.some((endpoint) => url.includes(endpoint));
+};
+
 // ======================================================
 // SERVICE API CLASS
 // ======================================================
@@ -116,7 +135,8 @@ class APIService {
         if (
           error.response?.status === 401 &&
           !originalConfig._retry &&
-          refreshTokenFn
+          refreshTokenFn &&
+          !isPublicAuthUrl(originalConfig.url)
         ) {
           originalConfig._retry = true;
           const newToken = await refreshTokenFn();

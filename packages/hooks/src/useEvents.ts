@@ -108,6 +108,22 @@ export default function useEvents() {
             }
           }
           break;
+        case 401:
+          if (hasAlertHandler && isValidAlertHandler(alertHandler, 401)) {
+            const alertInfo = alertHandler[401];
+
+            if (alertInfo?.description) {
+              showAlert && pushToastAlert(alertHandler[401]);
+            } else {
+              showAlert &&
+                pushToastAlert({
+                  message: alertInfo?.message as string,
+                  description: response?.message,
+                  type: "error",
+                });
+            }
+          }
+          break;
         case 404:
           if (hasAlertHandler && isValidAlertHandler(alertHandler, 404)) {
             showAlert && pushToastAlert(alertHandler[404]);
