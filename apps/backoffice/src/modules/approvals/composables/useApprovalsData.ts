@@ -279,7 +279,7 @@ export function useApprovalsData() {
   };
 
   const fetchApprovalStats = async () => {
-    const base = filters.value.replace(/page=\d+/, "page=1");
+    const base = filters.value.replace(/page=\d+/, "page=1").replace(/&status=[^&]*/, '');
     const action =
       activeTab.value === "funding"
         ? getAllApprovals
