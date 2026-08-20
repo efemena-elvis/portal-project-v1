@@ -62,7 +62,6 @@ interface PayoutRow {
   createdAt: string;
   amount: string;
   fee: string;
-  netPayout: string;
   status: string;
   reference: string;
   raw: Record<string, any>;
@@ -138,7 +137,6 @@ const tableHeader: TableHeaderType[] = [
   { title: "Reference", slug: "reference" },
   { title: "Amount", slug: "amount" },
   { title: "Fees", slug: "fee" },
-  { title: "Net payout", slug: "net_payout" },
   { title: "Status", slug: "status" },
   { title: "", slug: "action" },
 ];
@@ -203,9 +201,6 @@ const fetchPayouts = async () => {
     createdAt: item.created_at,
     amount: item.amount ? `${item.currency} ${formatNumber(item.amount)}` : "-",
     fee: item.fee ? `${item.currency} ${formatNumber(item.fee)}` : "-",
-    netPayout: item.net_amount
-      ? `${item.currency} ${formatNumber(item.net_amount)}`
-      : "-",
     status: (item.status || "").toLowerCase(),
     reference: item.reference || "-",
     raw: item,
@@ -240,7 +235,6 @@ const filteredTableBody = computed(() =>
       }),
       amount: getBoldTableText(payout.amount),
       fee: payout.fee,
-      net_payout: getBoldTableText(payout.netPayout),
       status: getStatus(key, label),
       reference: payout.reference,
       action: h("div", { class: "flex items-center gap-3" }, [
