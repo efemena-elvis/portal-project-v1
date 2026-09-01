@@ -12,5 +12,5 @@ export const authRoutes = {
   mfaVerify: `mfa/verify`,
   verifyLogin: `${nameSpace}/verify-login`,
   changePassword: `${nameSpace}/change-password`,
-  resetMfa: `admin/users/mfa/reset`,
+  resetMfa: `admin/merchants/mfa/reset`,
 };

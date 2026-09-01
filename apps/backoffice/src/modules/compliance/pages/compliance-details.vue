@@ -53,11 +53,6 @@
               </template>
             </ReadOnlyField>
           </div>
-          <ReviewActions
-            section="Business Information"
-            @approve="(section: string) => openActionModal('approve', section)"
-            @reject="(section: string) => openActionModal('reject', section)"
-          />
         </section>
 
         <section class="detail-card documents-card">
@@ -77,12 +72,6 @@
               @onDocumentUploaded="uploadedDocUrl = $event"
             />
           </div>
-
-          <ReviewActions
-            section="Business Registration Documents"
-            @approve="(section: string) => openActionModal('approve', section)"
-            @reject="(section: string) => openActionModal('reject', section)"
-          />
         </section>
 
         <section class="detail-card">
@@ -108,11 +97,6 @@
               @onDocumentUploaded="uploadedDocUrl = $event"
             />
           </div>
-          <ReviewActions
-            section="Representative Information"
-            @approve="(section: string) => openActionModal('approve', section)"
-            @reject="(section: string) => openActionModal('reject', section)"
-          />
         </section>
       </div>
 
@@ -143,11 +127,6 @@
             :key="field.label"
             :label="field.label"
             :value="field.value"
-          />
-          <ReviewActions
-            section="Address Information"
-            @approve="(section: string) => openActionModal('approve', section)"
-            @reject="(section: string) => openActionModal('reject', section)"
           />
         </section>
       </aside>
@@ -207,7 +186,6 @@ import { FileUploadInput } from "@packages/uikit";
 import {
   ReadOnlyField,
   DocumentRow,
-  ReviewActions,
   ProgressRow,
 } from "@/modules/compliance/components";
 import { ComplianceActionModal } from "@/modules/compliance/modals";
@@ -304,11 +282,7 @@ const showActionModal = ref(false);
 const activeAction = ref("");
 const activeSection = ref("");
 
-const openActionModal = (action: string, section: string) => {
-  activeAction.value = action;
-  activeSection.value = section;
-  showActionModal.value = true;
-};
+
 
 const closeActionModal = () => {
   showActionModal.value = false;
