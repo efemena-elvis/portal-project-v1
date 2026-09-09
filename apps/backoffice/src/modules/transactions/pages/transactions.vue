@@ -98,13 +98,7 @@ const {
 const { pushToastAlert } = useEvents();
 
 const handleExport = async () => {
-  const fmtStartISO = (date: Date) =>
-    date.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (date: Date) => {
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 0);
-    return end.toISOString().replace(/\.\d+Z$/, "Z");
-  };
+  const fmtDate = (date: Date) => date.toISOString().split("T")[0];
 
   const filters: Record<string, string> = {
     ...(filterValues.status && { status: filterValues.status }),
@@ -114,8 +108,8 @@ const handleExport = async () => {
     ...(filterValues.merchant && { user_id: filterValues.merchant }),
     ...(filterValues.search && { reference: filterValues.search }),
     ...(filterValues.period && {
-      from_created_at: fmtStartISO(filterValues.period[0]),
-      to_created_at: fmtEndISO(filterValues.period[1]),
+      from_created_at: fmtDate(filterValues.period[0]),
+      to_created_at: fmtDate(filterValues.period[1]),
     }),
   };
 

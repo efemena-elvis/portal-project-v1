@@ -207,12 +207,7 @@ const normalizeTransaction = (
   raw: transaction,
 });
 
-const fmtStartISO = (date: Date) => date.toISOString().replace(/\.\d+Z$/, "Z");
-const fmtEndISO = (date: Date) => {
-  const end = new Date(date);
-  end.setHours(23, 59, 59, 999);
-  return end.toISOString().replace(/\.\d+Z$/, "Z");
-};
+const fmtDate = (date: Date) => date.toISOString().split("T")[0];
 
 const apiFilters = computed(() => {
    let filters = `?page=${page.value}&user_id=${props.merchantId}&type=pay_in&status=${filterValues.status}&reference=${filterValues.search}&environment=${environment.value}`;
@@ -224,8 +219,8 @@ const apiFilters = computed(() => {
     filters += `&currency=${filterValues.currency.toUpperCase()}`;
 
   if (filterValues.period) {
-    filters += `&from_created_at=${fmtStartISO(filterValues.period[0])}`;
-    filters += `&to_created_at=${fmtEndISO(filterValues.period[1])}`;
+    filters += `&from_created_at=${fmtDate(filterValues.period[0])}`;
+    filters += `&to_created_at=${fmtDate(filterValues.period[1])}`;
   }
   return filters;
 });
@@ -350,8 +345,8 @@ const handleExport = async () => {
           : filterValues.paymentMethod,
     }),
     ...(filterValues.period && {
-      from_created_at: fmtStartISO(filterValues.period[0]),
-      to_created_at: fmtEndISO(filterValues.period[1]),
+      from_created_at: fmtDate(filterValues.period[0]),
+      to_created_at: fmtDate(filterValues.period[1]),
     }),
   };
 
