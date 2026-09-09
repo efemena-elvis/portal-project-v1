@@ -7,7 +7,6 @@
       </button>
 
       <MerchantAdminActions
-        v-if="showAdminActions"
         @actionSelected="(action: any) => $emit('actionSelected', action)"
       />
     </header>

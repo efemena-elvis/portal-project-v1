@@ -3,4 +3,5 @@ export const paymentRoutes = {
   getTransactionByRef: "payment",
   initiatePayout: "payouts/request",
   exportTransactions: "admin/reports/transactions",
+  
 };

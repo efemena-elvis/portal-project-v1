@@ -30,6 +30,7 @@
     @closeTriggered="closeActionModal"
     @confirmed="handleActionConfirmed"
   />
+  
 </template>
 
 <script setup lang="ts">
@@ -141,7 +142,6 @@ const modalContent = computed(() => {
 
   return content[activeAction.value];
 });
-
 
 
 const fetchMerchantOverview = async () => {

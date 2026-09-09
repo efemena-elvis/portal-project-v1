@@ -61,11 +61,11 @@ watch(
   @apply relative  min-w-max sm:w-1/2 md:w-full;
 
   :deep(.dp__input) {
-    @apply p-4 border border-gray-300 rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none w-[200px] h-12 py-4 px-6;
+    @apply p-4 border border-gray-300 relative rounded-md text-sm font-semibold text-teal-800 bg-white cursor-pointer transition duration-200 ease-in-out focus:outline-none w-[300px] h-12 py-4 px-6;
   }
 
   :deep(.dp__input::placeholder) {
-    @apply text-teal-800 relative left-6 font-bold;
+    @apply text-teal-800 font-bold relative left-4;
   }
 
   :deep(.dp__menu) {

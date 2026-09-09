@@ -5,10 +5,28 @@
       <span class="pdf-icon">PDF</span>
       <span>{{ filename }}</span>
     </div>
+    <ReviewActions
+      section="Business Information"
+      @approve="(section: string) => openActionModal('approve', section)"
+      @reject="(section: string) => openActionModal('reject', section)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from "vue";
+import ReviewActions from './review-actions.vue';
+
+const showActionModal = ref(false);
+const activeAction = ref("");
+const activeSection = ref("");
+
+const openActionModal = (action: string, section: string) => {
+  activeAction.value = action;
+  activeSection.value = section;
+  showActionModal.value = true;
+};
+
 defineProps({
   label: { type: String, required: true },
   filename: { type: String, required: true },
