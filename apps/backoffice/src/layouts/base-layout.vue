@@ -39,6 +39,7 @@
 
 <script lang="ts" setup>
 import { ref, watch, onMounted, onUnmounted, inject } from "vue";
+import { storeToRefs } from "pinia";
 import { useRoute } from "vue-router";
 import { jwtDecode } from "jwt-decode";
 import { Emitter } from "mitt";
@@ -58,11 +59,11 @@ const authStore = useAuthStore();
 const { resetAdminMfa } = authStore;
 const globalStore = useGlobalStore();
 const { switchAppMode, updateEnvironment } = globalStore;
+const { environment } = storeToRefs(globalStore);
 const eventBus = inject<Emitter<{ environmentChange: string }>>("eventBus");
 const { getCompliances } = useComplianceStore() as any;
 const { getAllWithdrawalRequests } = useApprovalsStore();
 const { getAllApprovals } = useApprovalsStore();
-
 
 const { setPageBackgroundColor } = useColor();
 const { processAPIRequest } = useEvents();
@@ -87,35 +88,38 @@ const getPendingCount = (response: any) => {
 };
 
 const getSidebarPendingData = async () => {
-  const [
-    complianceResponse,
-    approvalResponse,
-    withdrawalResponse,
-
-  ] = await Promise.all([
-    processAPIRequest({
-      action: getCompliances,
-      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
-      showAlert: false,
-    }),
-    processAPIRequest({
-      action: getAllApprovals,
-      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
-      showAlert: false,
-    }),
-    processAPIRequest({
-      action: getAllWithdrawalRequests,
-      payload: { filters: "?page=1&status=pending&limit=10000000", page: 1 },
-      showAlert: false,
-    }),
-
-  ]);
+  const [complianceResponse, approvalResponse, withdrawalResponse] =
+    await Promise.all([
+      processAPIRequest({
+        action: getCompliances,
+        payload: {
+          filters: `?page=1&status=pending&limit=10000000&environment=${environment.value}`,
+          page: 1,
+        },
+        showAlert: false,
+      }),
+      processAPIRequest({
+        action: getAllApprovals,
+        payload: {
+          filters: `?page=1&status=pending&limit=10000000&environment=${environment.value}`,
+          page: 1,
+        },
+        showAlert: false,
+      }),
+      processAPIRequest({
+        action: getAllWithdrawalRequests,
+        payload: {
+          filters: `?page=1&status=pending&limit=10000000&environment=${environment.value}`,
+          page: 1,
+        },
+        showAlert: false,
+      }),
+    ]);
 
   sidebarBadgeConfig.value = {
     Compliance: getPendingCount(complianceResponse),
     Approvals:
       getPendingCount(approvalResponse) + getPendingCount(withdrawalResponse),
-
   };
 };
 
@@ -123,6 +127,10 @@ watch(route, () => {
   if (showMobileSidebar.value) {
     showMobileSidebar.value = false;
   }
+});
+
+watch(environment, () => {
+  getSidebarPendingData();
 });
 
 onMounted(() => {
