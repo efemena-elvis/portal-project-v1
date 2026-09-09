@@ -73,13 +73,7 @@ export function useApprovalsData() {
     { title: "Fundings Failed", value: "-" },
   ]);
 
-  const fmtStartISO = (date: Date) =>
-    date.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (date: Date) => {
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 0);
-    return end.toISOString().replace(/\.\d+Z$/, "Z");
-  };
+  const fmtDate = (date: Date) => date.toISOString().split("T")[0];
 
   const fundingTableHeader: TableHeaderType[] = [
     { title: "Date", slug: "date_created" },
@@ -107,7 +101,7 @@ export function useApprovalsData() {
 
   const filters = computed(
     () =>
-      `?page=${page.value}&tab=${activeTab.value}&status=${filterValues.status}&from=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}&environment=${environment.value}`,
+      `?page=${page.value}&tab=${activeTab.value}&status=${filterValues.status}&from=${filterValues.period ? fmtDate(filterValues.period[0]) : ""}&to=${filterValues.period ? fmtDate(filterValues.period[1]) : ""}&search=${filterValues.search.toLocaleLowerCase().trim()}&environment=${environment.value}`,
   );
 
   const openRequestModal = async (request: any) => {

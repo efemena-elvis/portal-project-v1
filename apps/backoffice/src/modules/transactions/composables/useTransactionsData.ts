@@ -139,16 +139,10 @@ export function useTransactionsData() {
     { title: "", slug: "action" },
   ]);
 
-  const fmtStartISO = (date: Date) =>
-    date.toISOString().replace(/\.\d+Z$/, "Z");
-  const fmtEndISO = (date: Date) => {
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 0);
-    return end.toISOString().replace(/\.\d+Z$/, "Z");
-  };
+  const fmtDate = (date: Date) => date.toISOString().split("T")[0];
 
   const filters = computed(() => {
-    return `?page=${page.value}&status=${filterValues.status}&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
+    return `?page=${page.value}&status=${filterValues.status}&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtDate(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtDate(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
   });
 
   const getDateCreated = (date: string) => {
@@ -225,7 +219,7 @@ export function useTransactionsData() {
   };
 
   const fetchTransactionStats = async () => {
-    const base = `?page=1&page_size=100&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtStartISO(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtEndISO(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
+    const base = `?page=1&page_size=100&method=${filterValues.paymentMethod}&type=${filterValues.type}&currency=${filterValues.currency}&user_id=${filterValues.merchant}&from_created_at=${filterValues.period ? fmtDate(filterValues.period[0]) : ""}&to_created_at=${filterValues.period ? fmtDate(filterValues.period[1]) : ""}&reference=${filterValues.search}`;
 
     if (filterValues.status) {
       const statusRes = await processAPIRequest({
