@@ -198,7 +198,7 @@ const groupedAndFilteredRoutes = computed(() => {
       @apply text-[14.5px] flex items-center gap-x-2 flex-1;
 
       .badge {
-        @apply ml-4 inline-flex items-center justify-center w-[38px] h-[38px] px-2 text-[12px] leading-none font-semibold text-[#D94072] bg-[#FDEEF4] rounded-full;
+        @apply absolute right-4 inline-flex items-center justify-center w-[38px] h-[38px] px-2 text-[12px] leading-none font-semibold text-[#D94072] bg-[#FDEEF4] rounded-full;
       }
     }
   }

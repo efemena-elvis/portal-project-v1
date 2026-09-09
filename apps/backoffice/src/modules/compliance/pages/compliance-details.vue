@@ -65,13 +65,13 @@
             @view="handleDocumentView"
           />
 
-          <div class="upload-area">
+          <!-- <div class="upload-area">
             <FileUploadInput
               :hasDocumentUploaded="!!uploadedDocUrl"
               :uploadAction="uploadCompliance"
               @onDocumentUploaded="uploadedDocUrl = $event"
             />
-          </div>
+          </div> -->
         </section>
 
         <section class="detail-card">
@@ -90,13 +90,13 @@
             compact
             @view="handleDocumentView"
           />
-          <div class="upload-area">
+          <!-- <div class="upload-area">
             <FileUploadInput
               :hasDocumentUploaded="!!uploadedDocUrl"
               :uploadAction="uploadCompliance"
               @onDocumentUploaded="uploadedDocUrl = $event"
             />
-          </div>
+          </div> -->
         </section>
       </div>
 
