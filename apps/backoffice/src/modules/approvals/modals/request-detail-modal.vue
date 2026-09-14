@@ -15,7 +15,10 @@
     </template>
 
     <template #modal-cover-body>
-      <div class="modal-cover-body request-modal-body">
+      <div
+        class="modal-cover-body request-modal-body"
+        :class="{ 'pb-8': !(showActions && isPending) }"
+      >
         <div class="amount-row">
           <div>
             <p class="label">Amount</p>
@@ -66,7 +69,10 @@
     </template>
 
     <template #modal-cover-footer>
-      <div v-if="showActions" class="modal-cover-footer request-modal-footer">
+      <div
+        v-if="showActions && isPending"
+        class="modal-cover-footer request-modal-footer"
+      >
         <template v-if="request.isFunding">
           <button
             class="action-btn cancel-btn"
@@ -155,6 +161,10 @@ const displayAmount = computed(() => {
     : amount;
 });
 
+const isPending = computed(
+  () => props.request?.status?.toLowerCase() === "pending",
+);
+
 const statusClass = computed(() => {
   const status = props.request?.status?.toLowerCase().replace(/_/g, " ");
 
@@ -164,6 +174,10 @@ const statusClass = computed(() => {
 
   if (status?.includes("failed")) {
     return "status-danger";
+  }
+
+  if (status?.includes("cancelled")) {
+    return "status-neutral";
   }
 
   return "status-warning";
@@ -209,6 +223,10 @@ const statusClass = computed(() => {
 
 .status-danger {
   @apply border-red-100 bg-red-50 text-red-600;
+}
+
+.status-neutral {
+  @apply border-grey-100 bg-[#F1F7F6] text-[#818988];
 }
 
 .detail-list {

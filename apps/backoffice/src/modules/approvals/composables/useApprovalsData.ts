@@ -40,6 +40,17 @@ export function useApprovalsData() {
 
   const activeTab = ref<"funding" | "withdrawal">("funding");
 
+  const emptyData = computed(() => ({
+    title:
+      activeTab.value === "funding"
+        ? "No funding requests yet"
+        : "No withdrawal requests yet",
+    description:
+      activeTab.value === "funding"
+        ? "Funding requests will appear here once they are available."
+        : "Withdrawal requests will appear here once they are available.",
+  }));
+
   const tabButtonClass = (tabValue: string) =>
     activeTab.value === tabValue ? "tab-btn tab-btn--active" : "tab-btn";
 
@@ -447,6 +458,7 @@ export function useApprovalsData() {
     onFilterChange,
     approvalStats,
     fetchApprovals,
+    emptyData,
     closeRequestModal,
     goToMerchantDashboard,
     handleApprovalAction,
