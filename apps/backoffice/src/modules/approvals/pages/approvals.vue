@@ -40,11 +40,7 @@
           :tableHeader="tableHeader"
           :tableBody="tableBody"
           :isLoading="isLoading"
-          :emptyData="{
-            title: 'No approval requests yet',
-            description:
-              'Approval requests will appear here once they are available.',
-          }"
+          :emptyData="emptyData"
         >
           <TableContainerBody
             v-for="(payload, index) in tableBody"
@@ -97,6 +93,7 @@ const {
   filterConfig,
   onFilterChange,
   approvalStats,
+  emptyData,
   closeRequestModal,
   goToMerchantDashboard,
   handleApprovalAction,

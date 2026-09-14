@@ -95,23 +95,7 @@ const tableHeader = ref<TableHeaderType[]>([
   { title: "Activity", slug: "activity" },
 ]);
 
-const dummyActivities = [
-  {
-    email: "john.doe@company.com",
-    date: "2025-05-25T09:30:00Z",
-    activity: "Logged in to the dashboard",
-  },
-  {
-    email: "jane.smith@company.com",
-    date: "2025-05-25T10:15:00Z",
-    activity: "Updated merchant profile",
-  },
-  {
-    email: "sam.wilson@company.com",
-    date: "2025-05-24T14:45:00Z",
-    activity: "Approved withdrawal request #1234",
-  },
-];
+
 
 const getDateFormatted = (date: string) => {
   const { w2, m3, d3, y1 } = useDate.formatDate(date).getAll();
@@ -133,7 +117,7 @@ const tableBody = ref<any[]>([]);
 
 const fetchActivities = async () => {
   isLoading.value = true;
-  tableBody.value = dummyActivities.map(mapActivityToRow);
+
 
   try {
     const response = await processAPIRequest({
