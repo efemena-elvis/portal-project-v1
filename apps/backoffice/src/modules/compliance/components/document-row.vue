@@ -1,40 +1,67 @@
 <template>
   <div :class="['document-row', compact && 'document-row--compact']">
     <p>{{ label }}</p>
-    <div class="document-file" @click="$emit('view', { label, filename })">
+    <button
+      v-if="displayType === 'file'"
+      class="document-file"
+      :class="{ 'document-file--disabled': !url }"
+      type="button"
+      :disabled="!url"
+      @click="$emit('view', { label, filename, url })"
+    >
       <span class="pdf-icon">PDF</span>
       <span>{{ filename }}</span>
-    </div>
+    </button>
+    <span v-else class="document-value">{{ filename }}</span>
     <ReviewActions
       section="Business Information"
-      @approve="(section: string) => openActionModal('approve', section)"
-      @reject="(section: string) => openActionModal('reject', section)"
+      :actions-disabled="!hasDocument || reviewStatus !== 'pending'"
+      :approve-disabled="isProcessing"
+      :approve-label="approvalLabel"
+      :reject-disabled="isProcessing"
+      :reject-label="rejectionLabel"
+      @approve="$emit('approve', { documentUuid, label })"
+      @reject="$emit('reject', { documentUuid, label })"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import ReviewActions from './review-actions.vue';
+import { computed } from "vue";
+import ReviewActions from "./review-actions.vue";
 
-const showActionModal = ref(false);
-const activeAction = ref("");
-const activeSection = ref("");
-
-const openActionModal = (action: string, section: string) => {
-  activeAction.value = action;
-  activeSection.value = section;
-  showActionModal.value = true;
-};
-
-defineProps({
+const props = defineProps({
   label: { type: String, required: true },
   filename: { type: String, required: true },
+  documentUuid: { type: String, required: true },
+  hasDocument: { type: Boolean, default: true },
+  reviewStatus: {
+    type: String as () => "pending" | "approved" | "rejected",
+    default: "pending",
+  },
+  isProcessing: { type: Boolean, default: false },
+  url: { type: String, default: "" },
+  displayType: {
+    type: String as () => "file" | "text",
+    default: "file",
+  },
   compact: { type: Boolean, default: false },
 });
 
+const approvalLabel = computed(() => {
+  if (props.reviewStatus === "approved") return "Approved";
+  return props.isProcessing ? "Processing..." : "Approve";
+});
+
+const rejectionLabel = computed(() => {
+  if (props.reviewStatus === "rejected") return "Rejected";
+  return props.isProcessing ? "Processing..." : "Reject";
+});
+
 defineEmits<{
-  view: [payload: { label: string; filename: string }];
+  view: [payload: { label: string; filename: string; url: string }];
+  approve: [payload: { documentUuid: string; label: string }];
+  reject: [payload: { documentUuid: string; label: string }];
 }>();
 </script>
 
@@ -56,7 +83,15 @@ defineEmits<{
 }
 
 .document-file {
-  @apply flex items-center gap-4 text-sm font-medium text-grey-800 cursor-pointer transition-colors hover:text-teal-700;
+  @apply flex items-center gap-4 text-left text-sm font-medium text-grey-800 transition-colors hover:text-teal-700;
+}
+
+.document-file--disabled {
+  @apply cursor-not-allowed text-grey-500 hover:text-grey-500;
+}
+
+.document-value {
+  @apply text-sm font-medium text-grey-800;
 }
 
 .pdf-icon {

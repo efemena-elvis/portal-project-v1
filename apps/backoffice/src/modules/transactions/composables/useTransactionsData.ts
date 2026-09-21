@@ -1,6 +1,6 @@
 import { ref, computed, h, reactive, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
-import { useDate, useEvents, useString } from "@packages/hooks";
+import { useDate, useEvents, useString, usePolling } from "@packages/hooks";
 import { useTransactionStore } from "@/modules/transactions/store";
 import { useMerchantStore } from "@/modules/merchants/store";
 import { useGlobalStore } from "@/modules/global/store";
@@ -298,8 +298,8 @@ export function useTransactionsData() {
     ];
   };
 
-  const fetchTransactions = async (filters: string) => {
-    isLoading.value = true;
+  const fetchTransactions = async (filters: string, silent = false) => {
+    if (!silent) isLoading.value = true;
     tablePaging.value.current_page = page.value;
 
     const response = await processAPIRequest({
@@ -308,7 +308,7 @@ export function useTransactionsData() {
       showAlert: false,
     });
 
-    isLoading.value = false;
+    if (!silent) isLoading.value = false;
 
     if (response?.code === 200) {
       const transactions = response.data?.transactions || [];
@@ -341,6 +341,8 @@ export function useTransactionsData() {
     fetchMerchants();
     fetchTransactions(filters.value);
   });
+
+  usePolling(() => fetchTransactions(filters.value, true));
 
   return {
     transactionStats,

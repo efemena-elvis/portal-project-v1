@@ -25,6 +25,7 @@
           <button
             class="btn btn-sm action-btn"
             :class="action === 'approve' ? 'approve-btn' : 'reject-btn'"
+            :disabled="isProcessing"
             ref="actionBtnRef"
             @click="$emit('confirmed', { action, section })"
           >
@@ -46,6 +47,7 @@ import { ModalDialog } from "@packages/uikit";
 defineProps({
   action: { type: String, required: true },
   section: { type: String, required: true },
+  isProcessing: { type: Boolean, default: false },
 });
 
 defineEmits<{

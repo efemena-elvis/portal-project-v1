@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { computed, ref, reactive, watch, onMounted, h } from "vue";
 import { storeToRefs } from "pinia";
-import { useString, useEvents, useDate } from "@packages/hooks";
+import { useString, useEvents, useDate, usePolling } from "@packages/hooks";
 import { TableHeaderType } from "@packages/models";
 import {
   FilterBar,
@@ -174,9 +174,9 @@ const apiFilters = computed(() => {
 
 const payouts = ref<PayoutRow[]>([]);
 
-const fetchPayouts = async () => {
+const fetchPayouts = async (silent = false) => {
   if (!props.merchantId) return;
-  isLoading.value = true;
+  if (!silent) isLoading.value = true;
 
   const response = await processAPIRequest({
     action: getTransactions,
@@ -184,7 +184,7 @@ const fetchPayouts = async () => {
     showAlert: false,
   });
 
-  isLoading.value = false;
+  if (!silent) isLoading.value = false;
 
   if (response?.code !== 200) return;
 
@@ -269,6 +269,8 @@ watch(
 onMounted(() => {
   if (props.merchantId) fetchPayouts();
 });
+
+usePolling(() => fetchPayouts(true));
 </script>
 
 <style scoped lang="scss">
