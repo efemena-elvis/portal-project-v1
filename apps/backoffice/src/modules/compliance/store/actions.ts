@@ -2,6 +2,7 @@ import { useServiceAPI } from "@packages/hooks";
 import { complianceRoutes } from "./compliance-routes";
 import { complianceData } from "./state";
 import constants from "@/shared/utilities/constants";
+import type { ComplianceResponseData } from "../types";
 
 const { PORTAL_API_BASE_URL, PORTAL_API_VERSION, PORTAL_AUTH_TOKEN } =
   constants;
@@ -23,6 +24,24 @@ export const mutateCompliance = (payload: any) => {
 };
 
 export const getCompliances = getCompliance;
+
+export const getComplianceDetails = async (merchantId: string) => {
+  return await $api.fetch<ComplianceResponseData>(
+    complianceRoutes.getComplianceDetails(merchantId),
+  );
+};
+
+export const approveComplianceDocument = async (documentUuid: string) => {
+  return await $api.push(
+    complianceRoutes.approveComplianceDocument(documentUuid),
+  );
+};
+
+export const rejectComplianceDocument = async (documentUuid: string) => {
+  return await $api.push(
+    complianceRoutes.rejectComplianceDocument(documentUuid),
+  );
+};
 
 export const getMerchantOnDraft = (id: any) => {
   return null;

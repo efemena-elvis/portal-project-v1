@@ -14,3 +14,4 @@ export { useAppVariant } from "./src/useGlobal";
 export { setRefreshTokenFn } from "./src/useServiceAPI";
 export { useDateFilter } from "./src/useDateFilter";
 export { useAutoFetch } from "./src/useAutoFetch";
+export { usePolling } from "./src/usePolling";

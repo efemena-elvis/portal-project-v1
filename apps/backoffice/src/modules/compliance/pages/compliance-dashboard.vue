@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, h, reactive } from "vue";
+import { computed, ref, h, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { TableHeaderType } from "@packages/models";
 import {
@@ -78,7 +78,12 @@ import {
 import { useString, useEvents, useDate, useAutoFetch } from "@packages/hooks";
 import { useComplianceStore } from "@/modules/compliance/store";
 import ComplianceConfig from "../components/compliance-config.vue";
-import { title } from "process";
+import type { ComplianceMerchant } from "../types";
+
+type MerchantOption = {
+  value: string;
+  name: string;
+};
 
 const { getStatus, getBoldTableText, capitalizeFirstLetter } = useString();
 const { processAPIRequest } = useEvents();
@@ -108,17 +113,24 @@ const tablePaging = ref<any>({});
 const page = ref(1);
 
 const filterValues = reactive({
-  search: "",
+  merchant: "",
   status: "",
   period: null as [Date, Date] | null,
 });
 
+const merchantOptions = ref<MerchantOption[]>([]);
+
 const filterConfig = [
-  { type: "search" as const, key: "search", placeholder: "Search" },
+  {
+    type: "searchable-select" as const,
+    key: "merchant",
+    options: merchantOptions,
+    placeholder: "Merchant",
+  },
   {
     type: "select" as const,
     key: "status",
-    options: ["Verified", "Unverified"],
+    options: ["Approved", "Pending", "Rejected", "Submitted"],
     placeholder: "Status",
   },
   { type: "date" as const, key: "period" },
@@ -133,7 +145,7 @@ const onFilterChange = ({ key, value }: { key: string; value: any }) => {
   } else {
     (filterValues as any)[key] = value;
   }
-  if (key !== "search") page.value = 1;
+  page.value = 1;
 };
 
 const tableHeader = ref<TableHeaderType[]>([
@@ -146,16 +158,9 @@ const tableHeader = ref<TableHeaderType[]>([
 
 const tableBody = ref<any[]>([]);
 
-const isVerifiedParam = computed(() => {
-  const status = (filterValues.status || "").toLowerCase();
-  if (status === "verified") return "true";
-  if (status === "unverified") return "false";
-  return "";
-});
-
 const filters = computed(
   () =>
-    `?page=${page.value}&page_size=20&is_verified=${isVerifiedParam.value}&from_created_at=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to_created_at=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}&search=${filterValues.search}`,
+    `?page=${page.value}&page_size=20&merchant_id=${encodeURIComponent(filterValues.merchant)}&status=${filterValues.status.toLowerCase()}&from_created_at=${filterValues.period ? filterValues.period[0].toISOString().split("T")[0] : ""}&to_created_at=${filterValues.period ? filterValues.period[1].toISOString().split("T")[0] : ""}`,
 );
 
 const getDateFormatted = (date: string) => {
@@ -166,46 +171,41 @@ const getDateFormatted = (date: string) => {
 const openComplianceDetails = (data: any) => {
   router.push({
     name: "ComplianceDetails",
-    params: { id: data.uuid },
+    params: { id: data.merchant_id },
   });
 };
 
-const buildBusinessRows = (documents: any[]) => {
-  const grouped = documents.reduce<Record<string, any[]>>((acc, doc) => {
-    const key = doc.uuid;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(doc);
-    return acc;
-  }, {});
+const buildBusinessRows = (merchants: any[]) => {
+  const statusMappings: Record<string, { key: string; label: string }> = {
+    approved: { key: "successful", label: "Approved" },
+    rejected: { key: "rejected", label: "Rejected" },
+    pending: { key: "pending", label: "Pending" },
+    submitted: { key: "no-status", label: "Submitted" },
+  };
 
-  return Object.values(grouped).map((docs) => {
-    const first = docs[0];
-    const isVerified =
-      first.is_verified === true 
-    const latest = docs.reduce((a, b) =>
+  return merchants.map((merchant) => {
+    const docs: any[] = merchant.documents || [];
+    const latest = docs.reduce((a: any, b: any) =>
       new Date(a.created_at) > new Date(b.created_at) ? a : b,
     );
+    const businessName = merchant.business?.name || "No business info";
+    const businessStatus = (merchant.business?.status || "").toLowerCase();
+    const statusData =
+      statusMappings[businessStatus] ||
+      ({ key: "no-status", label: "-" } as { key: string; label: string });
 
     return {
-      date: h(TableDoubleColumn, {
-        entry: {
-          primaryText: latest?.created_at
-            ? getDateFormatted(latest.created_at)
-            : "-",
-          secondaryText: latest?.created_at
-            ? useDate.formatTime(latest.created_at)
-            : "",
-        },
-      }),
-      business: getBoldTableText(
-        capitalizeFirstLetter(first.business_name || "No business info"),
-      ),
-      email: first.merchant_email || "-",
-      status: getStatus(
-        isVerified ? "verified" : "pending",
-        isVerified ? "Verified" :  "Unverified",
-      ),
-     
+      date: latest?.created_at
+        ? h(TableDoubleColumn, {
+            entry: {
+              primaryText: getDateFormatted(latest.created_at),
+              secondaryText: useDate.formatTime(latest.created_at),
+            },
+          })
+        : "-",
+      business: getBoldTableText(capitalizeFirstLetter(businessName)),
+      email: merchant.merchant_email || "-",
+      status: getStatus(statusData.key, statusData.label),
       action: h(
         "button",
         {
@@ -214,12 +214,11 @@ const buildBusinessRows = (documents: any[]) => {
           type: "button",
           onClick: (event: Event) => {
             event.stopPropagation();
-            openComplianceDetails(first);
+            openComplianceDetails(merchant);
           },
         },
         "View",
       ),
-      isVerified,
     };
   });
 };
@@ -236,25 +235,66 @@ const fetchCompliances = async (filters: string) => {
   isLoading.value = false;
 
   if (response && response.code === 200) {
-    const documents = response.data?.documents || [];
-    const rows = buildBusinessRows(documents);
+    const merchants = response.data?.merchants || [];
+    const rows = buildBusinessRows(merchants);
     tableBody.value = rows;
 
-    const total = response.data?.total_records || documents.length;
+    const total = response.data?.total_records || merchants.length;
     tablePaging.value = {
       current_page: response.data?.page || page.value,
       page_count: rows.length,
       total_pages_count: Math.ceil(total / (response.data?.page_size || 20)),
     };
 
-
-    complianceStats.value = [
-      { title: "Total", value: total.toLocaleString() }
-    ];
+    complianceStats.value = [{ title: "Total", value: total.toLocaleString() }];
   }
 };
 
+const getMerchantOptionLabel = (merchant: ComplianceMerchant) => {
+  return merchant.business?.name || "No business info";
+};
+
+const fetchMerchantOptions = async () => {
+  const merchants: ComplianceMerchant[] = [];
+  let currentPage = 1;
+  let totalPages = 1;
+
+  while (currentPage <= totalPages) {
+    const response = await processAPIRequest({
+      action: getCompliances,
+      payload: {
+        filters: `?page=${currentPage}&page_size=20`,
+        page: currentPage,
+      },
+      showAlert: false,
+    });
+
+    if (response?.code !== 200) break;
+
+    const data = response.data;
+    const pageMerchants: ComplianceMerchant[] = data?.merchants || [];
+    merchants.push(...pageMerchants);
+    totalPages = Math.ceil(
+      (data?.total_records || 0) / (data?.page_size || 20),
+    );
+    currentPage += 1;
+  }
+
+  merchantOptions.value = Array.from(
+    new Map(
+      merchants.map((merchant) => [
+        merchant.merchant_id,
+        {
+          value: merchant.merchant_id,
+          name: getMerchantOptionLabel(merchant),
+        },
+      ]),
+    ).values(),
+  ).sort((first, second) => first.name.localeCompare(second.name));
+};
+
 useAutoFetch(filters, fetchCompliances);
+onMounted(fetchMerchantOptions);
 </script>
 
 <style scoped>

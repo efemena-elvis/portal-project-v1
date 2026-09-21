@@ -54,7 +54,7 @@ import { computed, ref, reactive, watch, onMounted, h } from "vue";
 import { storeToRefs } from "pinia";
 import { useGlobalStore } from "@/modules/global/store";
 import { TableHeaderType } from "@packages/models";
-import { useDate, useString, useEvents } from "@packages/hooks";
+import { useDate, useString, useEvents, usePolling } from "@packages/hooks";
 import {
   FilterBar,
   Pagination,
@@ -228,9 +228,9 @@ const apiFilters = computed(() => {
 const transactions = ref<MerchantTransaction[]>([]);
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-const fetchTransactions = async () => {
+const fetchTransactions = async (silent = false) => {
   if (!props.merchantId) return;
-  isLoading.value = true;
+  if (!silent) isLoading.value = true;
 
   const response = await processAPIRequest({
     action: getTransactions,
@@ -238,7 +238,7 @@ const fetchTransactions = async () => {
     showAlert: false,
   });
 
-  isLoading.value = false;
+  if (!silent) isLoading.value = false;
 
   if (response?.code !== 200) return;
 
@@ -332,6 +332,8 @@ watch(
 onMounted(() => {
   if (props.merchantId) fetchTransactions();
 });
+
+usePolling(() => fetchTransactions(true));
 
 const handleExport = async () => {
   const filters: Record<string, string> = {
