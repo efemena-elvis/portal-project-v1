@@ -21,7 +21,7 @@
           />
           <TransactionsDonut
             v-if="!filterValues.status"
-            :stats="transactionStats"
+            :percentages="transactionPercentages"
           />
         </div>
         <div class="flex items-center justify-between">
@@ -83,6 +83,7 @@ import { useTransactionsData } from "@/modules/transactions/composables/useTrans
 
 const {
   transactionStats,
+  transactionPercentages,
   isLoading,
   tableBody,
   tableHeader,
