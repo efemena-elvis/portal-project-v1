@@ -19,39 +19,20 @@
 <script setup lang="ts">
 import { computed, defineProps } from "vue";
 import { DoughnutChart } from "@packages/uikit";
+import type { TransactionPercentages } from "@/modules/transactions/composables/useTransactionsData";
 
 const props = defineProps<{
-  stats: { title: string; value: string }[];
+  percentages: TransactionPercentages;
 }>();
 
-const donutData = computed(() => {
-  const parseStat = (title: string) => {
-    const stat = props.stats.find((statEntry) => statEntry.title === title);
-    return stat ? Number(stat.value.replace(/,/g, "")) : 0;
-  };
-  const total = parseStat("Total Transactions");
-  if (!total) {
-    return [
-      { country: "Completed", amount: 0 },
-      { country: "Pending", amount: 0 },
-      { country: "Failed", amount: 0 },
-    ];
-  }
-  return [
-    {
-      country: "Completed",
-      amount: Math.round((parseStat("Completed") / total) * 100),
-    },
-    {
-      country: "Pending",
-      amount: Math.round((parseStat("Pending") / total) * 100),
-    },
-    {
-      country: "Failed",
-      amount: Math.round((parseStat("Failed") / total) * 100),
-    },
-  ];
-});
+const donutData = computed(() => [
+  {
+    country: "Completed",
+    amount: Math.round(props.percentages.Completed || 0),
+  },
+  { country: "Pending", amount: Math.round(props.percentages.Pending || 0) },
+  { country: "Failed", amount: Math.round(props.percentages.Failed || 0) },
+]);
 </script>
 
 <style scoped lang="scss">

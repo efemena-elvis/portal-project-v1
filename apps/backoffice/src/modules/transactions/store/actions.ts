@@ -15,13 +15,18 @@ export const getAllTransactions = async (payload: any) => {
   const filters = payload.filters
     ? `${payload.filters}&environment=${payload.environment || "live"}`
     : `?page=${payload.page}&environment=${payload.environment || "live"}`;
-  return await $api.fetch(
-    `${transactionRoutes.getTransactions}${filters}`,
-  );
+  return await $api.fetch(`${transactionRoutes.getTransactions}${filters}`);
 };
 
 export const getSingleTransaction = async (payload: any) => {
   return await $api.fetch(
     `${transactionRoutes.getTransactions}/${payload.uuid}`,
   );
+};
+
+export const getTransactionStats = async (payload: any) => {
+  const filters = payload.filters
+    ? `${payload.filters}&environment=${payload.environment || "live"}`
+    : `?environment=${payload.environment || "live"}`;
+  return await $api.fetch(`${transactionRoutes.getTransactionStats}${filters}`);
 };
