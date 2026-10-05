@@ -7,6 +7,14 @@
         variant="panel"
         @change="onFilterChange"
       />
+
+      <button
+        class="btn btn-sm btn-secondary mt-8"
+        type="button"
+        @click="handleExport"
+      >
+        Export
+      </button>
     </div>
 
     <TableContainer
@@ -55,6 +63,7 @@ import {
 } from "@packages/uikit";
 import { usePaymentStore } from "@/modules/payments/store";
 import { useGlobalStore } from "@/modules/global/store";
+import { exportTransactionsCSV } from "@/shared/utils/transaction-export";
 import TransactionDetailModal from "@/modules/transactions/modals/transaction-detail-modal.vue";
 
 interface PayoutRow {
@@ -78,7 +87,7 @@ const props = withDefaults(
 
 const { getTransactions } = usePaymentStore();
 const { environment } = storeToRefs(useGlobalStore());
-const { processAPIRequest } = useEvents();
+const { processAPIRequest, pushToastAlert } = useEvents();
 const { getStatus, formatNumber, getBoldTableText } = useString();
 
 const currencyOptions = computed<string[]>(() => {
@@ -271,6 +280,37 @@ onMounted(() => {
 });
 
 usePolling(() => fetchPayouts(true));
+
+const handleExport = async () => {
+  const filters: Record<string, string> = {
+    category: "payout",
+    user_id: props.merchantId,
+    ...(filterValues.status && { status: filterValues.status.toLowerCase() }),
+    ...(filterValues.search && { reference: filterValues.search }),
+    ...(filterValues.currency && {
+      currency: filterValues.currency.toUpperCase(),
+    }),
+    ...(filterValues.period && {
+      from_created_at: fmtDate(filterValues.period[0]),
+      to_created_at: fmtDate(filterValues.period[1]),
+    }),
+  };
+
+  const result = await exportTransactionsCSV(
+    filters,
+    `Merchant_${props.merchantId}_Payouts.csv`,
+  );
+
+  if (!result.success) {
+    pushToastAlert({
+      message: "Export failed",
+      description:
+        result.message ||
+        "Data exceeds the number exportable. Please apply filters to narrow your search.",
+      type: "error",
+    });
+  }
+};
 </script>
 
 <style scoped lang="scss">
